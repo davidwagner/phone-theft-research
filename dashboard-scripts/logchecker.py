@@ -7,14 +7,14 @@ import sys
 #Assumes this is called in a folder that has that day's decrypted data.
 #Also assumes that there exists a CSV file that maps user to uniqueID
 
-USERS_TO_IDS_FILE = 'users_to_ids.csv'
+USERS_TO_IDS_FILE = '/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv'
 ###########################
 """ If you have pycrypto installed, uncomment these lines and comment the lines below """
-# FILES_DECRYPTED = True
-# DIRECTORY = "./" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
+FILES_DECRYPTED = True
+DIRECTORY = "/tmp/dashboards/" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
 """ Otherwise leave these uncommented """
-FILES_DECRYPTED = False
-DIRECTORY = "./Dashboard_Results/" + sys.argv[1] + "/" + "encrypted/"
+# FILES_DECRYPTED = False
+# DIRECTORY = "./Dashboard_Results/" + sys.argv[1] + "/" + "encrypted/"
 ############################
 
 NO_DATA_FOUND = "Instrument Data not Found"
@@ -77,7 +77,8 @@ def formatTime(dateTime):
     return dateTime.strftime('%H:%M:%S %m-%d-%Y')
 
 def getTimeFromFile(filename, userID, instrument, isDecrypted):
-    query = userToDataFileName(DIRECTORY, userID, instrument) + '(?P<time>.*)' + getFileExtension(isDecrypted)
+    query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
+        '(?P<time>.*)' + getFileExtension(isDecrypted)
     match = re.match(query, filename)
     return match.group('time')
 
@@ -91,7 +92,7 @@ def getFileExtension(isDecrypted):
 
 # Gets all filenames belonging to certain user 
 def getUserFiles(userID, instrument):
-    query = userToDataFileName(DIRECTORY, userID, instrument) + '*'
+    query = DIRECTORY + 'AppMon' + '_' + userID + '*_' + instrument + '_*'
     #print(query)
     userFiles = glob.glob(query)
     # validateFiles(userFiles)
@@ -207,7 +208,7 @@ def getTimeAndTimeSince(time):
 def main():
     now = datetime.datetime.now()
     # dashboardDir = "./" + sys.argv[1] + "/Dashboard_Results/"
-    dashboardFileName = "Dashboard-" + sys.argv[1] + ".csv" 
+    dashboardFileName = "/home/daw/Dropbox/phone_data/Dashboard_results/Dashboard-" + sys.argv[1] + ".csv" 
 
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')

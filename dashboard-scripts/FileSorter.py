@@ -5,7 +5,7 @@ import sys
 
 
 """The path to the directory with all the files: """
-sourceDirectory = "./../../../Downloads/0912_pull" #change as needed
+sourceDirectory = "/home/daw/Dropbox/phone_data/Sensor Research" #change as needed
 
 """The path to the directory where you want the files to be moved. 
 The subdirectory will automatically create a subdirectory inside with the date
@@ -13,7 +13,8 @@ The subdirectory will automatically create a subdirectory inside with the date
 
 ex: If your directory is "TestSubjects" and you input "2016_01_01", the files will be located in "TestSubjects/2016_01_01"
 """
-targetDirectory = "./Dashboard_Results" #change as needed
+#targetDirectory = "/home/daw/Dropbox/phone_data/Dashboard_tmp" #change as needed
+targetDirectory = "/tmp/dashboards"
 
 """
 The path to the decryptor Python script
@@ -26,7 +27,7 @@ privateKeyPath = "./ucb_keypair/ucb.privatekey"
 
 
 """ If you have pycrypto installed (pip install pycrypto) then set to True """
-HAS_PYCRYPTO = False
+HAS_PYCRYPTO = True
 
 """ If Windows uncomment and comment Mac line"""
 # PYTHON = "python"
@@ -74,7 +75,7 @@ def decrypt(encryptedPath, destPath):
 	print("Running command: " + command)
 	os.system(command)
 
-	print("Decryption succesful")
+	print("Decryption successful")
 
 
 
@@ -87,23 +88,23 @@ def main():
 
 
 	print("The date you have entered is " + date)
-	print("If the path already exists, you will overwrite your past directory")
-	print("Enter Y if you wish to continue. Enter N for quit.")
-	while True:
-		inputString = raw_input()
-		if inputString == "Y":
-			break
-		elif inputString == "N":
-			sys.exit()
+	#print("If the path already exists, you will overwrite your past directory")
+	#print("Enter Y if you wish to continue. Enter N for quit.")
+	#while True:
+	#	inputString = raw_input()
+	#	if inputString == "Y":
+	#		break
+	#	elif inputString == "N":
+	#		sys.exit()
 
-	print("Please take this moment to make sure your paths are inputted correctly")
-	print("Enter Y if you wish to continue. Enter N for quit.")
-	while True:
-		inputString = raw_input()
-		if inputString == "Y":
-			break
-		elif inputString == "N":
-			sys.exit()
+	#print("Please take this moment to make sure your paths are inputted correctly")
+	#print("Enter Y if you wish to continue. Enter N for quit.")
+	#while True:
+	#	inputString = raw_input()
+	#	if inputString == "Y":
+	#		break
+	#	elif inputString == "N":
+	#		sys.exit()
 
 	print("Attempting to move files")
 	encryptedDir, targetDir = moveFiles(date)
