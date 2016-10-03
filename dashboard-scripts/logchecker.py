@@ -4,28 +4,21 @@ import glob
 import re
 import datetime
 import sys
-#Assumes this is called in a folder that has that day's decrypted data.
-#Also assumes that there exists a CSV file that maps user to uniqueID
 
+# where to save output
 DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
-USERS_TO_IDS_FILE = '/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv'
 
-###########################
-""" If you have pycrypto installed, uncomment these lines and comment the lines below """
+# assumes that there exists a CSV file that maps user to uniqueID
+USERS_TO_IDS_FILE = "/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv"
+
+# Install pycrypto and pycryptodome to use this script
 FILES_DECRYPTED = True
-# DIRECTORY = "/tmp/dashboards/" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
-# DIRECTORY = "/var/tmp/decrypted/"
+
 global DIRECTORY
 DIRECTORY = None
-""" Otherwise leave these uncommented """
-# FILES_DECRYPTED = False
-# DIRECTORY = "./Dashboard_Results/" + sys.argv[1] + "/" + "encrypted/"
-############################
 
 NO_DATA_FOUND = "Instrument Data not Found"
-#DIRECTORY = "./0912_pull/"
 
-BLANK_ROWS_THRESHHOLD = 20
 USERS = {}
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
@@ -211,6 +204,9 @@ def getTimeAndTimeSince(time):
     return [time, now - time]
 
 def main():
+    if len(sys.argv) < 2:
+        print("Usage: logchecker.py <directory containing decrypted .csv files>")
+        sys.exit()
     global DIRECTORY
     DIRECTORY = sys.argv[1] + "/"
     now = datetime.datetime.now()
