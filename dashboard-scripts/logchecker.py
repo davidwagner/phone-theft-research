@@ -7,11 +7,16 @@ import sys
 #Assumes this is called in a folder that has that day's decrypted data.
 #Also assumes that there exists a CSV file that maps user to uniqueID
 
+DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
 USERS_TO_IDS_FILE = '/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv'
+
 ###########################
 """ If you have pycrypto installed, uncomment these lines and comment the lines below """
 FILES_DECRYPTED = True
-DIRECTORY = "/tmp/dashboards/" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
+# DIRECTORY = "/tmp/dashboards/" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
+# DIRECTORY = "/var/tmp/decrypted/"
+global DIRECTORY
+DIRECTORY = None
 """ Otherwise leave these uncommented """
 # FILES_DECRYPTED = False
 # DIRECTORY = "./Dashboard_Results/" + sys.argv[1] + "/" + "encrypted/"
@@ -206,9 +211,10 @@ def getTimeAndTimeSince(time):
     return [time, now - time]
 
 def main():
+    global DIRECTORY
+    DIRECTORY = sys.argv[1] + "/"
     now = datetime.datetime.now()
-    # dashboardDir = "./" + sys.argv[1] + "/Dashboard_Results/"
-    dashboardFileName = "/home/daw/Dropbox/phone_data/Dashboard_results/Dashboard-" + sys.argv[1] + ".csv" 
+    dashboardFileName = DASHBOARDDIR + "Dashboard-" + now.strftime('%Y_%m_%d') + ".csv"
 
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
