@@ -4,35 +4,21 @@ import glob
 import re
 import datetime
 import sys
-#Assumes this is called in a folder that has that day's decrypted data.
-#Also assumes that there exists a CSV file that maps user to uniqueID
 
-#################### FILE CONFIGURATIONS #######################
+# where to save output
+DASHBOARDDIR = "./"
 
-USERS_TO_IDS_FILE = 'users_to_ids.csv'
-###########################
-""" If you have pycrypto installed, uncomment these lines and comment the lines below """
-# FILES_DECRYPTED = True
-# DIRECTORY = "./" + datetime.datetime.now().strftime('%Y_%m_%d') + "/"
-""" Otherwise leave these uncommented """
+# assumes that there exists a CSV file that maps user to uniqueID
+USERS_TO_IDS_FILE = "users_to_ids.csv"
+
+# Install pycrypto and pycryptodome to use this script
 FILES_DECRYPTED = False
-# DIRECTORY = "./Dashboard_Results/" + sys.argv[1] + "/" + "encrypted/"
+
+global DIRECTORY
 DIRECTORY = "./0912_pull/"
-############################
 
-
-
-##################### STATS CONFIGURATIONS ############################
-
-
-
-
-
-#######################
-
-# MAX_WATCH_GAP_ALLOWED_TIME = datetime.timedelta(hours=MAX_WATCH_GAP_ALLOWED_HOURS)
 NO_DATA_FOUND = "Instrument Data not Found"
-BLANK_ROWS_THRESHOLD = 20
+
 USERS = {}
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
@@ -136,7 +122,7 @@ def timesToStats(times):
     timesStats["latest_time"] = latestTime
     timesStats["period"] = timeDiffToHours(period)
     timesStats["times_count"] = numTimes
-    timesStats["times_per_period"] = numTimes / (period.seconds // 3600) if period.seconds >= 3600 else numTimes
+    timesStats["times_per_period"] = numTimes / (period.days * 24 + period.seconds // 3600) if period.seconds >= 3600 else numTimes
 
     return timesStats
 
