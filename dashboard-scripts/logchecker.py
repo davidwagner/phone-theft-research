@@ -157,7 +157,8 @@ def formatTime(dateTime):
     return dateTime.strftime('%H:%M:%S %m-%d-%Y')
 
 def getTimeFromFile(filename, userID, instrument, isDecrypted):
-    query = userToDataFileName(DIRECTORY, userID, instrument) + '(?P<time>.*)' + getFileExtension(isDecrypted)
+    query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
+        '(?P<time>.*)' + getFileExtension(isDecrypted)
     match = re.match(query, filename)
     return match.group('time')
 
@@ -187,8 +188,7 @@ def getMaxWatchGapAllowed():
 
 # Gets all filenames belonging to certain user 
 def getUserFiles(userID, instrument):
-    query = userToDataFileName(DIRECTORY, userID, instrument) + '*'
- 
+    query = DIRECTORY + 'AppMon' + '_' + userID + '*_' + instrument + '_*'
     userFiles = glob.glob(query)
     # validateFiles(userFiles)
     
@@ -317,7 +317,7 @@ def main():
     
 
     now = datetime.datetime.now()
-    dashboardFileName = "Dashboard-" + sys.argv[1] + ".csv" 
+    dashboardFileName = DASHBOARDDIR + "Dashboard-" + now.strftime('%Y_%m_%d') + ".csv"
 
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
