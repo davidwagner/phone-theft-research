@@ -23,19 +23,17 @@ PHONE_INSTRUMENT = 'BatchedStepCount'
 
 NO_DATA_FOUND = "Instrument Data not Found"
 
-USERS = {}
+ids = []
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
     reader = csv.reader(usersToIdsFile)
     for row in reader:
-        user = row[0]
         userID = row[1]
-        USERS[user] = userID
+        ids.append(userID)
 finally:
     usersToIdsFile.close()
 
-uniqueIDs = set()
-
+USERS = set(ids)
 
 #Looks through folder and checks to see there are enough files
 def checkFileExist():
@@ -322,7 +320,7 @@ def main():
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
 
-    columnHeaders = ["USER", "ID", 
+    columnHeaders = ["User ID", 
                      "Most Recent Accel. Data", "Time Since", 
                      "Last time Watch was worn", "Time Since", 
                      "Last time Watch was connected", "Time Since", 
@@ -338,12 +336,12 @@ def main():
                      "Period of Phone Data", "Number of Data Files", "Data Files per Hour"]
 
     dashboardWriter.writerow(columnHeaders)
-    for user, userID in USERS.iteritems():
-        mostRecentAccelTime = getLastPhoneDataFileTime(userID)
+    for userID in USERS:
+        mostRecentAccelTime = getMostRecentAccelerometerFileTime(userID)
         mostRecentWatchWornTime = getLastTimeWatchWasWornAndConnected(userID)
         mostRecentWatchConnectedTime = getLastTimeWatchConnected(userID)
         mostRecentWatchDataAny = getMostRecentWatchDataTime(userID)
-        datarow = [user, userID]
+        datarow = [userID]
         datarow += getTimeAndTimeSince(mostRecentAccelTime) 
         datarow += getTimeAndTimeSince(mostRecentWatchWornTime)
         datarow += getTimeAndTimeSince(mostRecentWatchConnectedTime)
