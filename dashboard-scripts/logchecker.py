@@ -19,7 +19,7 @@ DIRECTORY = None
 
 WATCH_CONNECTED_INSTRUMENT = 'TriggeredBleDevices'
 WATCH_WORN_INSTRUMENT = 'BleHrm'
-PHONE_INSTRUMENT = 'BatchedStepCount'
+PHONE_INSTRUMENT = 'BatchedAccelerometer'
 
 NO_DATA_FOUND = "Instrument Data not Found"
 
