@@ -6,18 +6,24 @@ import datetime
 import sys
 
 # where to save output
-DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
+#DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
 
 # assumes that there exists a CSV file that maps user to uniqueID
-USERS_TO_IDS_FILE = "/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv"
+# USERS_TO_IDS_FILE = "/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv"
+
+DASHBOARDDIR = "./"
+
+# assumes that there exists a CSV file that maps user to uniqueID
+USERS_TO_IDS_FILE = "../dashboard_scripts/users_to_ids.csv"
 
 # Install pycrypto and pycryptodome to use this script
-FILES_DECRYPTED = True
+#FILES_DECRYPTED = True
+FILES_DECRYPTED = False
 
 global DIRECTORY
 DIRECTORY = None
 
-WATCH_CONNECTED_INSTRUMENT = 'TriggeredBleDevices'
+WATCH_CONNECTED_INSTRUMENT = 'TriggeredBleConnectedDevices'
 WATCH_WORN_INSTRUMENT = 'BleHrm'
 PHONE_INSTRUMENT = 'BatchedAccelerometer'
 
@@ -158,6 +164,9 @@ def getTimeFromFile(filename, userID, instrument, isDecrypted):
     query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
         '(?P<time>.*)' + getFileExtension(isDecrypted)
     match = re.match(query, filename)
+    if match == None:
+        print(query)
+        print(filename)
     return match.group('time')
 
 def getFileExtension(isDecrypted):
@@ -202,18 +211,17 @@ def getLastTimeWatchWasWornAndConnected(userID):
     if lastBleHrmTime == NO_DATA_FOUND and lastBleConnectedTime == NO_DATA_FOUND:
         return "No Watch Data found, check with participant on watch connection and wearing."
     elif lastBleHrmTime == NO_DATA_FOUND:
-        return "No {} data found, participant has been connected, but check if participant has been wearing watch.".format(WATCH_WORN_INSTRUMENT)
-    elif lastBleConnectedTime == NO_DATA_FOUND:
-        return "No {} data found, check if participant has been connecting to watch.".format(WATCH_CONNECTED_INSTRUMENT)
+        return "No {} data found, participant has been connected, but check if participant has been wearing watch consistently.".format(WATCH_WORN_INSTRUMENT)
+    elif lastBleConnectedTime == NO_DATA_FOUND: #No TriggeredBleConnected, but BleHrm data, so watch must have connected
+        return lastBleHrmTime
 
     if lastBleHrmTime == lastBleConnectedTime:
         return lastBleConnectedTime
 
     mostRecentMatchingTime = getMostRecentMatchingTime([bleHrmTimes, bleConnectedTimes])
-    if mostRecentMatchingTime == None:
-        return "{} and {} never uploaded at same time. Something may be wrong with watch, check data.".format(WATCH_WORN_INSTRUMENT, WATCH_CONNECTED_INSTRUMENT)
+    if mostRecentMatchingTime == None or mostRecentMatchingTime < lastBleHrmTime:
+        return lastBleHrmTime
     else:
-        
         return mostRecentMatchingTime
 
 
@@ -233,7 +241,19 @@ def getMostRecentWatchDataTime(userID):
         return watchWornTime
 
 def getLastTimeWatchConnected(userID):
-    return getMostRecentDataTime(userID, WATCH_CONNECTED_INSTRUMENT)
+    watchConnectedTime = getMostRecentDataTime(userID, WATCH_CONNECTED_INSTRUMENT)
+    watchWornTime = getMostRecentDataTime(userID, WATCH_WORN_INSTRUMENT) 
+    if watchConnectedTime == NO_DATA_FOUND and watchWornTime == NO_DATA_FOUND:
+        return "Watch was never connected, no heart rate or connection data found, check with participant on watch connection/wearing."
+    elif watchWornTime == NO_DATA_FOUND:
+        return watchConnectedTime
+    elif watchConnectedTime == NO_DATA_FOUND:
+        return watchWornTime
+    
+    if watchConnectedTime > watchWornTime:
+        return watchConnectedTime
+    else:
+        return watchWornTime
 
 def getLastTimeWatchWorn(userID):
     return getMostRecentDataTime(userID, WATCH_WORN_INSTRUMENT)
@@ -321,7 +341,7 @@ def main():
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
 
     columnHeaders = ["User ID", 
-                     "Most Recent Accel. Data", "Time Since", 
+                     "Most Recent Phone Data", "Time Since", 
                      "Last time Watch was worn", "Time Since", 
                      "Last time Watch was connected", "Time Since", 
                      "Last time of any Watch Data", "Time Since",
@@ -337,7 +357,8 @@ def main():
 
     dashboardWriter.writerow(columnHeaders)
     for userID in USERS:
-        mostRecentAccelTime = getMostRecentAccelerometerFileTime(userID)
+        print(userID)
+        mostRecentAccelTime = getLastPhoneDataFileTime(userID)
         mostRecentWatchWornTime = getLastTimeWatchWasWornAndConnected(userID)
         mostRecentWatchConnectedTime = getLastTimeWatchConnected(userID)
         mostRecentWatchDataAny = getMostRecentWatchDataTime(userID)
