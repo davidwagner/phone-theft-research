@@ -6,19 +6,14 @@ import datetime
 import sys
 
 # where to save output
-#DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
+DASHBOARDDIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
 
 # assumes that there exists a CSV file that maps user to uniqueID
-# USERS_TO_IDS_FILE = "/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv"
-
-DASHBOARDDIR = "./"
-
-# assumes that there exists a CSV file that maps user to uniqueID
-USERS_TO_IDS_FILE = "../dashboard_scripts/users_to_ids.csv"
+USERS_TO_IDS_FILE = "/home/daw/Dropbox/phone_data/Dashboard_results/users_to_ids.csv"
 
 # Install pycrypto and pycryptodome to use this script
-#FILES_DECRYPTED = True
-FILES_DECRYPTED = False
+FILES_DECRYPTED = True
+
 
 global DIRECTORY
 DIRECTORY = None
@@ -164,9 +159,6 @@ def getTimeFromFile(filename, userID, instrument, isDecrypted):
     query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
         '(?P<time>.*)' + getFileExtension(isDecrypted)
     match = re.match(query, filename)
-    if match == None:
-        print(query)
-        print(filename)
     return match.group('time')
 
 def getFileExtension(isDecrypted):
@@ -259,7 +251,10 @@ def getLastTimeWatchWorn(userID):
     return getMostRecentDataTime(userID, WATCH_WORN_INSTRUMENT)
 
 def getLastPhoneDataFileTime(userID):
-    return getMostRecentDataTime(userID, PHONE_INSTRUMENT)
+    time = getMostRecentDataTime(userID, PHONE_INSTRUMENT)
+    if time == NO_DATA_FOUND:
+        return "{} data not found.".format(PHONE_INSTRUMENT)
+    return time
 
 
 def userToDataFileName(directory, userID, instrument):
@@ -345,19 +340,18 @@ def main():
                      "Last time Watch was worn", "Time Since", 
                      "Last time Watch was connected", "Time Since", 
                      "Last time of any Watch Data", "Time Since",
-                     "Largest Watch Worn Data Gap", "Start Time of Gap", "End Time of Gap", "Median Watch Worn Data Gap",
+                     "Largest Watch Worn Data Gap", "Start Time of Largest Gap", "End Time of Largest Gap", "Median Watch Worn Data Gap",
                      "Earliest Watch Worn Data Time", "Latest Watch Worn Data Time",
                      "Period of Watch Worn Data", "Number of Data Files", "Data Files per Hour",
-                     "Largest Watch Connected Data Gap",  "Start Time of Gap", "End Time of Gap", "Median Watch Connected Data Gap",
+                     "Largest Watch Connected Data Gap (If no data found, defer to Watch Worn data)",  "Start Time of Largest Gap", "End Time of Largest Gap", "Median Watch Connected Data Gap",
                      "Earliest Watch Connected Data Time", "Latest Watch Connected Data Time",
                      "Period of Watch Connected Data", "Number of Data Files", "Data Files per Hour",
-                     "Largest Phone Data Gap",  "Start Time of Gap", "End Time of Gap", "Median Phone Data Gap",
+                     "Largest Phone Data Gap",  "Start Time of Largest Gap", "End Time of Largest Gap", "Median Phone Data Gap",
                      "Earliest Phone Data Time", "Latest Phone Data Time",
                      "Period of Phone Data", "Number of Data Files", "Data Files per Hour"]
 
     dashboardWriter.writerow(columnHeaders)
     for userID in USERS:
-        print(userID)
         mostRecentAccelTime = getLastPhoneDataFileTime(userID)
         mostRecentWatchWornTime = getLastTimeWatchWasWornAndConnected(userID)
         mostRecentWatchConnectedTime = getLastTimeWatchConnected(userID)
