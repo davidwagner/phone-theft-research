@@ -109,7 +109,7 @@ def timesToStats(times):
     latestTime = times[-1] if numTimes > 1 else earliestTime
     period = latestTime - earliestTime
     largestGapStart = times[0]
-    largestGapEnd = times[1]
+    largestGapEnd = times[1] if numTimes > 1 else times[0]
 
     
     for i in range(numTimes - 1):
