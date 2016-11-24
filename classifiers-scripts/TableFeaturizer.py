@@ -144,12 +144,6 @@ def plotCheck(rows, tableTimes):
     print(markers_on)
     pyplot.show()
 
-def classify(dataFile):
-    rows = getFile(dataFile)
-    features = getFeatures(rows)
-    tableTimes = checkFeatures(rows)
-    return tableTimes
-
 
 def main():
     rows = getFile()

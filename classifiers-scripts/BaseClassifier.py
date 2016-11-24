@@ -5,7 +5,7 @@ the classifier/featurizer code that you've already written, and then having a cl
 Classifiers.py (CLASSIFIERS) and logClassifier.py ( runClassifier() )have the intended usage.
 """
 
-class BaseClassifier():
+class BaseClassifier(object):
 
 	"""
 	Input: windowOfData is a dictionary with the following format of key-values:
@@ -17,25 +17,25 @@ class BaseClassifier():
 
 	Output: a 0 or 1 (the classification)
 	"""
-	def classify(windowOfData):
+	def classify(self, windowOfData):
 		return 0 
 
 	"""
 	Returns the # of milliseconds of data needed to classify a window of data
 	e.g. Table classifier needs 30ms of data (3 rows of accelerometer data) for one window
 	"""
-	def getWindowTime():
+	def getWindowTime(self):
 		return 1000
 
 	"""
 	Returns a list of sensors, whose data is needed for the classifier (see LogConstants.py)
 	e.g. Table classifier would return [ACCELEROMETER]
 	"""
-	def getRelevantSensors():
+	def getRelevantSensors(self):
 		return []
 
 	"""
 	Returns meaning of classification values (useful for interpreting results in post-processing)
 	"""
-	def getClassifications():
+	def getClassifications(self):
 		return {0 : "Not in given state", 1 : "In given state"}
