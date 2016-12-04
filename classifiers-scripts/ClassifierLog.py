@@ -5,13 +5,15 @@ import re
 import datetime
 import sys
 import shutil
+import matplotlib.pyplot as plt
+from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateFormatter, date2num
 # import classifier
 import Sensors as sensors
 import Classifiers as classifiers 
 
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
-NOW_DAY = '2016_09_28'
+NOW_DAY = '2016_11_10'
 
 
 # Replace with your own
@@ -21,7 +23,8 @@ DATA_DIR = "../../../Dropbox/phone_data/Sensor_Research/"
 DECRYPTED_DIR = "./Decrypted_Data/"
 DIRECTORY = DECRYPTED_DIR + NOW_DAY + "/"
 
-USERS_TO_IDS_FILE = "./users_to_ids_test.csv"
+# USERS_TO_IDS_FILE = "./users_to_ids_test.csv"
+USERS_TO_IDS_FILE = "./users_r2_test.csv"
 ids = []
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
@@ -91,6 +94,33 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                 dataList.append(row)
     return dataList
 
+def getReferenceBootTimes(userID):
+    userFiles = getUserFilesByDayAndInstrument(userID, BOOT_TIME_SENSOR)
+
+    bootTimes = []
+    currentBootTime = START_OF_TIME
+    
+    for dataFile in userFiles:
+        with open(dataFile) as f:  
+            reader = csv.reader(f)
+            
+            fileTime = timeStringToDateTime(getTimeFromFile(dataFile))
+
+            firstRow = reader.next()
+            firstTime = datetime.timedelta(milliseconds=int(firstRow[0]))
+
+            bootTime = fileTime - firstTime
+
+            difference = bootTime - currentBootTime if bootTime > currentBootTime else currentBootTime - bootTime
+
+            if difference > BOOT_TIME_DELTA:
+                currentBootTime = bootTime 
+                bootTimes.append((fileTime, bootTime))
+
+    return bootTimes
+
+
+
 def getRelevantUserData(userID):
     userData = {}
     bootTimes = []
@@ -117,10 +147,15 @@ def runClassifier(classifier, userData):
     # {instrument: windowOfRawData}
     results = {0 : [], 1 : []}
     resultIntervals = []
+    resultTimes = []
 
+    if numRows == 0:
+        return results, resultIntervals, resultTimes
+    print(userData[instrument][0])
     firstTime = userData[instrument][0][0]
     currentInterval = (firstTime, firstTime)
     currentClass = -1
+
     for row in range(0, numRows - windowSize):
         windowOfData = {}
         for instrument in instruments:
@@ -131,12 +166,15 @@ def runClassifier(classifier, userData):
         # print(windowStartTime)
         classification = classifier.classify(windowOfData)
         # print(classification)
+        # resultTimes.append((windowStartTime, classification))
 
         # Adjust the interval
         if currentClass == -1:
             currentClass = classification
         elif currentClass != classification:
             resultIntervals.append((currentInterval, currentClass))
+            interval = currentInterval
+            print((formatTime(interval[0]), formatTime(interval[1])), currentClass)
             currentInterval = (windowStartTime, windowStartTime)
             currentClass = classification
         else:
@@ -144,9 +182,10 @@ def runClassifier(classifier, userData):
 
 
     resultIntervals.append((currentInterval, currentClass))
+    # filterSpikesFromIntervals(resultIntervals)
 
         # results[classification].append(windowStartTime)
-    return results, resultIntervals
+    return results, resultIntervals, resultTimes
 
 # {windowStartTime : 0, 1}
 # {7:30pm : 0}
@@ -154,20 +193,29 @@ def runClassifier(classifier, userData):
 # {0 : [list of times], 1 : [list of times]}
 
 def runClassifiersOnUser(userID, csvWriter):
+    print(userID)
     userData = getRelevantUserData(userID)
   
     csvRow = [userID]
 
+    csvWriter.write(str(userID) + '\n')
     for c in classifiers.CLASSIFIERS:
         classifier = classifiers.CLASSIFIERS[c]
-        # print(classifiers.CLASSIFIERS)
-        csvWriter.write(str(userID) + '\n')
-        results, intervals = runClassifier(classifier, userData)
+        print(classifiers.CLASSIFIERS)
+        csvWriter.write(str(c) + '\n')
+        results, intervals, times = runClassifier(classifier, userData)
         for interval in intervals:
             intervalString = (formatTime(interval[0][0]), formatTime(interval[0][1]))
             result = (intervalString, interval[1])
             csvWriter.write(str(result) + '\n')
-        
+
+        csvWriter.write('#######\n')
+
+        # for time in times:
+        #     result = (formatTime(time[0]), time[1])
+        #     csvWriter.write(str(result) + '\n')
+
+        plotIntervals(intervals)        
         #print(results)
         # processResults(results, csvWriter, csvRow)
 
@@ -180,6 +228,65 @@ def processResults(results, writer, csvrow):
     if len(negatives) > 0:
         return 1
     return 0
+
+def filterSpikesFromIntervals(intervals):
+    spikeLength = datetime.timedelta(seconds=1)
+    i = 1
+    while i < len(intervals) - 1:
+        interval, intervalBefore, intervalAfter = intervals[i], intervals[i - 1], intervals[i + 1]
+
+        timeInterval = interval[0]
+
+        if timeInterval[1] - timeInterval[0] <= spikeLength:
+            newTimeInterval = (intervalBefore[0][0], intervalAfter[0][1])
+            intervals[i - 1] = (newTimeInterval, intervalBefore[1])
+            del intervals[i:i+2]
+        else:
+            i += 1
+
+
+
+def plotIntervals(intervals):
+    times = []
+    values = []
+
+    for interval in intervals:
+        time = interval[0]
+        times.append(time[0])
+        times.append(time[1])
+        values.append(interval[1])
+        values.append(interval[1])
+
+    times = date2num(times)
+
+    seconds = SecondLocator()   # every year
+    minutes = MinuteLocator()  # every month
+    hours = HourLocator()
+    hoursFmt = DateFormatter('%H:%M')
+    minutesFmt = DateFormatter('%H:%M:%S')
+
+    fig, ax = plt.subplots()
+    ax.plot_date(times, values, '-')
+
+    # format the ticks
+    ax.xaxis.set_major_locator(hours)
+    ax.xaxis.set_major_formatter(hoursFmt)
+    ax.xaxis.set_minor_locator(minutes)
+    ax.autoscale_view()
+
+
+    # format the coords message box
+    ax.fmt_xdata = DateFormatter('%H:%M')
+    ax.grid(True)
+
+    axes = plt.gca()
+    axes.set_ylim([-0.25, 1.25])
+
+    fig.autofmt_xdate()
+    plt.show()
+
+
+
 
 ###### Utilities #######
 
@@ -197,7 +304,7 @@ def timeStringsToDateTimes(timeStrings):
     return [timeStringToDateTime(timeString) for timeString in timeStrings]
 
 def formatTime(dateTime):
-    return dateTime.strftime('%H:%M:%S')
+    return dateTime.strftime('%H:%M:%S:%f')
 
 def getTimeFromFile(filename, userID, instrument):
     query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
