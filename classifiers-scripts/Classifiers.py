@@ -11,8 +11,8 @@ RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
     "tableClassifier": table.Classifier(),
     "steadyStateClassifier": ss.Classifier(),
-    "theftClassifier" : theft.Classifier()
+    # "theftClassifier" : theft.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"
-DAY_INTERVALS = "dayIntervals"
+DAY_INTERVAL = "dayIntervals"
