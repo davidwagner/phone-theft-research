@@ -13,7 +13,7 @@ import Classifiers as classifiers
 
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
-NOW_DAY = '2016_11_10'
+NOW_DAY = '2016_11_01'
 
 
 # Replace with your own
@@ -215,7 +215,7 @@ def runClassifiersOnUser(userID, csvWriter):
         #     result = (formatTime(time[0]), time[1])
         #     csvWriter.write(str(result) + '\n')
 
-        plotIntervals(intervals)        
+        # plotIntervals(intervals)        
         #print(results)
         # processResults(results, csvWriter, csvRow)
 
