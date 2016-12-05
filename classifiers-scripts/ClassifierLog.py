@@ -159,33 +159,46 @@ def runClassifier(classifier, userData):
 
     if windowSize == classifiers.DAY_INTERVAL:
         windowSize == len(numRows) - 1
+        for row in range(0, numRows - windowSize):
+            windowOfData = {}
+            for instrument in instruments:
+                data = userData[instrument][row:row + windowSize] 
+                windowOfData[instrument] = data
+                windowStartTime = getWindowStartTime(data)
 
-    for row in range(0, numRows - windowSize):
-        windowOfData = {}
-        for instrument in instruments:
-            data = userData[instrument][row:row + windowSize] 
-            windowOfData[instrument] = data
-            windowStartTime = getWindowStartTime(data)
+        classifications = classifier.classify(windowOfData)
 
-        # print(windowStartTime)
-        classification = classifier.classify(windowOfData)
-        # print(classification)
-        # resultTimes.append((windowStartTime, classification))
+        #TODO: Process theft results (since now in timestamp, class format)
+        # Format results, resultIntervals, resultTimes as you need to (@Jason)
 
-        # Adjust the interval
-        if currentClass == -1:
-            currentClass = classification
-        elif currentClass != classification:
-            resultIntervals.append((currentInterval, currentClass))
-            interval = currentInterval
-            print((formatTime(interval[0]), formatTime(interval[1])), currentClass)
-            currentInterval = (windowStartTime, windowStartTime)
-            currentClass = classification
-        else:
-            currentInterval = (currentInterval[0], windowStartTime)
+    else:
+
+        for row in range(0, numRows - windowSize):
+            windowOfData = {}
+            for instrument in instruments:
+                data = userData[instrument][row:row + windowSize] 
+                windowOfData[instrument] = data
+                windowStartTime = getWindowStartTime(data)
+
+            # print(windowStartTime)
+            classification = classifier.classify(windowOfData)
+            # print(classification)
+            # resultTimes.append((windowStartTime, classification))
+
+            # Adjust the interval
+            if currentClass == -1:
+                currentClass = classification
+            elif currentClass != classification:
+                resultIntervals.append((currentInterval, currentClass))
+                interval = currentInterval
+                print((formatTime(interval[0]), formatTime(interval[1])), currentClass)
+                currentInterval = (windowStartTime, windowStartTime)
+                currentClass = classification
+            else:
+                currentInterval = (currentInterval[0], windowStartTime)
 
 
-    resultIntervals.append((currentInterval, currentClass))
+        resultIntervals.append((currentInterval, currentClass))
     # filterSpikesFromIntervals(resultIntervals)
 
         # results[classification].append(windowStartTime)
