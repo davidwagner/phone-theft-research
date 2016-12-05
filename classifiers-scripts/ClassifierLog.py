@@ -37,7 +37,8 @@ finally:
 
 USERS = set(ids)
 
-RELEVANT_SENSORS = set([])
+# RELEVANT_SENSORS = set([])
+RELEVANT_SENSORS = [sensors.ACCELEROMETER]
 YEAR_2000 = datetime.date(2000, 1, 1)
 
 BOOT_TIME_DELTA = datetime.timedelta(hours=1)
@@ -155,6 +156,9 @@ def runClassifier(classifier, userData):
     firstTime = userData[instrument][0][0]
     currentInterval = (firstTime, firstTime)
     currentClass = -1
+
+    if windowSize == classifiers.DAY_INTERVAL:
+        windowSize == len(numRows) - 1
 
     for row in range(0, numRows - windowSize):
         windowOfData = {}
@@ -374,7 +378,7 @@ def main():
 
     dashboardWriter.writerow(columnHeaders)
 
-    compileRelevantSensors()
+    # compileRelevantSensors()
 
     tempResultsName = DASHBOARDDIR + "Dashboard-" + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
     tempResultsFile = open(tempResultsName, 'wb')
