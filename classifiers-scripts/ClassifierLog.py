@@ -261,6 +261,56 @@ def filterSpikesFromIntervals(intervals):
         else:
             i += 1
 
+def findCommonIntervalsByValue(intervals1, intervals2, value):
+    def advance(intervals, i, value):
+        while i < len(intervals) and intervals[i][1] != value:
+            i++
+        return i 
+
+    i1 = advance(intervals1, 0, value) 
+    i2 = advance(intervals2, 0, value)
+    
+    commonIntervals = []
+    while i1 < len(intervals1) and i2 < len(intervals2):
+        interval1 = intervals1[i1][0]
+        interval2 = intervals2[i2][0]
+
+        laterStartingInterval, earlierStartingInterval = None, None
+        later_i, earlier_i = None, None
+        if interval1[0] >= interval2[0]:
+            laterStartingInterval, earlierStartingInterval = interval1, interval2
+            later_i, earlier_i = i1, i2
+        else:
+            laterStartingInterval, earlierStartingInterval = interval2, interval1
+            later_i, earlier_i = i2, i1
+
+        if laterStartingInterval[0] >= earlierStartingInterval[1]:
+            if earlier_i == i1:
+                i1 = advance(intervals1, i1, value)
+            else:
+                i2 = advance(intervals2, i2, value)
+        
+        else:
+            earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] laterStartingInterval
+
+            commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
+
+            if earlierStartingInterval[1] == laterStartingInterval[1]:
+                i1 = advance(intervals1, i1, value)
+                i2 = advance(intervals2, i2, value)
+
+            elif earlierStartingInterval[1] < laterStartingInterval[1]:
+                if earlier_i == i1:
+                    i1 = advance(intervals1, i1, value)
+                else:
+                    i2 = advance(intervals2, i2, value)
+            else:
+                if later_i == i1:
+                    i1 = advance(intervals1, i1, value)
+                else:
+                    i2 = advance(intervals2, i2, value)
+    return commonIntervals
+
 
 
 def plotIntervals(intervals):
