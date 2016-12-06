@@ -9,22 +9,22 @@ from numpy import linalg as LA
 ACC_THRESHOLD = 40
 
 def data_to_windows(times, datas):
-	'''
-	Parameters
-	----------
-	times: a flat list of times.
-	datas: a flat list of data. For acc, data is norm.
+    '''
+    Parameters
+    ----------
+    times: a flat list of times.
+    datas: a flat list of data. For acc, data is norm.
 
-	Partitions data into windows before and after indicator times. For acc, window size is 1s.
-	from [t0, t1, t2, t3, t4, t5, ...], [n0, n1, n2, n3, n4, n5, ...]
-	to [[t0,t1, t2, t3], [t4, t5, ...], ...], [[n0, n1, n2, n3], [n4, n5, ...], ...]
+    Partitions data into windows before and after indicator times. For acc, window size is 1s.
+    from [t0, t1, t2, t3, t4, t5, ...], [n0, n1, n2, n3, n4, n5, ...]
+    to [[t0,t1, t2, t3], [t4, t5, ...], ...], [[n0, n1, n2, n3], [n4, n5, ...], ...]
 
-	Returns
-	-------
-	window_times: a list of start times of each window.
-	window_datas: a list of data of each window. For acc, data is acc norm.
-	'''
-	window_times = []
+    Returns
+    -------
+    window_times: a list of start times of each window.
+    window_datas: a list of data of each window. For acc, data is acc norm.
+    '''
+    window_times = []
     window_datas = []
     
     i = 0
@@ -54,19 +54,19 @@ def data_to_windows(times, datas):
     return window_times, window_datas
 
 def hist(feature, split):
-	'''
-	Parameters
-	----------
-	feature: one of "min", max", "mean", "std", "rms", "arc-length", "arc-length*std", "mean-absolute"
-	split: a list of lists (windows)
+    '''
+    Parameters
+    ----------
+    feature: one of "min", max", "mean", "std", "rms", "arc-length", "arc-length*std", "mean-absolute"
+    split: a list of lists (windows)
 
-	Featurize data in each window, i.e. turn each window into a data point.
-	Example function call: hist("max", [[...], [...], [...], ...]).
+    Featurize data in each window, i.e. turn each window into a data point.
+    Example function call: hist("max", [[...], [...], [...], ...]).
 
-	Returns
-	-------
-	a list of featurized data points.
-	'''
+    Returns
+    -------
+    a list of featurized data points.
+    '''
     if feature == "min":
         return [np.min(lst) for lst in split]
     if feature == "max":
@@ -109,30 +109,30 @@ def hist(feature, split):
     
 
 def featurize_windows(window_times, window_datas):
-	'''
-	Parameters
-	----------
-	window_times: output by data_to_windows.
-	window_datas: output by data_to_windows.
+    '''
+    Parameters
+    ----------
+    window_times: output by data_to_windows.
+    window_datas: output by data_to_windows.
 
-	Constructs a design matrix.
+    Constructs a design matrix.
 
-	Returns
-	-------
-	design_matrix: rows are data points; columns are features.
-	'''
+    Returns
+    -------
+    design_matrix: rows are data points; columns are features.
+    '''
     features = ["max", "mean", "std", "rms", "arc-length", "arc-length*std", "mean-absolute"] # ambient light in windows before & after grab or threshold
 
     design_matrix = []
     feature_vector = {}
     for feature in features:
-    	feature_vector[feature] = hist(feature, window_datas)
+        feature_vector[feature] = hist(feature, window_datas)
     for i in range(len(window_datas)):
-    	row = []
-    	row.append(str(i))
-    	row.append(str(window_times[i][0]))
-    	row.append(str(window_times[len(window_times[i])-1]))
-    	row.append(str(feature_vector["max"][i]))
+        row = []
+        row.append(str(i))
+        row.append(str(window_times[i][0]))
+        row.append(str(window_times[len(window_times[i])-1]))
+        row.append(str(feature_vector["max"][i]))
         row.append(str(feature_vector["mean"][i]))
         row.append(str(feature_vector["std"][i]))
         row.append(str(feature_vector["rms"][i]))
@@ -144,29 +144,29 @@ def featurize_windows(window_times, window_datas):
     return design_matrix
 
 def acc_featurizer(acc_data):
-	'''
-	Parameters
-	----------
-	acc_data: a list of rows in csv files.
+    '''
+    Parameters
+    ----------
+    acc_data: a list of rows in csv files.
 
-	Master function. Constructs a design matrix.
+    Master function. Constructs a design matrix.
 
-	Returns
-	-------
-	design_matrix: rows are data points; columns are features.
-	'''
-	times = [row[0] for row in acc_data if len(row) == 4]
-	norms = [LA.norm([row[1],row[2],row[3]]) for row in acc_data if len(row) == 4]
-	window_times, window_datas = data_to_windows(times, norms)
-	design_matrix = featurize_windows(window_times, window_datas)
+    Returns
+    -------
+    design_matrix: rows are data points; columns are features.
+    '''
+    times = [row[0] for row in acc_data if len(row) == 4]
+    norms = [LA.norm([row[1],row[2],row[3]]) for row in acc_data if len(row) == 4]
+    window_times, window_datas = data_to_windows(times, norms)
+    design_matrix = featurize_windows(window_times, window_datas)
 
 def test():
-	acc_data = []
-	path = 'data/test'
+    acc_data = []
+    path = 'data/test'
 
-	''' Constructs acc_data '''
-	csv_files = os.listdir(path)
-	for i in range(len(csv_files)):
+    ''' Constructs acc_data '''
+    csv_files = os.listdir(path)
+    for i in range(len(csv_files)):
         csv_file = open(os.getcwd() + "/" + path + "/" + csv_files[i])
         reader = csv.reader(csv_file, delimiter=",")
 
@@ -175,10 +175,10 @@ def test():
                 acc_data.append(row)
 
     ''' Featurize acc_data '''
-	print(acc_featurizer(acc_data))
+    print(acc_featurizer(acc_data))
 
 if __name__ == '__main__':
-	test()
+    test()
 
 
 
