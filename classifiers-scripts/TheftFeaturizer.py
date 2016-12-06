@@ -129,16 +129,16 @@ def featurize_windows(window_times, window_datas):
         feature_vector[feature] = hist(feature, window_datas)
     for i in range(len(window_datas)):
         row = []
-        row.append(str(i))
-        row.append(str(window_times[i][0]))
-        row.append(str(window_times[len(window_times[i])-1]))
-        row.append(str(feature_vector["max"][i]))
-        row.append(str(feature_vector["mean"][i]))
-        row.append(str(feature_vector["std"][i]))
-        row.append(str(feature_vector["rms"][i]))
-        row.append(str(feature_vector["arc-length"][i]))
-        row.append(str(feature_vector["arc-length*std"][i]))
-        row.append(str(feature_vector["mean-absolute"][i]))
+        row.append(i)
+        row.append(window_times[i][0])
+        row.append(window_times[len(window_times[i])-1])
+        row.append(feature_vector["max"][i])
+        row.append(feature_vector["mean"][i])
+        row.append(feature_vector["std"][i])
+        row.append(feature_vector["rms"][i])
+        row.append(feature_vector["arc-length"][i])
+        row.append(feature_vector["arc-length*std"][i])
+        row.append(feature_vector["mean-absolute"][i])
         design_matrix.append(row)
 
     return design_matrix
