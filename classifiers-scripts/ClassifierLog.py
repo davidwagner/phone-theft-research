@@ -13,7 +13,7 @@ import Classifiers as classifiers
 
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
-NOW_DAY = '2016_11_01'
+NOW_DAY = '2016_11_29'
 
 
 # Replace with your own
@@ -152,7 +152,6 @@ def runClassifier(classifier, userData):
     if numRows == 0:
         return resultIntervals
 
-    print(userData[instrument][0])
     firstTime = userData[instrument][0][0]
     currentInterval = (firstTime, firstTime)
     currentClass = -1
@@ -172,7 +171,7 @@ def runClassifier(classifier, userData):
         # Format results, resultIntervals, resultTimes as you need to (@Jason)
 
     else:
-
+        print("Number of samples: " + str(numRows - windowSize))
         for row in range(0, numRows - windowSize):
             windowOfData = {}
             for instrument in instruments:
@@ -180,10 +179,11 @@ def runClassifier(classifier, userData):
                 windowOfData[instrument] = data
                 windowStartTime = getWindowStartTime(data)
 
-            # print(windowStartTime)
+            if row % 1000 == 0:
+                print("# of windows classified: " + str(row))
+                print(formatTime(windowStartTime))
+
             classification = classifier.classify(windowOfData)
-            # print(classification)
-            # resultTimes.append((windowStartTime, classification))
 
             # Adjust the interval
             if currentClass == -1:
@@ -219,13 +219,13 @@ def runClassifiersOnUser(userID, csvWriter):
     results = {}
     for c in classifiers.CLASSIFIERS:
         classifier = classifiers.CLASSIFIERS[c]
-        print(classifiers.CLASSIFIERS)
+        print(c)
         # csvWriter.write(str(c) + '\n')
         resultIntervals, resultIntervalsByValue = runClassifier(classifier, userData)
         classifierResults = (resultIntervals, resultIntervalsByValue)
         processResults(classifierResults, csvWriter, csvRow)
         results[c] = classifierResults
-
+        print("Results computed for: " + c)
         # for interval in resultIntervals:
             # intervalString = (formatTime(interval[0][0]), formatTime(interval[0][1]))
             # result = (intervalString, interval[1])
