@@ -28,25 +28,25 @@ def data_to_windows(times, datas):
     window_datas = []
     
     i = 0
-    while i < len(acc_data):
-        if np.absolute(acc_data[i]) >= ACC_THRESHOLD:
+    while i < len(datas):
+        if np.absolute(datas[i]) >= ACC_THRESHOLD:
             start_index = i
 
             ''' constructs window before indicator time. '''
             if start_index-100 >= 0:
                 window_times += [times[start_index-100 : start_index]]
-                window_datas += [acc_data[start_index-100 : start_index]]
+                window_datas += [datas[start_index-100 : start_index]]
             else:
                 window_times += [times[0 : start_index]]
-                window_datas += [acc_data[0 : start_index]]
+                window_datas += [datas[0 : start_index]]
 
             ''' constructs window after indicator time. '''
-            if start_index+100 <= len(acc_data)-1:
+            if start_index+100 <= len(datas)-1:
                 window_times += [times[start_index : start_index+100]]
-                window_datas += [acc_data[start_index : start_index+100]]
+                window_datas += [datas[start_index : start_index+100]]
             else:
                 window_times += [times[start_index : len(times)]]
-                window_datas += [acc_data[start_index : len(acc_data)]]
+                window_datas += [datas[start_index : len(datas)]]
             i += 100
         else:
             i += 1
@@ -143,11 +143,11 @@ def featurize_windows(window_times, window_datas):
 
     return design_matrix
 
-def acc_featurizer(acc_data):
+def acc_featurizer(datas):
     '''
     Parameters
     ----------
-    acc_data: a list of rows in csv files.
+    datas: a list of rows in csv files.
 
     Master function. Constructs a design matrix.
 
@@ -155,16 +155,16 @@ def acc_featurizer(acc_data):
     -------
     design_matrix: rows are data points; columns are features.
     '''
-    times = [row[0] for row in acc_data if len(row) == 4]
-    norms = [LA.norm([row[1],row[2],row[3]]) for row in acc_data if len(row) == 4]
+    times = [row[0] for row in datas if len(row) == 4]
+    norms = [LA.norm([row[1],row[2],row[3]]) for row in datas if len(row) == 4]
     window_times, window_datas = data_to_windows(times, norms)
     design_matrix = featurize_windows(window_times, window_datas)
 
 def test():
-    acc_data = []
+    datas = []
     path = 'data/test'
 
-    ''' Constructs acc_data '''
+    ''' Constructs datas '''
     csv_files = os.listdir(path)
     for i in range(len(csv_files)):
         csv_file = open(os.getcwd() + "/" + path + "/" + csv_files[i])
@@ -172,10 +172,10 @@ def test():
 
         for row in reader:
             if len(row) == 4:
-                acc_data.append(row)
+                datas.append(row)
 
-    ''' Featurize acc_data '''
-    print(acc_featurizer(acc_data))
+    ''' Featurize datas '''
+    print(acc_featurizer(datas))
 
 if __name__ == '__main__':
     test()

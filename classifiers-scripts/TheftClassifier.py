@@ -5,7 +5,9 @@ import BaseClassifier
 
 from sklearn.externals import joblib
 
-class Classifier(BaseClassifier.BasecClassifier):
+filename = './theft_classifier_weights/random_forest_weights.pkl'
+clf = joblib.load(filename)
+class Classifier(BaseClassifier.BaseClassifier):
 
     """
     Input: windowOfData is a dictionary with the following format of key-values:
@@ -17,12 +19,10 @@ class Classifier(BaseClassifier.BasecClassifier):
 
     Output: a 0 or 1 (the classification)
     """
-    def classify(windowOfData):
+    def classify(self, windowOfData):
         acc_data = windowOfData[Sensors.ACCELEROMETER]
         features = featurizer.acc_featurizer(acc_data)
 
-        filename = 'classifier_weights/random_forest_weights.pkl'
-        clf = joblib.load(filename)
         predictions = clf.predict(features)
 
         return predictions
@@ -30,5 +30,8 @@ class Classifier(BaseClassifier.BasecClassifier):
     """
     Returns data in a single file.
     """
-    def getWindowTime():
+    def getWindowTime(self):
         return Classifiers.DAY_INTERVAL
+
+    def getRelevantSensors(self):
+        return [Sensors.ACCELEROMETER]
