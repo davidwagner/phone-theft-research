@@ -2,8 +2,8 @@ import Sensors as s
 
 # Import classifiers
 # import TableClassifier as table
-import SteadyStateClassifier as ss 
-import TableClassifier as table
+# import SteadyStateClassifier as ss 
+# import TableClassifier as table
 import TheftClassifier as theft
 
 ### CLASSIFIERS ###

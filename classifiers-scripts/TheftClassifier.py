@@ -5,7 +5,7 @@ import BaseClassifier
 
 from sklearn.externals import joblib
 
-filename = './theft_classifier_weights/random_forest_weights.pkl'
+filename = './data/theft_classifiers_weights/linear_svm_weights.pkl'
 clf = joblib.load(filename)
 class Classifier(BaseClassifier.BaseClassifier):
 
@@ -21,11 +21,14 @@ class Classifier(BaseClassifier.BaseClassifier):
     """
     def classify(self, windowOfData):
         acc_data = windowOfData[Sensors.ACCELEROMETER]
-        features = featurizer.acc_featurizer(acc_data)
 
-        predictions = clf.predict(features)
+        times_for_data_pts, X = featurizer.acc_featurizer(acc_data)
 
-        return predictions
+        if len(X) > 0:
+            predictions = clf.predict(X)
+            return predictions
+        else:
+            print("no anomaly.")
 
     """
     Returns data in a single file.
