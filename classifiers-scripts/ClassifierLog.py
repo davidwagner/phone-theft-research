@@ -94,9 +94,9 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             for row in reader:
                 row[0] = convertToDateTime(row[0], currentBootTime)
                 dataList.append(row)
-                count += 1
-                if count > 10000:
-                    break
+                # count += 1
+                # if count > 100000:
+                #     break
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -259,15 +259,19 @@ def processResults(results, writer, csvRow):
     posTime = posStats["totalTimeSpent"].total_seconds()
     totalTime = negTime + posTime
 
-    negTimePercentage = negTime / totalTime
-    posTimePercentage = posTime / totalTime
+    negTimePercentage = negTime / totalTime if totalTime > 0 else 0
+    posTimePercentage = posTime / totalTime if totalTime > 0 else 0
+
+    stats = ["totalTimeSpent", "medianLength", "avgLength", "longestInterval", "shortestInterval"]
 
     csvRow.append(posTimePercentage)
-    for stat, val in posStats.iteritems():
+    for stat in stats:
+        val = posStats[stat]
         csvRow.append(formatTimeValue(val))
     
     csvRow.append(negTimePercentage)
-    for stat, val in negStats.iteritems():
+    for stat in stats:
+        val = negStats[stat]
         csvRow.append(formatTimeValue(val))
         
 
@@ -300,10 +304,20 @@ def getIntervalStats(intervals):
 
     return stats
 
+def getIntervalStatHeaders(classifier_name):
+    headers = ["% Time Positive", "Total Time Positive", "Median Period Length", "Average Period Length",
+               "Longest Positive Period", "Shortest Positive Period", "% Time Negatve", "Total Time Negative", "Median Period Length", "Average Period Length",
+               "Longest Negative Period", "Shortest Negative Period",]
+
+    classifier = " (" + classifier_name  + ")"
+    return [header + classifier for header in headers]
+
 
 
 def processAllClassifierResults(results, csvRow):
     conflicitingClassifications = findConflictingClassifications(results)
+    print "These classifications conflict"
+    print conflicitingClassifications
     if len(conflicitingClassifications) > 0:
         csvRow += [intervalsToString(conflicitingClassifications)]
     else:
@@ -311,13 +325,14 @@ def processAllClassifierResults(results, csvRow):
 
 
 def findConflictingClassifications(results):
+    conflictingVal = 1
     conflicitingClassifications = []
     for classifier in results:
         if classifier != classifiers.THEFT_CLASSIFIER:
-            intervals = results[classifier][0]
+            intervals = results[classifier][1][conflictingVal]
             print(classifier)
             print(intervals)
-            conflicitingClassifications = findCommonIntervalsByValue(conflicitingClassifications, intervals, 0)
+            conflicitingClassifications = findCommonIntervals(conflicitingClassifications, intervals)
 
     return conflicitingClassifications
 
@@ -351,7 +366,10 @@ def filterSpikesFromIntervals(intervals, intervalsByValue):
 
 
 def findCommonIntervalsByValue(intervals1, intervals2, value):
-    # print(intervals1, intervals2)
+    print("Finding common intervals!")
+    print intervals1
+    print intervals2
+
     if len(intervals1) == 0 and len(intervals2) == 0:
         return []
     if len(intervals1) == 0:
@@ -361,12 +379,14 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
 
     def advance(intervals, i, value):
         while i < len(intervals) and intervals[i][1] != value:
-            # print(i)
+            print(i)
             i += 1
         return i 
 
     i1 = advance(intervals1, 0, value) 
     i2 = advance(intervals2, 0, value)
+    print "Starting"
+    print i1, i2 
     
     commonIntervals = []
     while i1 < len(intervals1) and i2 < len(intervals2):
@@ -375,6 +395,7 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
         # print(i1, i2)
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
+
         if interval1[0] >= interval2[0]:
             laterStartingInterval, earlierStartingInterval = interval1, interval2
             later_i, earlier_i = i1, i2
@@ -383,30 +404,106 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
             later_i, earlier_i = i2, i1
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
+            print("GOODBYE")
             if earlier_i == i1:
                 i1 = advance(intervals1, i1, value)
             else:
                 i2 = advance(intervals2, i2, value)
         
         else:
+            print("HELLO")
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
 
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
+            print commonIntervals
 
             if earlierStartingInterval[1] == laterStartingInterval[1]:
+                print "End times are equal"
                 i1 = advance(intervals1, i1, value)
                 i2 = advance(intervals2, i2, value)
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
+                print "Early start ends earlier, advance early"
                 if earlier_i == i1:
                     i1 = advance(intervals1, i1, value)
                 else:
                     i2 = advance(intervals2, i2, value)
+                print i1, i2
             else:
+                print "Early start ends later, advance later"
                 if later_i == i1:
                     i1 = advance(intervals1, i1, value)
                 else:
                     i2 = advance(intervals2, i2, value)
+                print i1, i2
+
+    return commonIntervals
+
+def findCommonIntervals(intervals1, intervals2):
+    print("Finding common intervals!")
+    print intervals1
+    print intervals2
+
+    if len(intervals1) == 0 and len(intervals2) == 0:
+        return []
+    if len(intervals1) == 0:
+        return intervals2
+    if len(intervals2) == 0:
+        return intervals1 
+
+    i1 = 0
+    i2 = 0
+    print "Starting"
+    print i1, i2 
+    
+    commonIntervals = []
+    while i1 < len(intervals1) and i2 < len(intervals2):
+        interval1 = intervals1[i1]
+        interval2 = intervals2[i2]
+        # print(i1, i2)
+        laterStartingInterval, earlierStartingInterval = None, None
+        later_i, earlier_i = None, None
+
+        if interval1[0] >= interval2[0]:
+            laterStartingInterval, earlierStartingInterval = interval1, interval2
+            later_i, earlier_i = i1, i2
+        else:
+            laterStartingInterval, earlierStartingInterval = interval2, interval1
+            later_i, earlier_i = i2, i1
+
+        if laterStartingInterval[0] >= earlierStartingInterval[1]:
+            print("GOODBYE")
+            if earlier_i == i1:
+                i1 += 1
+            else:
+                i2 += 1
+        
+        else:
+            print("HELLO")
+            earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
+
+            commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
+            print commonIntervals
+
+            if earlierStartingInterval[1] == laterStartingInterval[1]:
+                print "End times are equal"
+                i1 += 1
+                i2 += 1
+
+            elif earlierStartingInterval[1] < laterStartingInterval[1]:
+                print "Early start ends earlier, advance early"
+                if earlier_i == i1:
+                    i1 += 1
+                else:
+                    i2 += 1
+                print i1, i2
+            else:
+                print "Early start ends later, advance later"
+                if later_i == i1:
+                    i1 += 1
+                else:
+                    i2 += 1
+                print i1, i2
 
     return commonIntervals
 
@@ -472,7 +569,7 @@ def timeStringsToDateTimes(timeStrings):
     return [timeStringToDateTime(timeString) for timeString in timeStrings]
 
 def formatTime(dateTime):
-    return dateTime.strftime('%H:%M:%S:%f')
+    return dateTime.strftime('%H:%M:%S')
 
 def formatTimeDelta(timeDelta):
     totalSeconds = timeDelta.total_seconds()
@@ -529,6 +626,8 @@ def intervalsToString(intervals):
     for interval in intervals:
         intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
         resultsString += intervalString
+    print "Interval String"
+    print resultsString
     return resultsString 
  
 def convertToDateTime(timestring, bootTime):
@@ -565,8 +664,13 @@ def main():
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
 
-    columnHeaders = ["User ID", 
-                     ]
+    columnHeaders = ["User ID"]
+
+    for c in classifiers.CLASSIFIERS:
+        print c
+        columnHeaders += getIntervalStatHeaders(c)
+
+    columnHeaders += ["Periods when classifiers were both positive"]
 
     dashboardWriter.writerow(columnHeaders)
 
@@ -576,7 +680,6 @@ def main():
         datarow = [userID]
         runClassifiersOnUser(userID, dashboardWriter)
         #runClassifiersOnUser(userID, tempResultsFile)
-    tempResultsFile.close()
 
     print("Dashboard results generated in: " + dashboardFileName)
 

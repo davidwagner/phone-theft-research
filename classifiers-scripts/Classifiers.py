@@ -13,9 +13,9 @@ THEFT_CLASSIFIER = "Theft Classifier"
 
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
-    # TABLE_CLASSIFIER: table.Classifier(),
-    # POCKET_BAG_CLASSIFIER: ss.Classifier(),
-    THEFT_CLASSIFIER: theft.Classifier()
+    TABLE_CLASSIFIER: table.Classifier(),
+    POCKET_BAG_CLASSIFIER: ss.Classifier(),
+    # THEFT_CLASSIFIER: theft.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"
