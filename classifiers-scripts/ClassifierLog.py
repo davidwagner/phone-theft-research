@@ -18,13 +18,13 @@ NOW_DAY = '2016_11_01'
 
 # Replace with your own
 # DATA_DIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
-DASHBOARDDIR = './Classifier_Results_TEST/'
+DASHBOARDDIR = './data/Classifier_Results_TEST/'
 DATA_DIR = "../../../Dropbox/phone_data/Sensor_Research/"
-DECRYPTED_DIR = "./Decrypted_Data/"
+DECRYPTED_DIR = "./data/Decrypted_Data/"
 DIRECTORY = DECRYPTED_DIR + NOW_DAY + "/"
 
 # USERS_TO_IDS_FILE = "./users_to_ids_test.csv"
-USERS_TO_IDS_FILE = "./users_r2_test.csv"
+USERS_TO_IDS_FILE = "./data/users_r2_test.csv"
 ids = []
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
@@ -148,7 +148,7 @@ def runClassifier(classifier, userData):
     
     numRows = min([len(userData[instrument]) for instrument in instruments])
     print(len(userData[sensors.ACCELEROMETER]))
-    
+
     # {instrument: windowOfRawData}
     resultIntervalsByValue = ([], [])
     resultIntervals = []
@@ -227,7 +227,7 @@ def runClassifiersOnUser(userID, csvWriter):
         print(c)
         # csvWriter.write(str(c) + '\n')
         classifierResults = runClassifier(classifier, userData)
-        processResults(classifierResults, csvWriter, csvRow)
+        # processResults(classifierResults, csvWriter, csvRow)
         results[c] = classifierResults
         print("Results computed for: " + c)
         # for interval in resultIntervals:
@@ -237,7 +237,7 @@ def runClassifiersOnUser(userID, csvWriter):
 
        # csvWriter.write('#######\n')
 
-    processAllClassifierResults(results, csvRow)
+    # processAllClassifierResults(results, csvRow)
 
     csvWriter.writerow(csvRow)
 
