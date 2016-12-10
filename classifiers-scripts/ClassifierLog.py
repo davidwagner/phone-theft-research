@@ -94,9 +94,9 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             for row in reader:
                 row[0] = convertToDateTime(row[0], currentBootTime)
                 dataList.append(row)
-                # count += 1
-                # if count > 100000:
-                #     break
+                count += 1
+                if count > 100000:
+                    break
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -665,8 +665,6 @@ def intervalsToString(intervals):
     for interval in intervals:
         intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
         resultsString += intervalString
-    print "Interval String"
-    print resultsString
     return resultsString 
  
 def convertToDateTime(timestring, bootTime):
