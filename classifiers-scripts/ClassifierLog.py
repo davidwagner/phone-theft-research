@@ -11,20 +11,20 @@ from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateForm
 import Sensors as sensors
 import Classifiers as classifiers 
 
+##### CONFIGURE FOR OWN MACHINE ###############
+# Replace with your own
+DASHBOARDDIR = '../data/Classifier_Results_TEST/'
+USERS_TO_IDS_FILE = "../data/users_r2_test.csv"
+DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
+###############################################
+
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
+
+YESTERDAY = (NOW - datetime.timedelta(days=1)).strftime('%Y_%m_%d')
+# NOW_DAY = YESTERDAY
 NOW_DAY = '2016_11_01'
 
-
-# Replace with your own
-# DATA_DIR = "/home/daw/Dropbox/phone_data/Dashboard_results/"
-DASHBOARDDIR = './data/Classifier_Results_TEST/'
-DATA_DIR = "../../../Dropbox/phone_data/Sensor_Research/"
-DECRYPTED_DIR = "./data/Decrypted_Data/"
-DIRECTORY = DECRYPTED_DIR + NOW_DAY + "/"
-
-# USERS_TO_IDS_FILE = "./users_to_ids_test.csv"
-USERS_TO_IDS_FILE = "./data/users_r2_test.csv"
 ids = []
 usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
 try:
@@ -47,7 +47,7 @@ START_OF_TIME = datetime.datetime.min
 
 
 def getUserFilesByDayAndInstrument(userID, instrument):
-    query = DECRYPTED_DIR + NOW_DAY + '/' + 'AppMon_' + userID + '*_' + instrument + '_' + NOW_DAY + '*'
+    query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
     # print(query)
     userFiles = glob.glob(query)
 
@@ -170,8 +170,20 @@ def runClassifier(classifier, userData):
                 windowStartTime = getWindowStartTime(data)
 
         classifications = classifier.classify(windowOfData)
+
+        resultIntervals = classifications
+        # mergeAdjacentIntervals(resultIntervals)
+        # filterSpikesFromIntervals(resultIntervals, resultIntervalsByValue)
+        for c in classifications:
+            label = c[1]
+            timeInterval = c[0]
+            resultIntervalsByValue[label].append(timeInterval)
+
+
         print("THEFT CLASSIFICATIONS")
         print(classifications)
+        # print resultIntervals, resultIntervalsByValue
+        return resultIntervals, resultIntervalsByValue
         #TODO: Process theft results (since now in timestamp, class format)
         # Format results, resultIntervals, resultTimes as you need to (@Jason)
 
@@ -184,9 +196,9 @@ def runClassifier(classifier, userData):
                 windowOfData[instrument] = data
                 windowStartTime = getWindowStartTime(data)
 
-            if row % 1000 == 0:
-                print("# of windows classified: " + str(row))
-                print(formatTime(windowStartTime))
+            # if row % 1000 == 0:
+            #     print("# of windows classified: " + str(row))
+            #     print(formatTime(windowStartTime))
 
             classification = classifier.classify(windowOfData)
 
@@ -205,6 +217,7 @@ def runClassifier(classifier, userData):
 
         # results[currentClass].append(currentInterval)
         resultIntervals.append((currentInterval, currentClass))
+        print(resultIntervals)
         filterSpikesFromIntervals(resultIntervals, resultIntervalsByValue)
 
     return resultIntervals, resultIntervalsByValue
@@ -222,12 +235,21 @@ def runClassifiersOnUser(userID, csvWriter):
 
     # csvWriter.write(str(userID) + '\n')
     results = {}
+    theft = classifiers.THEFT_CLASSIFIER
+    print(theft)
+    classifier = classifiers.CLASSIFIERS[theft]
+    classifierResults = runClassifier(classifier, userData)
+    processTheftResults(classifierResults, csvWriter, csvRow)
+    results[theft] = classifierResults
+    print ("Results computed for: " + theft)
     for c in classifiers.CLASSIFIERS:
+        if c == classifiers.THEFT_CLASSIFIER:
+            continue
         classifier = classifiers.CLASSIFIERS[c]
         print(c)
         # csvWriter.write(str(c) + '\n')
         classifierResults = runClassifier(classifier, userData)
-        # processResults(classifierResults, csvWriter, csvRow)
+        processResults(classifierResults, csvWriter, csvRow)
         results[c] = classifierResults
         print("Results computed for: " + c)
         # for interval in resultIntervals:
@@ -237,13 +259,21 @@ def runClassifiersOnUser(userID, csvWriter):
 
        # csvWriter.write('#######\n')
 
-    # processAllClassifierResults(results, csvRow)
+    processAllClassifierResults(results, csvRow)
 
     csvWriter.writerow(csvRow)
 
-        
+def processTheftResults(results, writer, csvRow):
+    resultIntervals, resultIntervalsByValue = results[0], results[1]
 
-# TODO:
+    posTimes = resultIntervalsByValue[1]
+    negTimes = resultIntervalsByValue[0]
+    numPos = len(posTimes)
+    numNeg = len(negTimes)
+    numTotal = numPos + numNeg
+
+    csvRow += [intervalsToString(posTimes), str(numPos), str(numNeg), str(numTotal)]       
+
 def processResults(results, writer, csvRow):
     # analyze results
     # write actionable output to writer
@@ -336,7 +366,16 @@ def findConflictingClassifications(results):
 
     return conflicitingClassifications
 
-    
+def mergeAdjacentIntervals(intervals):
+    i = 0
+    while i + 1 < len(intervals):
+        curr = intervals[i]
+        next = intervals[i + 1]
+        if curr[1] == next[1]:
+            intervals[i] = ((curr[0][0], next[0][1]), curr[1])
+            del intervals[i + 1]
+        else:
+            i += 1   
 
 def filterSpikesFromIntervals(intervals, intervalsByValue):
     spikeLength = datetime.timedelta(seconds=1)
@@ -666,9 +705,12 @@ def main():
 
     columnHeaders = ["User ID"]
 
+    columnHeaders += ["False Positive Theft Times", "# of Theft Positives", "# of Theft Negatives", "Total Theft Classifications"]
+
     for c in classifiers.CLASSIFIERS:
         print c
-        columnHeaders += getIntervalStatHeaders(c)
+        if c != classifiers.THEFT_CLASSIFIER:
+            columnHeaders += getIntervalStatHeaders(c)
 
     columnHeaders += ["Periods when classifiers were both positive"]
 
