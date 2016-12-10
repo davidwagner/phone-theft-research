@@ -4,7 +4,7 @@ from sklearn.externals import joblib
 
 import Sensors as s
 
-CLASSIFIER_PATH = 'TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
+CLASSIFIER_PATH = './classifier_pickles/TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
 clf = joblib.load(CLASSIFIER_PATH)
 class Classifier(BaseClassifier.BaseClassifier):
 

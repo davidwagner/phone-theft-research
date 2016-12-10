@@ -1,17 +1,20 @@
 import Sensors as s 
 
 # Import classifiers
-# import TableClassifier as table
-import SteadyStateClassifier as ss 
 import TableClassifier as table
-import theft_classifier as theft
+import SteadyStateClassifier as ss 
+import TheftClassifier as theft
 
 ### CLASSIFIERS ###
+TABLE_CLASSIFIER = "Table Classifier"
+POCKET_BAG_CLASSIFIER = "Pocket/Bag Classifier"
+THEFT_CLASSIFIER = "Theft Classifier"
+
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
-    "tableClassifier": table.Classifier(),
-    "steadyStateClassifier": ss.Classifier(),
-    # "theftClassifier" : theft.Classifier()
+    TABLE_CLASSIFIER: table.Classifier(),
+    # POCKET_BAG_CLASSIFIER: ss.Classifier(),
+    THEFT_CLASSIFIER: theft.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"

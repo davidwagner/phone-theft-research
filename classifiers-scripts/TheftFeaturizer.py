@@ -13,47 +13,48 @@ def data_to_windows(times, datas):
     Parameters
     ----------
     times: a flat list of times.
-    datas: a flat list of data. For acc, data is norm.
+    datas: a flat list of corresponding data. For acc, data is norm.
 
-    Partitions data into windows before and after indicator times. For acc, window size is 1s.
-    from [t0, t1, t2, t3, t4, t5, ...], [n0, n1, n2, n3, n4, n5, ...]
-    to [[t0,t1, t2, t3], [t4, t5, ...], ...], [[n0, n1, n2, n3], [n4, n5, ...], ...]
+    Partitions data into windows before and after indicator times. 
+    For acc, indicator time is the time when acc norm exceeds 40; window size is 1s.
+    from [t0, t1, t2, t3, t4, t5, ...], [n0, n1, n2, n3, n4, n5, ...] (indicator time is t3)
+    to [[t0, t1, t2, t3], [t4, t5, ...], ...], [[n0, n1, n2, n3], [n4, n5, ...], ...]
 
     Returns
     -------
-    window_times: a list of start times of each window.
-    window_datas: a list of data of each window. For acc, data is acc norm.
+    window_times: a list of times of each window.
+    window_datas: a list of correspoding data of each window. For acc, data is acc norm.
     '''
     window_times = []
     window_datas = []
-    
+
     i = 0
-    while i < len(acc_data):
-        if np.absolute(acc_data[i]) >= ACC_THRESHOLD:
+    while i < len(datas):
+        if np.absolute(datas[i]) >= ACC_THRESHOLD:
             start_index = i
 
             ''' constructs window before indicator time. '''
             if start_index-100 >= 0:
-                window_times += [times[start_index-100 : start_index]]
-                window_datas += [acc_data[start_index-100 : start_index]]
+                window_times += [times[start_index-100 : start_index+1]]
+                window_datas += [datas[start_index-100 : start_index+1]]
             else:
-                window_times += [times[0 : start_index]]
-                window_datas += [acc_data[0 : start_index]]
+                window_times += [times[0 : start_index+1]]
+                window_datas += [datas[0 : start_index+1]]
 
             ''' constructs window after indicator time. '''
-            if start_index+100 <= len(acc_data)-1:
-                window_times += [times[start_index : start_index+100]]
-                window_datas += [acc_data[start_index : start_index+100]]
+            if start_index+100 < len(datas):
+                window_times += [times[start_index : start_index+101]]
+                window_datas += [datas[start_index : start_index+101]]
             else:
                 window_times += [times[start_index : len(times)]]
-                window_datas += [acc_data[start_index : len(acc_data)]]
+                window_datas += [datas[start_index : len(datas)]]
             i += 100
         else:
             i += 1
 
     return window_times, window_datas
 
-def hist(feature, split):
+def featurizer_by_feature(feature, split):
     '''
     Parameters
     ----------
@@ -61,7 +62,7 @@ def hist(feature, split):
     split: a list of lists (windows)
 
     Featurize data in each window, i.e. turn each window into a data point.
-    Example function call: hist("max", [[...], [...], [...], ...]).
+    Example function call: featurizer_by_feature("max", [[...], [...], [...], ...]).
 
     Returns
     -------
@@ -119,19 +120,20 @@ def featurize_windows(window_times, window_datas):
 
     Returns
     -------
-    design_matrix: rows are data points; columns are features.
+    X: design_matrix. rows are data points; columns are features.
+    times_for_data_pts: start and end times of corresponding data points.
     '''
     features = ["max", "mean", "std", "rms", "arc-length", "arc-length*std", "mean-absolute"] # ambient light in windows before & after grab or threshold
 
-    design_matrix = []
+    X = []
+    times_for_data_pts = []
     feature_vector = {}
     for feature in features:
-        feature_vector[feature] = hist(feature, window_datas)
+        feature_vector[feature] = featurizer_by_feature(feature, window_datas)
     for i in range(len(window_datas)):
         row = []
-        row.append(i)
-        row.append(window_times[i][0])
-        row.append(window_times[len(window_times[i])-1])
+        # row.append(i)
+        times_for_data_pts.append([window_times[i][0], window_times[i][len(window_times[i])-1]])
         row.append(feature_vector["max"][i])
         row.append(feature_vector["mean"][i])
         row.append(feature_vector["std"][i])
@@ -139,32 +141,37 @@ def featurize_windows(window_times, window_datas):
         row.append(feature_vector["arc-length"][i])
         row.append(feature_vector["arc-length*std"][i])
         row.append(feature_vector["mean-absolute"][i])
-        design_matrix.append(row)
+        X.append(row)
 
-    return design_matrix
+    return times_for_data_pts, X
 
-def acc_featurizer(acc_data):
+def acc_featurizer(datas):
     '''
     Parameters
     ----------
-    acc_data: a list of rows in csv files.
+    datas: a list of rows in csv files.
 
     Master function. Constructs a design matrix.
 
     Returns
     -------
-    design_matrix: rows are data points; columns are features.
+    X: design_matrix, rows are data points; columns are features.
     '''
-    times = [row[0] for row in acc_data if len(row) == 4]
-    norms = [LA.norm([row[1],row[2],row[3]]) for row in acc_data if len(row) == 4]
+
+    times = [row[0] for row in datas if len(row) >= 4]
+    norms = [LA.norm([row[1],row[2],row[3]]) for row in datas if len(row) >= 4]
+
     window_times, window_datas = data_to_windows(times, norms)
-    design_matrix = featurize_windows(window_times, window_datas)
+
+    times_for_data_pts, X = featurize_windows(window_times, window_datas)
+
+    return times_for_data_pts, X
 
 def test():
-    acc_data = []
+    datas = []
     path = 'data/test'
 
-    ''' Constructs acc_data '''
+    ''' Constructs datas '''
     csv_files = os.listdir(path)
     for i in range(len(csv_files)):
         csv_file = open(os.getcwd() + "/" + path + "/" + csv_files[i])
@@ -172,13 +179,10 @@ def test():
 
         for row in reader:
             if len(row) == 4:
-                acc_data.append(row)
+                datas.append(row)
 
-    ''' Featurize acc_data '''
-    print(acc_featurizer(acc_data))
+    ''' Featurize datas '''
+    print(acc_featurizer(datas))
 
 if __name__ == '__main__':
     test()
-
-
-
