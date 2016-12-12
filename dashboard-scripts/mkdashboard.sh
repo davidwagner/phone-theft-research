@@ -13,5 +13,5 @@ rm -r /var/tmp/decrypted
 mkdir -p /var/tmp/decrypted
 
 cd ~/phone-theft-research/dashboard-scripts/
-python bintocsv.py ucb_keypair/ucb.privatekey -s /var/tmp/encrypted -d /var/tmp/decrypted/
-python logchecker.py /var/tmp/decrypted
+nice -19 python bintocsv.py ucb_keypair/ucb.privatekey -s /var/tmp/encrypted -d /var/tmp/decrypted/
+nice -19 python logchecker.py /var/tmp/decrypted
