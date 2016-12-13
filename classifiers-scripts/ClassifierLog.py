@@ -17,6 +17,10 @@ DASHBOARDDIR = '../data/Classifier_Results_TEST/'
 USERS_TO_IDS_FILE = "../data/users_r2_test.csv"
 DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############################################
+DUMP_RESULTS = True
+
+if DIRECTORY[-1] != '/':
+    DIRECTORY += '/'
 
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
@@ -94,9 +98,9 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             for row in reader:
                 row[0] = convertToDateTime(row[0], currentBootTime)
                 dataList.append(row)
-                count += 1
-                if count > 100000:
-                    break
+                # count += 1
+                # if count > 100000:
+                #     break
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -170,6 +174,8 @@ def runClassifier(classifier, userData):
                 windowStartTime = getWindowStartTime(data)
 
         classifications = classifier.classify(windowOfData)
+        if classifications == None or classifications == [(0, 0)]:
+            return resultIntervals, resultIntervalsByValue
 
         resultIntervals = classifications
         # mergeAdjacentIntervals(resultIntervals)
@@ -182,10 +188,8 @@ def runClassifier(classifier, userData):
 
         print("THEFT CLASSIFICATIONS")
         print(classifications)
-        # print resultIntervals, resultIntervalsByValue
+
         return resultIntervals, resultIntervalsByValue
-        #TODO: Process theft results (since now in timestamp, class format)
-        # Format results, resultIntervals, resultTimes as you need to (@Jason)
 
     else:
         print("Number of samples: " + str(numRows - windowSize))
@@ -227,7 +231,7 @@ def runClassifier(classifier, userData):
 
 # {0 : [list of times], 1 : [list of times]}
 
-def runClassifiersOnUser(userID, csvWriter):
+def runClassifiersOnUser(userID, csvWriter, resultsFile):
     print(userID)
     userData = getRelevantUserData(userID)
   
@@ -242,6 +246,12 @@ def runClassifiersOnUser(userID, csvWriter):
     processTheftResults(classifierResults, csvWriter, csvRow)
     results[theft] = classifierResults
     print ("Results computed for: " + theft)
+
+    if DUMP_RESULTS:
+        resultsFile.write("###########################\n")
+        resultsFile.write(str(userID) + '\n')
+        logResultsToFile(classifierResults, theft, resultsFile)
+
     for c in classifiers.CLASSIFIERS:
         if c == classifiers.THEFT_CLASSIFIER:
             continue
@@ -252,16 +262,34 @@ def runClassifiersOnUser(userID, csvWriter):
         processResults(classifierResults, csvWriter, csvRow)
         results[c] = classifierResults
         print("Results computed for: " + c)
-        # for interval in resultIntervals:
-            # intervalString = (formatTime(interval[0][0]), formatTime(interval[0][1]))
-            # result = (intervalString, interval[1])
-            # csvWritxwer.write(str(result) + '\n')
-
-       # csvWriter.write('#######\n')
+        if DUMP_RESULTS:
+            logResultsToFile(classifierResults, c, resultsFile)
 
     processAllClassifierResults(results, csvRow)
 
     csvWriter.writerow(csvRow)
+
+def logResultsToFile(classifierResults, classifier_name, resultsFile):
+    resultsFile.write(str(classifier_name) + '\n')
+    resultsFile.write("-------------------------------------\n")
+    resultIntervals, resultIntervalsByValue = classifierResults
+    resultsFile.write("Result Intervals\n")
+    for interval in resultIntervals:
+        interval = (formatTimeInterval(interval[0]), interval[1])
+        resultsFile.write(str(interval) + '\n')
+
+    posTimes = resultIntervalsByValue[1]
+    negTimes = resultIntervalsByValue[0]
+
+    resultsFile.write("Positive Intervals\n")
+    for interval in posTimes:
+        resultsFile.write(formatTimeInterval(interval) + '\n')
+
+    resultsFile.write("Negative Intervals\n")
+    for interval in negTimes:
+        resultsFile.write(formatTimeInterval(interval) + '\n')
+
+
 
 def processTheftResults(results, writer, csvRow):
     resultIntervals, resultIntervalsByValue = results[0], results[1]
@@ -272,7 +300,22 @@ def processTheftResults(results, writer, csvRow):
     numNeg = len(negTimes)
     numTotal = numPos + numNeg
 
-    csvRow += [intervalsToString(posTimes), str(numPos), str(numNeg), str(numTotal)]       
+    posTimesString = "No false positive periods"
+    longestPosIntervalString = "No false positive periods"
+
+    if len(posTimes) > 0:
+        posTimesString = intervalsToString(posTimes)
+        longestPosInterval = posTimes[0]
+        longestPosIntervalLength = intervalLength(posTimes[0])
+        for interval in posTimes:
+            length = intervalLength(interval)
+            if length > longestPosIntervalLength:
+                longestPosIntervalLength = length
+                longestPosInterval = interval
+
+        longestPosIntervalString = formatTimeInterval(longestPosInterval)
+
+    csvRow += [longestPosIntervalString, posTimesString, str(numPos), str(numNeg), str(numTotal)]       
 
 def processResults(results, writer, csvRow):
     # analyze results
@@ -345,7 +388,7 @@ def getIntervalStatHeaders(classifier_name):
 
 
 def processAllClassifierResults(results, csvRow):
-    conflicitingClassifications = findConflictingClassifications(results)
+    conflicitingClassifications = findConflictingClassifications(results, False)
     print "These classifications conflict"
     print conflicitingClassifications
     if len(conflicitingClassifications) > 0:
@@ -353,15 +396,19 @@ def processAllClassifierResults(results, csvRow):
     else:
         csvRow += ["No times when multiple classifiers output 1"]
 
+    conflicitingClassificationsIncludingTheft = findConflictingClassifications(results, True)
+    if len(conflicitingClassifications) > 0:
+        csvRow += [intervalsToString(conflicitingClassificationsIncludingTheft)]
+    else:
+        csvRow += ["No times when multiple classifiers output 1"]
 
-def findConflictingClassifications(results):
+
+def findConflictingClassifications(results, includeTheft):
     conflictingVal = 1
     conflicitingClassifications = []
     for classifier in results:
-        if classifier != classifiers.THEFT_CLASSIFIER:
+        if includeTheft or classifier != classifiers.THEFT_CLASSIFIER:
             intervals = results[classifier][1][conflictingVal]
-            print(classifier)
-            print(intervals)
             conflicitingClassifications = findCommonIntervals(conflicitingClassifications, intervals)
 
     return conflicitingClassifications
@@ -424,7 +471,6 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
 
     i1 = advance(intervals1, 0, value) 
     i2 = advance(intervals2, 0, value)
-    print "Starting"
     print i1, i2 
     
     commonIntervals = []
@@ -443,14 +489,12 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
             later_i, earlier_i = i2, i1
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
-            print("GOODBYE")
             if earlier_i == i1:
                 i1 = advance(intervals1, i1, value)
             else:
                 i2 = advance(intervals2, i2, value)
         
         else:
-            print("HELLO")
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
 
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
@@ -697,20 +741,23 @@ def main():
 
     now = datetime.datetime.now()
     dashboardFileName = DASHBOARDDIR + "Dashboard-" + now.strftime('%Y_%m_%d_%H_%M') + ".csv"
+    resultsFileName = DASHBOARDDIR + "Dashboard-" + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
 
     dashboardFile = open(dashboardFileName, 'wb')
     dashboardWriter = csv.writer(dashboardFile, delimiter = ',')
 
+    resultsFile = open(resultsFileName, 'wb')
+
     columnHeaders = ["User ID"]
 
-    columnHeaders += ["False Positive Theft Times", "# of Theft Positives", "# of Theft Negatives", "Total Theft Classifications"]
+    columnHeaders += ["Longest False Positive Time Period", "False Positive Theft Times", "# of Theft Positives", "# of Theft Negatives", "Total Theft Classifications"]
 
     for c in classifiers.CLASSIFIERS:
         print c
         if c != classifiers.THEFT_CLASSIFIER:
             columnHeaders += getIntervalStatHeaders(c)
 
-    columnHeaders += ["Periods when classifiers were both positive"]
+    columnHeaders += ["Periods when multiple (non-theft) classifiers were both positive", "Periods when multiple classifiers were both positive"]
 
     dashboardWriter.writerow(columnHeaders)
 
@@ -718,9 +765,11 @@ def main():
 
     for userID in USERS:
         datarow = [userID]
-        runClassifiersOnUser(userID, dashboardWriter)
+        runClassifiersOnUser(userID, dashboardWriter, resultsFile)
         #runClassifiersOnUser(userID, tempResultsFile)
 
+    dashboardFile.close()
+    resultsFile.close()
     print("Dashboard results generated in: " + dashboardFileName)
 
 if __name__ == '__main__':
