@@ -6,6 +6,7 @@ import BaseClassifier
 from sklearn.externals import joblib
 
 filename = './data/theft_classifiers_weights/random_forest_weights.pkl'
+
 clf = joblib.load(filename)
 class Classifier(BaseClassifier.BaseClassifier):
 
@@ -27,7 +28,8 @@ class Classifier(BaseClassifier.BaseClassifier):
 
         if len(X) > 0:
             predictions = clf.predict(X)
-            return predictions
+            return zip(times_for_data_pts, predictions)
+            # return predictions
         else:
             return [(0, 0)]
 
