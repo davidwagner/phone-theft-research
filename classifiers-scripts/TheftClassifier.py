@@ -17,7 +17,8 @@ class Classifier(BaseClassifier.BaseClassifier):
             dataRow is a Python list of the corresponding data csv row (e.g. [timestamp, x, y, z])
             *all timestamps will be converted to Python DateTime objects corresponding to actual time*
 
-    Output: a 0 or 1 (the classification)
+    Output: a 0 or 1 (the classification) and associated times of data points.
+            example [(t0, 0), (t1, 0), (t2, 1), (t3, 1), ...]
     """
     def classify(self, windowOfData):
         acc_data = windowOfData[Sensors.ACCELEROMETER]
@@ -29,7 +30,7 @@ class Classifier(BaseClassifier.BaseClassifier):
             return zip(times_for_data_pts, predictions)
             # return predictions
         else:
-            print("no anomaly.")
+            return [(0, 0)]
 
     """
     Returns data in a single file.
