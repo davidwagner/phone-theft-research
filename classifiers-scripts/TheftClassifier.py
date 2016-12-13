@@ -5,7 +5,7 @@ import BaseClassifier
 
 from sklearn.externals import joblib
 
-filename = './data/theft_classifiers_weights/random_forest_weights.pkl'
+filename = './classifier_pickles/theft_classifiers_weights/random_forest_weights.pkl'
 
 clf = joblib.load(filename)
 class Classifier(BaseClassifier.BaseClassifier):
