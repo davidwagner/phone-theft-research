@@ -173,7 +173,7 @@ def runClassifier(classifier, userData):
                 windowStartTime = getWindowStartTime(data)
 
         classifications = classifier.classify(windowOfData)
-        if len(classifications) <= 0:
+        if classifications == None or classifications == [(0, 0)]:
             return resultIntervals, resultIntervalsByValue
 
         resultIntervals = classifications
