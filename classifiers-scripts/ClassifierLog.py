@@ -18,6 +18,9 @@ USERS_TO_IDS_FILE = "../data/users_r2_test.csv"
 DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############################################
 
+if DIRECTORY[-1] != '/':
+    DIRECTORY += '/'
+
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
 
@@ -94,9 +97,9 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             for row in reader:
                 row[0] = convertToDateTime(row[0], currentBootTime)
                 dataList.append(row)
-                count += 1
-                if count > 100000:
-                    break
+                # count += 1
+                # if count > 100000:
+                #     break
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -170,6 +173,8 @@ def runClassifier(classifier, userData):
                 windowStartTime = getWindowStartTime(data)
 
         classifications = classifier.classify(windowOfData)
+        if len(classifications) <= 0:
+            return resultIntervals, resultIntervalsByValue
 
         resultIntervals = classifications
         # mergeAdjacentIntervals(resultIntervals)
@@ -182,10 +187,8 @@ def runClassifier(classifier, userData):
 
         print("THEFT CLASSIFICATIONS")
         print(classifications)
-        # print resultIntervals, resultIntervalsByValue
+
         return resultIntervals, resultIntervalsByValue
-        #TODO: Process theft results (since now in timestamp, class format)
-        # Format results, resultIntervals, resultTimes as you need to (@Jason)
 
     else:
         print("Number of samples: " + str(numRows - windowSize))
