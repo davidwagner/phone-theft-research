@@ -93,11 +93,13 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                     nextFileTime = bootTimes[nextFileTimeIndex][0]
 
             firstRow[0] = convertToDateTime(firstRow[0], currentBootTime)
-            dataList.append(firstRow)
+            if len(firstRow) >= 5:
+                dataList.append(firstRow)
             count = 1
             for row in reader:
-                row[0] = convertToDateTime(row[0], currentBootTime)
-                dataList.append(row)
+                if len(row) >= 5:
+                    row[0] = convertToDateTime(row[0], currentBootTime)
+                    dataList.append(row)
                 # count += 1
                 # if count > 100000:
                 #     break
