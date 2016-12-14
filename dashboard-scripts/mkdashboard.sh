@@ -6,7 +6,7 @@ cd ~/Dropbox/phone_data/Sensor\ Research
 for BEFORE in 0 1 2
 do
     DAY=`python -c "import datetime; d = datetime.datetime.now() - datetime.timedelta(${BEFORE}); print d.strftime('%Y_%m_%d')"`
-    cp *_${DAY}_* /var/tmp/encrypted/
+    cp *_{BleHrm,BatchedAccelerometer,TriggeredBleConnectedDevices}_${DAY}_* /var/tmp/encrypted/
 done
 
 rm -r /var/tmp/decrypted
