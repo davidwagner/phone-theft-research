@@ -5,6 +5,7 @@ import re
 import datetime
 import sys
 import shutil
+import argparse
 import matplotlib.pyplot as plt
 from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateFormatter, date2num
 # import classifier
@@ -45,10 +46,12 @@ BOOT_TIME_DELTA = datetime.timedelta(hours=1)
 BOOT_TIME_SENSOR = sensors.ACCELEROMETER
 START_OF_TIME = datetime.datetime.min
 
+SANITY_TEST = False
+
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
-    # print(query)
+    
     userFiles = glob.glob(query)
 
     # TODO: Need to filter for sensors that need data files with matching times as other
@@ -96,9 +99,11 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                 if len(row) >= 5:
                     row[0] = convertToDateTime(row[0], currentBootTime)
                     dataList.append(row)
-                # count += 1
-                # if count > 100000:
-                #     break
+
+                if SANITY_TEST:
+                    count += 1
+                    if count > 100000:
+                        break
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -128,7 +133,7 @@ def getReferenceBootTimes(userID):
 
 
 
-def getRelevantUserData(userID):
+def getRelevantUserData(userID, logInfo=False, logFile=None):
     userData = {}
     bootTimes = []
 
@@ -140,6 +145,14 @@ def getRelevantUserData(userID):
             dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
             
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
+
+    if logInfo:
+        logFile.write("Data Files Analyzed:\n")
+        for filename in dataFiles:
+            logFile.write(getTimeFromFile(filename) + "_.csv" + '\n')
+        logFile.write("Boot Times Computed:\n")
+        for bootTime in bootTimes:
+            logFile.write("Files after " + str(formatTime(bootTime[0], withDate=True)) + ", have boot time: " + str(formatTime(bootTime[1], withDate=True)) + '\n')
 
     return userData 
 
@@ -230,8 +243,12 @@ def runClassifier(classifier, userData):
 # {0 : [list of times], 1 : [list of times]}
 
 def runClassifiersOnUser(userID, csvWriter, resultsFile):
+    if DUMP_RESULTS:
+        resultsFile.write("###########################\n")
+        resultsFile.write(str(userID) + '\n')
+        resultsFile.write("###########################\n")
     print(userID)
-    userData = getRelevantUserData(userID)
+    userData = getRelevantUserData(userID, logInfo=True, logFile=resultsFile)
   
     csvRow = [userID]
 
@@ -246,8 +263,6 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     print ("Results computed for: " + theft)
 
     if DUMP_RESULTS:
-        resultsFile.write("###########################\n")
-        resultsFile.write(str(userID) + '\n')
         logResultsToFile(classifierResults, theft, resultsFile)
 
     for c in classifiers.CLASSIFIERS:
@@ -268,12 +283,13 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     csvWriter.writerow(csvRow)
 
 def logResultsToFile(classifierResults, classifier_name, resultsFile):
+    resultsFile.write("-------------------------------------\n")
     resultsFile.write(str(classifier_name) + '\n')
     resultsFile.write("-------------------------------------\n")
     resultIntervals, resultIntervalsByValue = classifierResults
     resultsFile.write("Result Intervals\n")
     for interval in resultIntervals:
-        interval = (formatTimeInterval(interval[0]), interval[1])
+        interval = (formatTimeInterval(interval[0], withDate=True), interval[1])
         resultsFile.write(str(interval) + '\n')
 
     posTimes = resultIntervalsByValue[1]
@@ -281,11 +297,11 @@ def logResultsToFile(classifierResults, classifier_name, resultsFile):
 
     resultsFile.write("Positive Intervals\n")
     for interval in posTimes:
-        resultsFile.write(formatTimeInterval(interval) + '\n')
+        resultsFile.write(formatTimeInterval(interval, withDate=True) + '\n')
 
     resultsFile.write("Negative Intervals\n")
     for interval in negTimes:
-        resultsFile.write(formatTimeInterval(interval) + '\n')
+        resultsFile.write(formatTimeInterval(interval, withDate=True) + '\n')
 
 
 
@@ -649,7 +665,9 @@ def timeStringToDateTime(timestring):
 def timeStringsToDateTimes(timeStrings):
     return [timeStringToDateTime(timeString) for timeString in timeStrings]
 
-def formatTime(dateTime):
+def formatTime(dateTime, withDate=False):
+    if withDate:
+        return dateTime.strftime('%b %d|%H:%M:%S')
     return dateTime.strftime('%H:%M:%S')
 
 def formatTimeDelta(timeDelta):
@@ -659,8 +677,11 @@ def formatTimeDelta(timeDelta):
     seconds = totalSeconds % 60
     return str(hours) + 'h:' + str(minutes) + 'm:' + str(seconds) + 's' 
 
-def formatTimeInterval(timeInterval):
-    return '(' + formatTime(timeInterval[0]) + '--' + formatTime(timeInterval[1]) + ')' 
+def formatTimeInterval(timeInterval, withDate=False):
+    if withDate:
+        return '(' + formatTime(timeInterval[0], withDate=True) + '--' + formatTime(timeInterval[1], withDate=True) + ')'
+    else:
+        return '(' + formatTime(timeInterval[0]) + '--' + formatTime(timeInterval[1]) + ')' 
 
 def formatTimeValue(timeValue):
     if type(timeValue) is str:
@@ -693,6 +714,13 @@ def getFileExtension(isDecrypted):
         return '_.csv'
     else:
         return '_.zip.encrypted'
+
+def removePath(filename):
+    i = -1
+    while i >= -1 * len(filename) and filename[i] != '/':
+        i -= 1
+
+    return filename[i + 1:]
 
 def removeFilesFromDir(directory):
     if os.path.exists(directory):
