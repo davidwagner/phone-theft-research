@@ -297,11 +297,11 @@ def logResultsToFile(classifierResults, classifier_name, resultsFile):
 
     resultsFile.write("Positive Intervals\n")
     for interval in posTimes:
-        resultsFile.write(formatTimeInterval(interval, withDate=True) + '\n')
+        resultsFile.write(formatTimeInterval(interval, withDate=True) + ' ; ' + formatTimeValue(intervalLength(interval)) + '\n')
 
     resultsFile.write("Negative Intervals\n")
     for interval in negTimes:
-        resultsFile.write(formatTimeInterval(interval, withDate=True) + '\n')
+        resultsFile.write(formatTimeInterval(interval, withDate=True) + ' ; ' + formatTimeValue(intervalLength(interval)) + '\n')
 
 
 
