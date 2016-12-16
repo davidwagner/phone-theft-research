@@ -46,7 +46,7 @@ BOOT_TIME_DELTA = datetime.timedelta(hours=1)
 BOOT_TIME_SENSOR = sensors.ACCELEROMETER
 START_OF_TIME = datetime.datetime.min
 
-SANITY_TEST = True
+SANITY_TEST = False
 
 
 def getUserFilesByDayAndInstrument(userID, instrument):
