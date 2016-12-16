@@ -46,13 +46,14 @@ BOOT_TIME_DELTA = datetime.timedelta(hours=1)
 BOOT_TIME_SENSOR = sensors.ACCELEROMETER
 START_OF_TIME = datetime.datetime.min
 
-SANITY_TEST = False
+SANITY_TEST = True
 
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
     
     userFiles = glob.glob(query)
+    userFiles.sort()
 
     # TODO: Need to filter for sensors that need data files with matching times as other
     # sensors (e.g. accelerometer and step count for Theft Classifier)
@@ -102,7 +103,7 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
 
                 if SANITY_TEST:
                     count += 1
-                    if count > 100000:
+                    if count > 10000:
                         break
     return dataList
 
