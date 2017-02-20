@@ -11,6 +11,7 @@ from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateForm
 # import classifier
 import Sensors as sensors
 import Classifiers as classifiers 
+import pickle
 
 from configsettings import *
 
@@ -39,7 +40,9 @@ finally:
 USERS = set(ids)
 
 # RELEVANT_SENSORS = set([])
-RELEVANT_SENSORS = [sensors.ACCELEROMETER]
+RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
+HEARTRATE_SENSOR = sensors.HEART_RATE
+WATCH_SENSORS = [HEARTRATE_SENSOR]
 YEAR_2000 = datetime.date(2000, 1, 1)
 
 BOOT_TIME_DELTA = datetime.timedelta(hours=1)
@@ -107,6 +110,20 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                         break
     return dataList
 
+def dataFilesToDataListAbsTime(userFiles):
+    dataList = []
+    for dataFile in userFiles:
+        with open(dataFile) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) > 1:
+                    timestamp = int(row[1]) / 1000
+                    row[0] = datetime.datetime.fromtimestamp(timestamp)
+                    dataList.append(row)
+    print "Number of heartrate files"
+    print len(dataList)
+    return dataList
+
 def getReferenceBootTimes(userID):
     userFiles = getUserFilesByDayAndInstrument(userID, BOOT_TIME_SENSOR)
 
@@ -142,10 +159,17 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     userData[BOOT_TIME_SENSOR] = dataFilesToDataList(dataFiles, bootTimes, True)
 
     for instrument in RELEVANT_SENSORS:
-        if instrument != BOOT_TIME_SENSOR:
+        if instrument != BOOT_TIME_SENSOR and instrument != sensors.PHONE_ACTIVE_SENSORS:
             dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
-            
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
+      
+    userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
+
+    for instrument in WATCH_SENSORS:
+        dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
+        print "Heart Rate Files"
+        print dataFiles
+        userData[instrument] = dataFilesToDataListAbsTime(dataFiles)
 
     if logInfo:
         logFile.write("Data Files Analyzed:\n")
@@ -155,7 +179,216 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
         for bootTime in bootTimes:
             logFile.write("Files after " + str(formatTime(bootTime[0], withDate=True)) + ", have boot time: " + str(formatTime(bootTime[1], withDate=True)) + '\n')
 
-    return userData 
+    return userData
+
+def processPhoneActiveData(ID, posDataAccel):
+    # global DIRECTORY
+    # DIRECTORY = DIR
+    #if DIRECTORY[-1] != '/':
+        # DIRECTORY += '/'
+    
+    # ID = 'd792b61e'
+    # POS_DIR = DIRECTORY
+    # BOOT_TIMES = []
+    # START_TIME = datetime.datetime(2017, 1, 21, hour=13, minute=8)
+    # END_TIME = datetime.datetime(2017, 1, 21, hour=13, minute=19)
+    
+    # posFiles = getUserFilesByDayAndInstrument(ID, sensors.ACCELEROMETER, POS_DIR)
+    #rawPosData = dataFilesToDataList(posFiles, bootTimes=BOOT_TIMES, needsToComputeBootTime=True)
+    
+    # posDataAccel = []
+    
+    # if START_TIME != None and END_TIME != None:
+    #     START_TIME = datetime.datetime.strptime(START_TIME, '%Y_%m_%d_%H_%M_%S')
+    #     END_TIME = datetime.datetime.strptime(END_TIME, '%Y_%m_%d_%H_%M_%S')
+    #     posDataAccel = [row for row in rawPosData if row[0] > START_TIME and row[0] < END_TIME]
+    # else:
+    #     posDataAccel = rawPosData
+    
+    # for i in range(20):
+    #     print(rawPosData[-1 * i][0])
+        
+    firstAccelTime = posDataAccel[0][0]
+    
+    posFilesTouch = getUserFilesByDayAndInstrument(ID, 'TouchScreenAsEvent')
+    rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
+    # print("RAW DATA TOUCH")
+    # print(rawPosDataTouch)
+    
+    posFilesScreen = getUserFilesByDayAndInstrument(ID, 'TriggeredScreenState')
+    rawPosDataScreen = dataFilesToDataListAbsTime(posFilesScreen)
+    
+    posFilesLocked = getUserFilesByDayAndInstrument(ID, 'TriggeredKeyguard')
+    rawPosDataLocked = dataFilesToDataListAbsTime(posFilesLocked)
+    
+    touchIndex = 0
+    if len(rawPosDataTouch) > 0:
+        touchIndex = 0
+        currentTime = rawPosDataTouch[touchIndex][0]
+        while currentTime < firstAccelTime: 
+            touchIndex += 1
+            if touchIndex >= len(rawPosDataTouch):
+                break
+            currentTime = rawPosDataTouch[touchIndex][0]
+
+        startTouchIndex = touchIndex
+    
+    screenIndex = 0
+    if len(rawPosDataScreen) > 0:
+        screenIndex = 0
+        currentTime = rawPosDataScreen[screenIndex][0]
+        while currentTime < firstAccelTime:
+            screenIndex += 1
+            if screenIndex >= len(rawPosDataScreen):
+                break
+            currentTime = rawPosDataScreen[screenIndex][0]
+            # print(currentTime)
+            # print(screenIndex)
+    
+    lockedIndex = 0
+    if len(rawPosDataLocked) > 0:
+        lockedIndex = 0
+        currentTime = rawPosDataLocked[lockedIndex][0]
+        while currentTime < firstAccelTime:
+            lockedIndex += 1
+            if lockedIndex >= len(rawPosDataLocked):
+                break
+            currentTime = rawPosDataLocked[lockedIndex][0]
+    
+    posDataTouch = []
+    posDataScreen = []
+    posDataLocked = []
+    
+    # print(firstAccelTime)
+    # print(screenIndex)
+    currScreenDate = rawPosDataScreen[screenIndex][0]
+    nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
+    currScreenVal = rawPosDataScreen[screenIndex][2]
+    currLockedDate = rawPosDataLocked[lockedIndex][0]
+    nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
+    currLockedVal = rawPosDataLocked[lockedIndex][2]
+    
+    truthToNum = lambda x : 0 if str(x) == 'false' else 1
+    
+    for i in range(len(posDataAccel) - 1):
+        accelRow = posDataAccel[i]
+        accelRowNext = posDataAccel[i + 1]
+        
+        accelDate = accelRow[0]
+        accelDateNext = accelRowNext[0]
+        
+        # Calculate number of touch events starting at this row time and before next row time
+        # touchDate >= firstAccelTime
+        if len(rawPosDataTouch) == 0 or touchIndex >= len(rawPosDataTouch) or rawPosDataTouch[touchIndex][0] >= accelDateNext: # No touch events
+            touchRow = [accelDate, 0]
+            posDataTouch.append(touchRow)
+            #print("TOUCH DATE:" + str(touchDate))
+            #print("ACCEL DATE:" + str(accelDate))
+            
+        else: #touchDate < AccelDateNext
+            numTouches = 0
+            touchDate = rawPosDataTouch[touchIndex][0]
+            while touchDate < accelDateNext and touchIndex < len(rawPosDataTouch):
+                # print("TOUCH RECOGNIZED!")
+                numTouches += 1
+                touchIndex += 1
+                if touchIndex < len(rawPosDataTouch) - 1:
+                    touchDate = rawPosDataTouch[touchIndex][0]
+                
+            touchRow = [accelDate, numTouches]
+            posDataTouch.append(touchRow)
+        
+        
+        # Calculate if screen on in this interval
+        if accelDate >= nextScreenDate:
+            if screenIndex + 1 < len(rawPosDataScreen):
+                screenIndex += 1
+                currScreenDate = rawPosDataScreen[screenIndex][0]
+                currScreenVal = rawPosDataScreen[screenIndex][2]
+                if screenIndex + 1 < len(rawPosDataScreen):
+                    nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
+                
+            screenRow = [accelDate, truthToNum(currScreenVal)]
+            posDataScreen.append(screenRow)
+        
+        else:
+            screenRow = [accelDate, truthToNum(currScreenVal)]
+            posDataScreen.append(screenRow)
+        
+        # Calculate if locked on in this interval
+        if accelDate >= nextLockedDate:
+            if lockedIndex + 1 < len(rawPosDataLocked):
+                lockedIndex += 1
+                currLockedDate = rawPosDataLocked[lockedIndex][0]
+                currLockedVal = rawPosDataLocked[lockedIndex][2]
+                if lockedIndex + 1 < len(rawPosDataLocked):
+                    nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
+                
+            lockedRow = [accelDate, truthToNum(currLockedVal)]
+            posDataLocked.append(lockedRow)
+        
+        else:
+            lockedRow = [accelDate, truthToNum(currLockedVal)]
+            posDataLocked.append(lockedRow)
+            
+        
+    # touchCount = 0
+    # for i in range(len(posDataTouch)):
+    #     # print(posDataAccel[i])
+    #     if posDataTouch[i][1] > 0:
+    #         touchCount += 1
+    #         # print(posDataTouch[i])
+    
+    # # print("TOUCH COUNT:" + str(touchCount))
+    # """
+    # print("PHONE SCREEN:")
+    # for i in range(10000):
+    #     print(posDataScreen[i])
+    
+    # print("PHONE LOCKED:")
+    # for i in range(10000):
+    #     print(posDataLocked[i])
+    # """
+    
+    posData = []
+    curAccelSignX = float(posDataAccel[0][1]) > 0
+    curAccelSignY = float(posDataAccel[0][2]) > 0
+    curAccelSignZ = float(posDataAccel[0][3]) > 0
+    
+    curSigns = [curAccelSignX, curAccelSignY, curAccelSignZ]
+    
+    signsChanged = lambda now, cur : [1 if now[i] != cur[i] else 0 for i in range(len(now))]
+    for i in range(len(posDataAccel) - 1):
+        accelSignX = float(posDataAccel[i][1]) > 0
+        accelSignY = float(posDataAccel[i][2]) > 0
+        accelSignZ = float(posDataAccel[i][3]) > 0
+        
+        newSigns = [accelSignX, accelSignY, accelSignZ]
+        accelSigns = signsChanged(newSigns, curSigns)
+        curSigns = newSigns
+        
+        
+        numTouches = posDataTouch[i][1]
+        screenState = posDataScreen[i][1]
+        lockedState = posDataLocked[i][1]
+        
+        row = posDataAccel[i][0] + [numTouches, screenState, lockedState] + accelSigns
+        posData.append(row)
+    
+    # filename = 'compiled_' + os.path.basename(DIRECTORY) + '.csv'
+    # print(filename)
+    # f = open(filename, 'w+')
+    # writer = csv.writer(f, delimiter = ',')
+    # for row in posData:
+    #     row[0] = formatTimeValue(row[0])
+    #     writer.writerow(row)
+        
+    # f.close()
+    # print("Finished!")
+    
+    return posData
+
+
 
 
 def runClassifier(classifier, userData):
@@ -216,6 +449,9 @@ def runClassifier(classifier, userData):
             #     print("# of windows classified: " + str(row))
             #     print(formatTime(windowStartTime))
 
+            if row % 10000 == 0:
+                print "Processing window: " + str(row)
+
             classification = classifier.classify(windowOfData)
 
             # Adjust the interval
@@ -243,6 +479,33 @@ def runClassifier(classifier, userData):
 
 # {0 : [list of times], 1 : [list of times]}
 
+def getHeartRateTimes(userData):
+    heartRateData = userData[HEARTRATE_SENSOR]
+    intervals = []
+    # print "Heart rate data"
+    # print len(heartRateData)
+    if len(heartRateData) <= 0:
+        return intervals
+
+    currentWindowStartTime = heartRateData[0][0]
+    currentWindowEndTime = currentWindowStartTime
+    THRESHOLD = datetime.timedelta(minutes=5)
+    for row in heartRateData:
+        time = row[0]
+        if time - currentWindowEndTime > THRESHOLD:
+            interval = (currentWindowStartTime, currentWindowEndTime)
+            intervals.append(interval)
+            currentWindowStartTime = time
+            currentWindowEndTime = time
+        else:
+            currentWindowEndTime = time
+    interval = (currentWindowStartTime, currentWindowEndTime)
+    intervals.append(interval)
+
+    return intervals
+
+
+
 def runClassifiersOnUser(userID, csvWriter, resultsFile):
     if DUMP_RESULTS:
         resultsFile.write("###########################\n")
@@ -250,11 +513,13 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
         resultsFile.write("###########################\n")
     print(userID)
     userData = getRelevantUserData(userID, logInfo=True, logFile=resultsFile)
-  
+    heartRateTimes = getHeartRateTimes(userData)
+
     csvRow = [userID]
 
     # csvWriter.write(str(userID) + '\n')
     results = {}
+    pickleResults = {}
     theft = classifiers.THEFT_CLASSIFIER
     print(theft)
     classifier = classifiers.CLASSIFIERS[theft]
@@ -265,6 +530,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
 
     if DUMP_RESULTS:
         logResultsToFile(classifierResults, theft, resultsFile)
+        pickleResults[theft] = classifierResults[0]
 
     for c in classifiers.CLASSIFIERS:
         if c == classifiers.THEFT_CLASSIFIER:
@@ -278,8 +544,19 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
         print("Results computed for: " + c)
         if DUMP_RESULTS:
             logResultsToFile(classifierResults, c, resultsFile)
+            pickleResults[c] = classifierResults[0]
 
+    # Calculate times heartrate data was found, i.e. phone in possession
     processAllClassifierResults(results, csvRow)
+
+    results[HEARTRATE_SENSOR] = heartRateTimes
+    pickleResults[HEARTRATE_SENSOR] = heartRateTimes
+
+    if DUMP_RESULTS:
+        now = datetime.datetime.now()
+        pickleFileName = DASHBOARDDIR + "ResultsPickle_" + userID + '_' + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
+        pickleFile = open(pickleFileName, 'w+')
+        pickle.dump(pickleResults, pickleFile)
 
     csvWriter.writerow(csvRow)
 
