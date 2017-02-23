@@ -14,6 +14,7 @@ import Classifiers as classifiers
 import pickle
 
 from configsettings import *
+from collections import deque, Counter
 
 DUMP_RESULTS = True
 
@@ -520,45 +521,96 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     # csvWriter.write(str(userID) + '\n')
     results = {}
     pickleResults = {}
-    theft = classifiers.THEFT_CLASSIFIER
-    print(theft)
-    classifier = classifiers.CLASSIFIERS[theft]
-    classifierResults = runClassifier(classifier, userData)
-    processTheftResults(classifierResults, csvWriter, csvRow)
-    results[theft] = classifierResults
-    print ("Results computed for: " + theft)
+    # theft = classifiers.THEFT_CLASSIFIER
+    # print(theft)
+    # classifier = classifiers.CLASSIFIERS[theft]
+    # classifierResults = runClassifier(classifier, userData)
+    # processTheftResults(classifierResults, csvWriter, csvRow)
+    # results[theft] = classifierResults
+    # print ("Results computed for: " + theft)
 
-    if DUMP_RESULTS:
-        logResultsToFile(classifierResults, theft, resultsFile)
-        pickleResults[theft] = classifierResults[0]
+    # if DUMP_RESULTS:
+    #     logResultsToFile(classifierResults, theft, resultsFile)
+    #     pickleResults[theft] = classifierResults[0]
 
-    for c in classifiers.CLASSIFIERS:
-        if c == classifiers.THEFT_CLASSIFIER:
-            continue
-        classifier = classifiers.CLASSIFIERS[c]
-        print(c)
-        # csvWriter.write(str(c) + '\n')
-        classifierResults = runClassifier(classifier, userData)
-        processResults(classifierResults, csvWriter, csvRow)
-        results[c] = classifierResults
-        print("Results computed for: " + c)
-        if DUMP_RESULTS:
-            logResultsToFile(classifierResults, c, resultsFile)
-            pickleResults[c] = classifierResults[0]
+    # Take largest window
+    # Run classifier in each window (may be multiple windows)
+    # If multiple windows, take majority of results to get output of classifier
+    # Compare classifier results, take most conservative classification
 
-    # Calculate times heartrate data was found, i.e. phone in possession
-    processAllClassifierResults(results, csvRow)
+    numRows = min([len(userData[instrument]) for instrument in instruments])
+    maxWindowSize = 0
 
-    results[HEARTRATE_SENSOR] = heartRateTimes
-    pickleResults[HEARTRATE_SENSOR] = heartRateTimes
+    classifications = []
+    SMOOTHING_NUM
+    resultsBuffer = deque()
+    resultsCounter = Counter()
+    currentClass = -1
+    firstTime = userData[sensors.ACCELEROMETER][0][0]
+    currentInterval = (firstTime, firstTime)
+    for i in range(0, numRows - maxWindowSize):
+        windowOfData = {}
+        windowStartTime = 0
+        for instrument in RELEVANT_SENSORS:
+            data = userData[instrument][i:i + maxWindowSize] 
+            windowOfData[instrument] = data
+            windowStartTime = getWindowStartTime(data)
 
-    if DUMP_RESULTS:
-        now = datetime.datetime.now()
-        pickleFileName = DASHBOARDDIR + "ResultsPickle_" + userID + '_' + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
-        pickleFile = open(pickleFileName, 'w+')
-        pickle.dump(pickleResults, pickleFile)
 
-    csvWriter.writerow(csvRow)
+        classifierResults = {}
+        for c in classifiers.CLASSIFIERS:
+            classifier = classifiers.CLASSIFIERS[c]
+            results = runClassifier(classifier, userData)
+            classifierResults[classifier] = results
+
+        windowClassification = joannaFunction(classifierResults)
+        resultsBuffer.append((windowStartTime, windowClassification))
+        if len(resultsBuffer) >= SMOOTHING_NUM:
+            middleWindow = resultsBuffer[SMOOTHING_NUM // 2]
+            middleWindowStartTime = middleWindow[0]
+            newClassification = resultsBuffer.most_commmon(1)[0]
+            # newWindow = (middleWindow[0], newClassification)
+            # resultsBuffer[SMOOTHING_NUM // 2] = newWindow
+            if currentClass == -1:
+                currentClass = newClassification
+            elif currentClass != classification:
+                classifications.append((currentInterval, currentClass))
+                interval = currentInterval
+                currentInterval = (middleWindowStartTime, middleWindowStartTime)
+                currentClass = newClassification
+            else:
+                currentInterval = (currentInterval[0], middleWindowStartTime)
+
+            resultsBuffer.popleft()
+
+
+    # for c in classifiers.CLASSIFIERS:
+    #     if c == classifiers.THEFT_CLASSIFIER:
+    #         continue
+    #     classifier = classifiers.CLASSIFIERS[c]
+    #     print(c)
+    #     # csvWriter.write(str(c) + '\n')
+    #     classifierResults = runClassifier(classifier, userData)
+    #     processResults(classifierResults, csvWriter, csvRow)
+    #     results[c] = classifierResults
+    #     print("Results computed for: " + c)
+    #     if DUMP_RESULTS:
+    #         logResultsToFile(classifierResults, c, resultsFile)
+    #         pickleResults[c] = classifierResults[0]
+
+    # # Calculate times heartrate data was found, i.e. phone in possession
+    # processAllClassifierResults(results, csvRow)
+
+    # results[HEARTRATE_SENSOR] = heartRateTimes
+    # pickleResults[HEARTRATE_SENSOR] = heartRateTimes
+
+    # if DUMP_RESULTS:
+    #     now = datetime.datetime.now()
+    #     pickleFileName = DASHBOARDDIR + "ResultsPickle_" + userID + '_' + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
+    #     pickleFile = open(pickleFileName, 'w+')
+    #     pickle.dump(pickleResults, pickleFile)
+
+    # csvWriter.writerow(csvRow)
 
 def logResultsToFile(classifierResults, classifier_name, resultsFile):
     resultsFile.write("-------------------------------------\n")
