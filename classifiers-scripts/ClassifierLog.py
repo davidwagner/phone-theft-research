@@ -563,7 +563,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             results = runClassifier(classifier, userData)
             classifierResults[classifier] = results
 
-        windowClassification = joannaFunction(classifierResults)
+        windowClassification = classifierPolicy(classifierResults)
         resultsBuffer.append((windowStartTime, windowClassification))
         if len(resultsBuffer) >= SMOOTHING_NUM:
             middleWindow = resultsBuffer[SMOOTHING_NUM // 2]
@@ -980,6 +980,26 @@ def intervalLength(interval):
     return interval[1] - interval[0]
 
 
+def classifierPolicy(classifiedWindow):
+    averagedClassifications = []
+    for c, labels in classified_window.items():
+        positives = labels.count(1)
+        negatives = labels.count(0)
+        if positives > negatives:
+            averagedClassifications.append(c)
+    if len(averagedClassifications) == 1:
+        return averagedClassifications[0]
+    #use policy (most dangerous) among conflicting classifications
+    c = classifiers.CLASSIFIERS
+    if c[classifiers.THEFT_CLASSIFIER] in averagedClassifications:
+        return c[classifiers.THEFT_CLASSIFIER]
+    if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
+        return c[classifiers.TABLE_CLASSIFIER]
+    if c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
+        return c[classifiers.POCKET_BAG_CLASSIFIER]
+    else:
+        return c[classifiers.HAND_CLASSIFIER]
+
 ###### Utilities #######
 
 def filesToTimesToFilesDict(files, userID, instrument):
@@ -1091,6 +1111,7 @@ def calculateBootTime(userFiles):
 
 def getUserFileTimes(userFiles):
     return [timeStringToDateTime(getTimeFromFile(filename)) in filename in userFiles]
+
 
 
 def main():
