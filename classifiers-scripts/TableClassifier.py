@@ -52,6 +52,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def getRelevantSensors(self):
 		return [s.ACCELEROMETER]
 
+	def getName(self):
+		return "Table Classifier"
+
 
 
 

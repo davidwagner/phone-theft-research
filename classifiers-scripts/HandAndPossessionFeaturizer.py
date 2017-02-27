@@ -57,8 +57,8 @@ def getFeatures(rows):
 
     featureWindows = getWindows(WINDOW_SIZE, rows)
 
-    print(len(rows))
-    print("Windows to process: " + str(len(featureWindows)))
+    # print(len(rows))
+    # print("Windows to process: " + str(len(featureWindows)))
     count = 0
 
     """Calculate Features here"""
@@ -130,7 +130,7 @@ def getFeatures(rows):
     for i in range(len(allFeatures)):
         featureArray[i] = allFeatures[i]
 
-    print("Finished Featurizing!")
+    # print("Finished Featurizing!")
     return featureArray
 
 

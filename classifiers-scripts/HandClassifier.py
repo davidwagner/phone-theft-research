@@ -15,13 +15,13 @@ class Classifier(BaseClassifier.BaseClassifier):
 		combinedData = []
 
 		for i in range(len(accelData)):
-			row = accelData[i] + activeData[i][1:]
+			row = accelData[i][:4] + activeData[i][1:]
 			combinedData.append(row)
 
 		features = featurizer.getFeatures(combinedData)
-		results = clf.predict(features)
-
-		return int(results[0])
+		results = clf.predict(features)[0]
+		# print("Type:", type(results))
+		return results
 		# return results
 
 	# Need to change to time
@@ -30,6 +30,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 
 	def getRelevantSensors(self):
 		return [s.ACCELEROMETER, s.PHONE_ACTIVE_SENSORS]
+
+	def getName(self):
+		return "Hand Classifier"
 
 
 

@@ -6,8 +6,8 @@ import datetime
 import sys
 import shutil
 import argparse
-import matplotlib.pyplot as plt
-from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateFormatter, date2num
+# import matplotlib.pyplot as plt
+# from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateFormatter, date2num
 # import classifier
 import Sensors as sensors
 import Classifiers as classifiers 
@@ -51,6 +51,7 @@ BOOT_TIME_SENSOR = sensors.ACCELEROMETER
 START_OF_TIME = datetime.datetime.min
 
 SANITY_TEST = False
+maxWindowSize = 50
 
 
 def getUserFilesByDayAndInstrument(userID, instrument):
@@ -77,7 +78,7 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             
             fileTime = timeStringToDateTime(getTimeFromFile(dataFile))
 
-            firstRow = reader.next()
+            firstRow = next(reader)
             firstTime = datetime.timedelta(milliseconds=int(firstRow[0]))
 
             if needsToComputeBootTime:
@@ -121,8 +122,8 @@ def dataFilesToDataListAbsTime(userFiles):
                     timestamp = int(row[1]) / 1000
                     row[0] = datetime.datetime.fromtimestamp(timestamp)
                     dataList.append(row)
-    print "Number of heartrate files"
-    print len(dataList)
+    # print "Number of heartrate files"
+    # print len(dataList)
     return dataList
 
 def getReferenceBootTimes(userID):
@@ -163,13 +164,14 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
         if instrument != BOOT_TIME_SENSOR and instrument != sensors.PHONE_ACTIVE_SENSORS:
             dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
-      
+    
+    #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
 
     for instrument in WATCH_SENSORS:
         dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
-        print "Heart Rate Files"
-        print dataFiles
+        # print "Heart Rate Files"
+        # print dataFiles
         userData[instrument] = dataFilesToDataListAbsTime(dataFiles)
 
     if logInfo:
@@ -207,23 +209,31 @@ def processPhoneActiveData(ID, posDataAccel):
     #     posDataAccel = rawPosData
     
     # for i in range(20):
-    #     print(rawPosData[-1 * i][0])
+    #     # print(rawPosData[-1 * i][0])
         
     firstAccelTime = posDataAccel[0][0]
     
     posFilesTouch = getUserFilesByDayAndInstrument(ID, 'TouchScreenAsEvent')
     rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
-    # print("RAW DATA TOUCH")
-    # print(rawPosDataTouch)
+    # # print("RAW DATA TOUCH")
+    # # print(rawPosDataTouch)
     
     posFilesScreen = getUserFilesByDayAndInstrument(ID, 'TriggeredScreenState')
     rawPosDataScreen = dataFilesToDataListAbsTime(posFilesScreen)
     
     posFilesLocked = getUserFilesByDayAndInstrument(ID, 'TriggeredKeyguard')
     rawPosDataLocked = dataFilesToDataListAbsTime(posFilesLocked)
+
+    currScreenDate = None
+    nextScreenDate = None
+    currScreenVal = None
+    currLockedDate = None
+    nextLockedDate = None
+    currLockedVal = None
     
-    touchIndex = 0
+    touchIndex = -1
     if len(rawPosDataTouch) > 0:
+
         touchIndex = 0
         currentTime = rawPosDataTouch[touchIndex][0]
         while currentTime < firstAccelTime: 
@@ -234,7 +244,7 @@ def processPhoneActiveData(ID, posDataAccel):
 
         startTouchIndex = touchIndex
     
-    screenIndex = 0
+    screenIndex = -1
     if len(rawPosDataScreen) > 0:
         screenIndex = 0
         currentTime = rawPosDataScreen[screenIndex][0]
@@ -243,10 +253,14 @@ def processPhoneActiveData(ID, posDataAccel):
             if screenIndex >= len(rawPosDataScreen):
                 break
             currentTime = rawPosDataScreen[screenIndex][0]
-            # print(currentTime)
-            # print(screenIndex)
+            # # print(currentTime)
+            # # print(screenIndex)
+        currScreenDate = rawPosDataScreen[screenIndex][0]
+        currScreenVal = rawPosDataScreen[screenIndex][2]
+        if len(rawPosDataScreen) > 1:
+            nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
     
-    lockedIndex = 0
+    lockedIndex = -1
     if len(rawPosDataLocked) > 0:
         lockedIndex = 0
         currentTime = rawPosDataLocked[lockedIndex][0]
@@ -255,19 +269,17 @@ def processPhoneActiveData(ID, posDataAccel):
             if lockedIndex >= len(rawPosDataLocked):
                 break
             currentTime = rawPosDataLocked[lockedIndex][0]
+        currLockedDate = rawPosDataLocked[lockedIndex][0]
+        currLockedVal = rawPosDataLocked[lockedIndex][2]
+        if len(rawPosDataLocked) > 1:
+            nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
     
     posDataTouch = []
     posDataScreen = []
     posDataLocked = []
     
-    # print(firstAccelTime)
-    # print(screenIndex)
-    currScreenDate = rawPosDataScreen[screenIndex][0]
-    nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
-    currScreenVal = rawPosDataScreen[screenIndex][2]
-    currLockedDate = rawPosDataLocked[lockedIndex][0]
-    nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
-    currLockedVal = rawPosDataLocked[lockedIndex][2]
+    # # print(firstAccelTime)
+    # # print(screenIndex)
     
     truthToNum = lambda x : 0 if str(x) == 'false' else 1
     
@@ -283,14 +295,14 @@ def processPhoneActiveData(ID, posDataAccel):
         if len(rawPosDataTouch) == 0 or touchIndex >= len(rawPosDataTouch) or rawPosDataTouch[touchIndex][0] >= accelDateNext: # No touch events
             touchRow = [accelDate, 0]
             posDataTouch.append(touchRow)
-            #print("TOUCH DATE:" + str(touchDate))
-            #print("ACCEL DATE:" + str(accelDate))
+            ## print("TOUCH DATE:" + str(touchDate))
+            ## print("ACCEL DATE:" + str(accelDate))
             
         else: #touchDate < AccelDateNext
             numTouches = 0
             touchDate = rawPosDataTouch[touchIndex][0]
             while touchDate < accelDateNext and touchIndex < len(rawPosDataTouch):
-                # print("TOUCH RECOGNIZED!")
+                # # print("TOUCH RECOGNIZED!")
                 numTouches += 1
                 touchIndex += 1
                 if touchIndex < len(rawPosDataTouch) - 1:
@@ -301,7 +313,11 @@ def processPhoneActiveData(ID, posDataAccel):
         
         
         # Calculate if screen on in this interval
-        if accelDate >= nextScreenDate:
+        if currScreenDate == None or nextScreenDate == None:
+            screenRow = [accelDate, 0]
+            posDataScreen.append(screenRow)
+
+        elif accelDate >= nextScreenDate:
             if screenIndex + 1 < len(rawPosDataScreen):
                 screenIndex += 1
                 currScreenDate = rawPosDataScreen[screenIndex][0]
@@ -317,7 +333,11 @@ def processPhoneActiveData(ID, posDataAccel):
             posDataScreen.append(screenRow)
         
         # Calculate if locked on in this interval
-        if accelDate >= nextLockedDate:
+
+        if currLockedDate == None or nextLockedDate == None:
+            screenRow = [accelDate, 0]
+            posDataLocked.append(screenRow)
+        elif accelDate >= nextLockedDate:
             if lockedIndex + 1 < len(rawPosDataLocked):
                 lockedIndex += 1
                 currLockedDate = rawPosDataLocked[lockedIndex][0]
@@ -335,20 +355,20 @@ def processPhoneActiveData(ID, posDataAccel):
         
     # touchCount = 0
     # for i in range(len(posDataTouch)):
-    #     # print(posDataAccel[i])
+    #     # # print(posDataAccel[i])
     #     if posDataTouch[i][1] > 0:
     #         touchCount += 1
-    #         # print(posDataTouch[i])
+    #         # # print(posDataTouch[i])
     
-    # # print("TOUCH COUNT:" + str(touchCount))
+    # # # print("TOUCH COUNT:" + str(touchCount))
     # """
-    # print("PHONE SCREEN:")
+    # # print("PHONE SCREEN:")
     # for i in range(10000):
-    #     print(posDataScreen[i])
+    #     # print(posDataScreen[i])
     
-    # print("PHONE LOCKED:")
+    # # print("PHONE LOCKED:")
     # for i in range(10000):
-    #     print(posDataLocked[i])
+    #     # print(posDataLocked[i])
     # """
     
     posData = []
@@ -373,11 +393,11 @@ def processPhoneActiveData(ID, posDataAccel):
         screenState = posDataScreen[i][1]
         lockedState = posDataLocked[i][1]
         
-        row = posDataAccel[i][0] + [numTouches, screenState, lockedState] + accelSigns
+        row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + accelSigns
         posData.append(row)
     
     # filename = 'compiled_' + os.path.basename(DIRECTORY) + '.csv'
-    # print(filename)
+    # # print(filename)
     # f = open(filename, 'w+')
     # writer = csv.writer(f, delimiter = ',')
     # for row in posData:
@@ -385,7 +405,7 @@ def processPhoneActiveData(ID, posDataAccel):
     #     writer.writerow(row)
         
     # f.close()
-    # print("Finished!")
+    # # print("Finished!")
     
     return posData
 
@@ -396,84 +416,21 @@ def runClassifier(classifier, userData):
     windowSize = classifier.getWindowTime()
     instruments = classifier.getRelevantSensors()
     
-    numRows = min([len(userData[instrument]) for instrument in instruments])
-    print(len(userData[sensors.ACCELEROMETER]))
+    # numRows = min([len(userData[instrument]) for instrument in instruments])
+    # # print(len(userData[sensors.ACCELEROMETER]))
 
-    # {instrument: windowOfRawData}
-    resultIntervalsByValue = ([], [])
-    resultIntervals = []
+    classifications = []
 
-    if numRows == 0:
-        return resultIntervals, resultIntervalsByValue
-
-    firstTime = userData[instrument][0][0]
-    currentInterval = (firstTime, firstTime)
-    currentClass = -1
-
-    if windowSize == classifiers.DAY_INTERVAL:
-        windowSize = numRows - 1
-        for row in range(0, numRows - windowSize):
-            windowOfData = {}
-            for instrument in instruments:
-                data = userData[instrument][row:row + windowSize] 
-                windowOfData[instrument] = data
-                windowStartTime = getWindowStartTime(data)
-
-        classifications = classifier.classify(windowOfData)
-        if classifications == None or classifications == [(0, 0)]:
-            return resultIntervals, resultIntervalsByValue
-
-        resultIntervals = classifications
-        # mergeAdjacentIntervals(resultIntervals)
-        # filterSpikesFromIntervals(resultIntervals, resultIntervalsByValue)
-        for c in classifications:
-            label = c[1]
-            timeInterval = c[0]
-            resultIntervalsByValue[label].append(timeInterval)
-
-
-        print("THEFT CLASSIFICATIONS")
-        print(classifications)
-
-        return resultIntervals, resultIntervalsByValue
-
-    else:
-        print("Number of samples: " + str(numRows - windowSize))
-        for row in range(0, numRows - windowSize):
-            windowOfData = {}
-            for instrument in instruments:
-                data = userData[instrument][row:row + windowSize] 
-                windowOfData[instrument] = data
-                windowStartTime = getWindowStartTime(data)
-
-            # if row % 1000 == 0:
-            #     print("# of windows classified: " + str(row))
-            #     print(formatTime(windowStartTime))
-
-            if row % 10000 == 0:
-                print "Processing window: " + str(row)
-
-            classification = classifier.classify(windowOfData)
-
-            # Adjust the interval
-            if currentClass == -1:
-                currentClass = classification
-            elif currentClass != classification:
-                resultIntervals.append((currentInterval, currentClass))
-                # results[currentClass].append(currentInterval)
-                interval = currentInterval
-                # print((formatTime(interval[0]), formatTime(interval[1])), currentClass)
-                currentInterval = (windowStartTime, windowStartTime)
-                currentClass = classification
-            else:
-                currentInterval = (currentInterval[0], windowStartTime)
-
-        # results[currentClass].append(currentInterval)
-        resultIntervals.append((currentInterval, currentClass))
-        print(resultIntervals)
-        filterSpikesFromIntervals(resultIntervals, resultIntervalsByValue)
-
-    return resultIntervals, resultIntervalsByValue
+    for i in range(maxWindowSize // windowSize):
+        windowOfData = {}
+        for instrument in instruments:
+            start = i * windowSize
+            end = (i + 1) * windowSize
+            windowOfData[instrument] = userData[instrument][start:end]
+        classification = classifier.classify(windowOfData)
+        classifications.append(classification)
+    
+    return classifications
 
 # {windowStartTime : 0, 1}
 # {7:30pm : 0}
@@ -483,8 +440,8 @@ def runClassifier(classifier, userData):
 def getHeartRateTimes(userData):
     heartRateData = userData[HEARTRATE_SENSOR]
     intervals = []
-    # print "Heart rate data"
-    # print len(heartRateData)
+    # # print "Heart rate data"
+    # # print len(heartRateData)
     if len(heartRateData) <= 0:
         return intervals
 
@@ -512,42 +469,24 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
         resultsFile.write("###########################\n")
         resultsFile.write(str(userID) + '\n')
         resultsFile.write("###########################\n")
-    print(userID)
+    # print(userID)
     userData = getRelevantUserData(userID, logInfo=True, logFile=resultsFile)
     heartRateTimes = getHeartRateTimes(userData)
 
     csvRow = [userID]
-
-    # csvWriter.write(str(userID) + '\n')
     results = {}
     pickleResults = {}
-    # theft = classifiers.THEFT_CLASSIFIER
-    # print(theft)
-    # classifier = classifiers.CLASSIFIERS[theft]
-    # classifierResults = runClassifier(classifier, userData)
-    # processTheftResults(classifierResults, csvWriter, csvRow)
-    # results[theft] = classifierResults
-    # print ("Results computed for: " + theft)
 
-    # if DUMP_RESULTS:
-    #     logResultsToFile(classifierResults, theft, resultsFile)
-    #     pickleResults[theft] = classifierResults[0]
-
-    # Take largest window
-    # Run classifier in each window (may be multiple windows)
-    # If multiple windows, take majority of results to get output of classifier
-    # Compare classifier results, take most conservative classification
-
-    numRows = min([len(userData[instrument]) for instrument in instruments])
-    maxWindowSize = 0
+    numRows = min([len(userData[instrument]) for instrument in RELEVANT_SENSORS])
 
     classifications = []
-    SMOOTHING_NUM
+    SMOOTHING_NUM = 10
     resultsBuffer = deque()
     resultsCounter = Counter()
     currentClass = -1
     firstTime = userData[sensors.ACCELEROMETER][0][0]
     currentInterval = (firstTime, firstTime)
+
     for i in range(0, numRows - maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -555,25 +494,37 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             data = userData[instrument][i:i + maxWindowSize] 
             windowOfData[instrument] = data
             windowStartTime = getWindowStartTime(data)
-
-
+        
+        if i % 50000 == 0:
+            print("i:", i)
+            print("NumRows:", numRows)
         classifierResults = {}
         for c in classifiers.CLASSIFIERS:
             classifier = classifiers.CLASSIFIERS[c]
-            results = runClassifier(classifier, userData)
+            results = runClassifier(classifier, windowOfData)
             classifierResults[classifier] = results
+            if i % 50000 == 0 and c ==classifiers.HAND_CLASSIFIER:
+                print("TYPE: ", type(results))
+
+        logString = ""
+        for c, results in classifierResults.items():
+            logString += c.getName() + ": " + str(results) + ";"
+        logString += "\n"
+        resultsFile.write(logString)
 
         windowClassification = classifierPolicy(classifierResults)
         resultsBuffer.append((windowStartTime, windowClassification))
+        resultsCounter[windowClassification] += 1
         if len(resultsBuffer) >= SMOOTHING_NUM:
             middleWindow = resultsBuffer[SMOOTHING_NUM // 2]
             middleWindowStartTime = middleWindow[0]
-            newClassification = resultsBuffer.most_commmon(1)[0]
+
+            newClassification = resultsCounter.most_common(1)[0]
             # newWindow = (middleWindow[0], newClassification)
             # resultsBuffer[SMOOTHING_NUM // 2] = newWindow
             if currentClass == -1:
                 currentClass = newClassification
-            elif currentClass != classification:
+            elif currentClass != newClassification:
                 classifications.append((currentInterval, currentClass))
                 interval = currentInterval
                 currentInterval = (middleWindowStartTime, middleWindowStartTime)
@@ -581,36 +532,14 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             else:
                 currentInterval = (currentInterval[0], middleWindowStartTime)
 
-            resultsBuffer.popleft()
+            removed = resultsBuffer.popleft()
+            removedClassification = removed[1]
+            resultsCounter[removedClassification] -= 1
 
+    classifications.append((currentInterval, currentClass))
 
-    # for c in classifiers.CLASSIFIERS:
-    #     if c == classifiers.THEFT_CLASSIFIER:
-    #         continue
-    #     classifier = classifiers.CLASSIFIERS[c]
-    #     print(c)
-    #     # csvWriter.write(str(c) + '\n')
-    #     classifierResults = runClassifier(classifier, userData)
-    #     processResults(classifierResults, csvWriter, csvRow)
-    #     results[c] = classifierResults
-    #     print("Results computed for: " + c)
-    #     if DUMP_RESULTS:
-    #         logResultsToFile(classifierResults, c, resultsFile)
-    #         pickleResults[c] = classifierResults[0]
+    return classifications
 
-    # # Calculate times heartrate data was found, i.e. phone in possession
-    # processAllClassifierResults(results, csvRow)
-
-    # results[HEARTRATE_SENSOR] = heartRateTimes
-    # pickleResults[HEARTRATE_SENSOR] = heartRateTimes
-
-    # if DUMP_RESULTS:
-    #     now = datetime.datetime.now()
-    #     pickleFileName = DASHBOARDDIR + "ResultsPickle_" + userID + '_' + now.strftime('%Y_%m_%d_%H_%M') + ".txt"
-    #     pickleFile = open(pickleFileName, 'w+')
-    #     pickle.dump(pickleResults, pickleFile)
-
-    # csvWriter.writerow(csvRow)
 
 def logResultsToFile(classifierResults, classifier_name, resultsFile):
     resultsFile.write("-------------------------------------\n")
@@ -733,8 +662,8 @@ def getIntervalStatHeaders(classifier_name):
 
 def processAllClassifierResults(results, csvRow):
     conflicitingClassifications = findConflictingClassifications(results, False)
-    print "These classifications conflict"
-    print conflicitingClassifications
+    # print "These classifications conflict"
+    # print conflicitingClassifications
     if len(conflicitingClassifications) > 0:
         csvRow += [intervalsToString(conflicitingClassifications)]
     else:
@@ -796,9 +725,9 @@ def filterSpikesFromIntervals(intervals, intervalsByValue):
 
 
 def findCommonIntervalsByValue(intervals1, intervals2, value):
-    print("Finding common intervals!")
-    print intervals1
-    print intervals2
+    # print("Finding common intervals!")
+    # print intervals1
+    # print intervals2
 
     if len(intervals1) == 0 and len(intervals2) == 0:
         return []
@@ -809,19 +738,19 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
 
     def advance(intervals, i, value):
         while i < len(intervals) and intervals[i][1] != value:
-            print(i)
+            # print(i)
             i += 1
         return i 
 
     i1 = advance(intervals1, 0, value) 
     i2 = advance(intervals2, 0, value)
-    print i1, i2 
+    # print i1, i2 
     
     commonIntervals = []
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1][0]
         interval2 = intervals2[i2][0]
-        # print(i1, i2)
+        # # print(i1, i2)
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
 
@@ -842,34 +771,34 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
 
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            print commonIntervals
+            # print commonIntervals
 
             if earlierStartingInterval[1] == laterStartingInterval[1]:
-                print "End times are equal"
+                # print "End times are equal"
                 i1 = advance(intervals1, i1, value)
                 i2 = advance(intervals2, i2, value)
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                print "Early start ends earlier, advance early"
+                # print "Early start ends earlier, advance early"
                 if earlier_i == i1:
                     i1 = advance(intervals1, i1, value)
                 else:
                     i2 = advance(intervals2, i2, value)
-                print i1, i2
+                # print i1, i2
             else:
-                print "Early start ends later, advance later"
+                # print "Early start ends later, advance later"
                 if later_i == i1:
                     i1 = advance(intervals1, i1, value)
                 else:
                     i2 = advance(intervals2, i2, value)
-                print i1, i2
+                # print i1, i2
 
     return commonIntervals
 
 def findCommonIntervals(intervals1, intervals2):
-    print("Finding common intervals!")
-    print intervals1
-    print intervals2
+    # print("Finding common intervals!")
+    # print intervals1
+    # print intervals2
 
     if len(intervals1) == 0 and len(intervals2) == 0:
         return []
@@ -880,14 +809,14 @@ def findCommonIntervals(intervals1, intervals2):
 
     i1 = 0
     i2 = 0
-    print "Starting"
-    print i1, i2 
+    # print "Starting"
+    # print i1, i2 
     
     commonIntervals = []
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1]
         interval2 = intervals2[i2]
-        # print(i1, i2)
+        # # print(i1, i2)
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
 
@@ -899,38 +828,38 @@ def findCommonIntervals(intervals1, intervals2):
             later_i, earlier_i = i2, i1
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
-            print("GOODBYE")
+            # print("GOODBYE")
             if earlier_i == i1:
                 i1 += 1
             else:
                 i2 += 1
         
         else:
-            print("HELLO")
+            # print("HELLO")
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
 
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            print commonIntervals
+            # print commonIntervals
 
             if earlierStartingInterval[1] == laterStartingInterval[1]:
-                print "End times are equal"
+                # print "End times are equal"
                 i1 += 1
                 i2 += 1
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                print "Early start ends earlier, advance early"
+                # print "Early start ends earlier, advance early"
                 if earlier_i == i1:
                     i1 += 1
                 else:
                     i2 += 1
-                print i1, i2
+                # print i1, i2
             else:
-                print "Early start ends later, advance later"
+                # print "Early start ends later, advance later"
                 if later_i == i1:
                     i1 += 1
                 else:
                     i2 += 1
-                print i1, i2
+                # print i1, i2
 
     return commonIntervals
 
@@ -982,7 +911,7 @@ def intervalLength(interval):
 
 def classifierPolicy(classifiedWindow):
     averagedClassifications = []
-    for c, labels in classified_window.items():
+    for c, labels in classifiedWindow.items():
         positives = labels.count(1)
         negatives = labels.count(0)
         if positives > negatives:
@@ -991,12 +920,12 @@ def classifierPolicy(classifiedWindow):
         return averagedClassifications[0]
     #use policy (most dangerous) among conflicting classifications
     c = classifiers.CLASSIFIERS
-    if c[classifiers.THEFT_CLASSIFIER] in averagedClassifications:
-        return c[classifiers.THEFT_CLASSIFIER]
+    # if c[classifiers.THEFT_CLASSIFIER] in averagedClassifications:
+    #     return c[classifiers.THEFT_CLASSIFIER]
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
         return c[classifiers.TABLE_CLASSIFIER]
-    if c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
-        return c[classifiers.POCKET_BAG_CLASSIFIER]
+    # if c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
+    #     return c[classifiers.POCKET_BAG_CLASSIFIER]
     else:
         return c[classifiers.HAND_CLASSIFIER]
 
@@ -1130,7 +1059,7 @@ def main():
     columnHeaders += ["Longest False Positive Time Period", "False Positive Theft Times", "# of Theft Positives", "# of Theft Negatives", "Total Theft Classifications"]
 
     for c in classifiers.CLASSIFIERS:
-        print c
+        # print c
         if c != classifiers.THEFT_CLASSIFIER:
             columnHeaders += getIntervalStatHeaders(c)
 
@@ -1147,8 +1076,11 @@ def main():
 
     dashboardFile.close()
     resultsFile.close()
-    print("Dashboard results generated in: " + dashboardFileName)
+    # print("Dashboard results generated in: " + dashboardFileName)
 
 if __name__ == '__main__':
-    main()
+    # main()
+    USER_ID = '6fdda897'
+    file = open('testing-results.txt', 'w+')
+    classifications = runClassifiersOnUser(USER_ID, None, file)
 
