@@ -44,8 +44,9 @@ USERS = set(ids)
 # RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 HEARTRATE_SENSOR = sensors.HEART_RATE
-BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
-WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
+# BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
+# WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
+WATCH_SENSORS = [HEARTRATE_SENSOR]
 YEAR_2000 = datetime.date(2000, 1, 1)
 
 BOOT_TIME_DELTA = datetime.timedelta(hours=1)
@@ -679,7 +680,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             middleWindow = resultsBuffer[SMOOTHING_NUM // 2]
             middleWindowStartTime = middleWindow[0]
 
-            newClassification = resultsCounter.most_common(1)[0]
+            newClassification = resultsCounter.most_common(1)[0][0]
             # newWindow = (middleWindow[0], newClassification)
             # resultsBuffer[SMOOTHING_NUM // 2] = newWindow
             if currentClass == -1:
@@ -695,6 +696,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             removed = resultsBuffer.popleft()
             removedClassification = removed[1]
             resultsCounter[removedClassification] -= 1
+
 
     classifications.append((currentInterval, currentClass))
 
@@ -1077,13 +1079,13 @@ def classifierPolicy(classifiedWindow):
         if positives > negatives:
             averagedClassifications.append(c)
     if len(averagedClassifications) == 1:
-        return averagedClassifications[0]
+        return averagedClassifications[0].getName()
     #use policy (most dangerous) among conflicting classifications
     c = classifiers.CLASSIFIERS
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
         return classifiers.TABLE_CLASSIFIER
-    elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
-        return classifiers.POCKET_BAG_CLASSIFIER
+    # elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
+    #     return classifiers.POCKET_BAG_CLASSIFIER
     elif c[classifiers.HAND_CLASSIFIER] in averagedClassifications:
         return classifiers.HAND_CLASSIFIER
     else: 
@@ -1241,6 +1243,9 @@ def main():
 if __name__ == '__main__':
     # main()
     USER_ID = '6fdda897'
-    file = open('testing-results.txt', 'w+')
+    file = open('testing-log.txt', 'w+')
     classifications = runClassifiersOnUser(USER_ID, None, file)
+    results = open('testing-results.txt', 'w+')
+    for c in classifications:
+        results.write(str(c) + "\n")
 
