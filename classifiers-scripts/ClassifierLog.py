@@ -41,7 +41,7 @@ finally:
 USERS = set(ids)
 
 # RELEVANT_SENSORS = set([])
-RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
+RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS, sensors.LIGHT_SENSOR]
 HEARTRATE_SENSOR = sensors.HEART_RATE
 WATCH_SENSORS = [HEARTRATE_SENSOR]
 YEAR_2000 = datetime.date(2000, 1, 1)
@@ -167,6 +167,7 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     
     #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
+    processLightSensorData(userData)
 
     for instrument in WATCH_SENSORS:
         dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
@@ -183,6 +184,72 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
             logFile.write("Files after " + str(formatTime(bootTime[0], withDate=True)) + ", have boot time: " + str(formatTime(bootTime[1], withDate=True)) + '\n')
 
     return userData
+
+def processLightSensorData(userData):
+    dataAccel = userData[sensors.ACCELEROMETER]
+    dataLight = userData[sensors.LIGHT_SENSOR]
+    dataLightProcessed = []
+    firstAccelTime = dataAccel[0][0]
+    
+    firstLightTime = None
+    firstLightValue = None
+
+    currentLightIndex = -1
+    startLightIndex = -1
+    accelIndex = 0
+    if len(dataLight) <= 1:
+        return
+
+    currentLightIndex = 0
+    currentTime = dataLight[currentLightIndex][0]
+    prevLightValue = None
+    while currentTime < firstAccelTime: 
+        currentLightIndex += 1
+        if currentLightIndex >= len(dataLight):
+            break
+        currentTime = dataLight[currentLightIndex][0]
+        prevLightValue = dataLight[currentLightIndex][1]
+
+    startLightIndex = currentLightIndex
+    firstLightTime = dataLight[currentLightIndex][0]
+    firstLightValue = dataLight[currentLightIndex][1] if prevLightValue == None else prevLightValue
+
+    currentAccelTime = dataAccel[accelIndex][0]
+    while currentAccelTime < firstLightTime:
+        lightRow = [currentAccelTime, firstLightValue]
+        dataLightProcessed.append(lightRow)
+        accelIndex += 1
+
+
+    currentLightDate = dataLight[currentLightIndex][0]
+    nextLightDate = dataLight[currentLightIndex + 1][0]
+
+    for i in range(accelIndex, len(dataAccel) - 1):
+        accelRow = dataAccel[i]
+        accelRowNext = dataAccel[i + 1]
+        
+        accelDate = accelRow[0]
+        accelDateNext = accelRowNext[0]
+        
+        currentLightVal = dataLight[currentLightIndex][1]
+
+        if accelDate >= nextLightDate:
+            if currentLightIndex + 1 < len(rawPosDataScreen):
+                currentLightIndex += 1
+                currentLightDate = rawPosDataScreen[currentLightIndex][0]
+                if screenIndex + 1 < len(rawPosDataScreen):
+                    nextLightDate = rawPosDataScreen[screenIndex + 1][0]
+                
+            lightRow = [accelDate, currentLightVal]
+            dataLightProcessed.append(lightRow)
+        
+        else:
+            lightRow = [accelDate, currentLightVal]
+            dataLightProcessed.append(lightRow)
+
+    userData[sensors.LIGHT_SENSOR] = dataLightProcessed
+    
+
 
 def processPhoneActiveData(ID, posDataAccel):
     # global DIRECTORY
