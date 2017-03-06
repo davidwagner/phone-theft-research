@@ -41,7 +41,8 @@ finally:
 USERS = set(ids)
 
 # RELEVANT_SENSORS = set([])
-RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS, sensors.LIGHT_SENSOR]
+# RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
+RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 HEARTRATE_SENSOR = sensors.HEART_RATE
 BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
 WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
@@ -168,7 +169,7 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     
     #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
-    processLightSensorData(userData)
+    # processLightSensorData(userData)
 
     for instrument in WATCH_SENSORS:
         dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
@@ -186,7 +187,6 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
 
     return userData
 
-<<<<<<< HEAD
 def processLightSensorData(userData):
     dataAccel = userData[sensors.ACCELEROMETER]
     dataLight = userData[sensors.LIGHT_SENSOR]
@@ -252,7 +252,6 @@ def processLightSensorData(userData):
     userData[sensors.LIGHT_SENSOR] = dataLightProcessed
     
 
-=======
 def continuousWatchInterals(userID):
     watchData = getRelevantUserData(userID)
     delta = datetime.delta(seconds=60)
@@ -344,7 +343,6 @@ def stateFromWatchData(allIntervals):
         result.append(interval)
         prevTime = end
     return result
->>>>>>> cd2b3eabd46c1f75da1371a2b00ffc7c9b6e86ba
 
 def processPhoneActiveData(ID, posDataAccel):
     # global DIRECTORY
