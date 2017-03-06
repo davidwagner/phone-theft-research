@@ -1243,9 +1243,13 @@ def main():
 if __name__ == '__main__':
     # main()
     USER_ID = '6fdda897'
-    file = open('testing-log.txt', 'w+')
+
+    NOW = datetime.datetime.now()
+    NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
+
+    file = open('testing-log-' + NOW_TIME + '.txt', 'w+')
     classifications = runClassifiersOnUser(USER_ID, None, file)
-    results = open('testing-results.txt', 'w+')
+    results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
     for c in classifications:
         results.write(str(c) + "\n")
 
