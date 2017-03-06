@@ -7,3 +7,6 @@ KEYGUARD = 'TriggeredKeyguard'
 SCREEN_STATE = 'TriggeredScreenState'
 PHONE_ACTIVE_SENSORS = 'PhoneActiveSensors'
 LIGHT_SENSOR = 'LightSensor'
+CONNECTED_DEVICES = "TriggeredBleConnectedDevices"
+DETECTED_DEVICES = "TriggeredBleDevices"
+
