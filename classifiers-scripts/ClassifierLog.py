@@ -43,7 +43,8 @@ USERS = set(ids)
 # RELEVANT_SENSORS = set([])
 RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 HEARTRATE_SENSOR = sensors.HEART_RATE
-WATCH_SENSORS = [HEARTRATE_SENSOR]
+BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
+WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
 YEAR_2000 = datetime.date(2000, 1, 1)
 
 BOOT_TIME_DELTA = datetime.timedelta(hours=1)
@@ -183,6 +184,98 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
             logFile.write("Files after " + str(formatTime(bootTime[0], withDate=True)) + ", have boot time: " + str(formatTime(bootTime[1], withDate=True)) + '\n')
 
     return userData
+
+def continuousWatchInterals(userID):
+    watchData = getRelevantUserData(userID)
+    delta = datetime.delta(seconds=60)
+    allIntervals = []
+
+    for instrument in WATCH_SENSORS:
+        startTime = -1
+        prevTime = -1
+        intervals = []
+        prevState = -1
+        watchTimes = watchData[instrument]
+
+        for row in watchTimes:
+            time = row[0]
+            state = row[-1]
+            if startTime == -1:
+                startTime = time
+            elif time - prevTime > delta or prevState != state:
+                intervals.append((startTime, prevTime))
+                startTime = time
+            prevState = state
+            prevTime = time
+
+        intervals.append((startTime, prevTime, prevState))
+        allIntervals[instrument] = intervals 
+
+    return allIntervals
+
+# returns interval and state (1 = phone is near, 0, phone is not near, -1 unknown state)
+def stateFromWatchData(allIntervals):
+    i = 0
+    j = 0
+    bluetoothIntervals = allIntervals[BLUETOOTH_SENSOR]
+    heartRateIntervals = allIntervals[HEARTRATE_SENSOR]
+    delta = datetime.delta(seconds=10)
+    intervals = []
+
+    while i < len(heartRateIntervals) and j < len(bluetoothIntervals):
+        hInterval = heartRateIntervals[i]
+        bInterval = bluetoothIntervals[j]
+        hStart, hEnd, hState = hInterval
+        bStart, bEnd, bState = bInterval
+
+        while bEnd < hStart  and j < len(bluetoothIntervals):
+            bStart, bEnd, bState = bluetoothIntervals[j]
+            intervals.append((bStart, bEnd, -1))
+            j += 1
+        while hEnd < bStart and i < len(heartRateIntervals):
+            intervals.append((hStart, hEnd, -1))
+            i += 1
+            hStart, hEnd, hState = heartRateIntervals[i]
+        if abs(bStart- hStart) > delta:
+            start = max(hStart, bStart)
+            intervals.append((min(bStart, hStart), maxStart, -1))
+        else:
+            start = min(hStart, bStart)
+
+        if abs(bEnd - hEnd) > delta:
+            end = min(bEnd, hEnd)
+            if end == bEnd:
+                j += 1
+            else:
+                bluetoothIntervals[j] = (end, bEnd, bState)
+            if hEnd == end:
+                i += 1
+            else:
+                heartRateIntervals[i] = (end, hEnd, hState)
+        else:
+            end = max(bEnd, hEnd)
+            i += 1
+            j += 1
+        intervals.append((start, end, 1))
+    while i < len(heartRateIntervals):
+        hStart, hEnd, hState = heartRateIntervals[i]
+        intervals.append((hStart, hEnd, -1))
+        i += 1
+    while j < len(bluetoothIntervals):
+        bStart, bEnd, bState = bluetoothIntervals[i]
+        intervals.append((bStart, bEnd, -1))
+        j += 1
+    result = []
+    prevTime = -1
+    for interval in intervals:
+        start, end, state = interval
+        if prevTime == -1:
+            prevTime = end
+        elif start > prevTime + delta:
+            result.append((prevTime, start, 0))
+        result.append(interval)
+        prevTime = end
+    return result
 
 def processPhoneActiveData(ID, posDataAccel):
     # global DIRECTORY
@@ -920,14 +1013,14 @@ def classifierPolicy(classifiedWindow):
         return averagedClassifications[0]
     #use policy (most dangerous) among conflicting classifications
     c = classifiers.CLASSIFIERS
-    # if c[classifiers.THEFT_CLASSIFIER] in averagedClassifications:
-    #     return c[classifiers.THEFT_CLASSIFIER]
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
-        return c[classifiers.TABLE_CLASSIFIER]
-    # if c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
-    #     return c[classifiers.POCKET_BAG_CLASSIFIER]
-    else:
-        return c[classifiers.HAND_CLASSIFIER]
+        return classifiers.TABLE_CLASSIFIER
+    elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
+        return classifiers.POCKET_BAG_CLASSIFIER
+    elif c[classifiers.HAND_CLASSIFIER] in averagedClassifications:
+        return classifiers.HAND_CLASSIFIER
+    else: 
+        return "Unknown"
 
 ###### Utilities #######
 
