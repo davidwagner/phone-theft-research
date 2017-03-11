@@ -648,7 +648,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     firstTime = userData[sensors.ACCELEROMETER][0][0]
     currentInterval = (firstTime, firstTime)
 
-    for i in range(0, numRows - maxWindowSize):
+    for i in range(0, numRows, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
         for instrument in RELEVANT_SENSORS:
@@ -1248,8 +1248,28 @@ if __name__ == '__main__':
     NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
 
     file = open('testing-log-' + NOW_TIME + '.txt', 'w+')
-    classifications = runClassifiersOnUser(USER_ID, None, file)
+    classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
     results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
+    timeSpentByClass = {}
+    for c in intervalsByClass:
+        results.write("----" + str(c) + "-----")
+        intervals = intervalsByClass[c]
+        stats = getIntervalStats(intervals)
+        for stat, value in stats.items():
+            results.write(str(stat) + "\t\t" + str(value) + "\n")
+            if stat == "totalTimeSpent":
+                timeSpentByClass[c] = value.total_seconds()
+
+    totalTime = 0
+    for c, time in timeSpentByClass.items():
+        totalTime += time
+
+    results.write("-----Percentage of Time for each classifier------")
+    for c, time in timeSpentByClass.items():
+        percentage = time / totalTime
+        results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+
+    
     for c in classifications:
         results.write(str(c) + "\n")
 
