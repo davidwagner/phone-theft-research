@@ -64,7 +64,7 @@ def getUserFilesByDayAndInstrument(userID, instrument):
 
     # TODO: Need to filter for sensors that need data files with matching times as other
     # sensors (e.g. accelerometer and step count for Theft Classifier)
-    print(userFiles)
+    # print(userFiles)
     return userFiles
 
 
@@ -170,6 +170,9 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
     # processLightSensorData(userData)
+    userData[BOOT_TIME_SENSOR] = userData[BOOT_TIME_SENSOR][:-1]
+    print("Length accel:", len(userData[BOOT_TIME_SENSOR]))
+    print("Length active:", len(userData[sensors.PHONE_ACTIVE_SENSORS]))
 
     for instrument in WATCH_SENSORS:
         dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
@@ -637,6 +640,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     numRows = min([len(userData[instrument]) for instrument in RELEVANT_SENSORS])
 
     classifications = []
+    intervalsByClass = {}
     SMOOTHING_NUM = 10
     resultsBuffer = deque()
     resultsCounter = Counter()
@@ -644,7 +648,12 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     firstTime = userData[sensors.ACCELEROMETER][0][0]
     currentInterval = (firstTime, firstTime)
 
-    for i in range(0, numRows, maxWindowSize):
+    for c in classifiers.CLASSIFIERS:
+        intervalsByClass[c] = []
+    intervalsByClass["Unknown"] = []
+
+    limit = numRows // maxWindowSize * maxWindowSize
+    for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
         for instrument in RELEVANT_SENSORS:
@@ -683,6 +692,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
                 currentClass = newClassification
             elif currentClass != newClassification:
                 classifications.append((currentInterval, currentClass))
+                intervalsByClass[currentClass].append(currentInterval)
                 interval = currentInterval
                 currentInterval = (middleWindowStartTime, middleWindowStartTime)
                 currentClass = newClassification
@@ -695,8 +705,9 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
 
 
     classifications.append((currentInterval, currentClass))
+    intervalsByClass[currentClass].append(currentInterval)
 
-    return classifications
+    return classifications, intervalsByClass
 
 
 def logResultsToFile(classifierResults, classifier_name, resultsFile):
@@ -1256,7 +1267,7 @@ if __name__ == '__main__':
         intervals = watchState[state]
         stats = getIntervalStats(intervals)
         for stat, val in stats.items():
-            watchResults.write(str(stat) + "\t\t" + str(val) + "\n")
+            watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
             if stat == "totalTimeSpent":
                 timeSpentByWatchState[state] = val.total_seconds()
 
@@ -1267,11 +1278,11 @@ if __name__ == '__main__':
     watchResults.write("-----Percentage of Time for each State ------" + "\n")
     for c, time in timeSpentByWatchState.items():
         percentage = time / totalTime
-        watchResults.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+        watchResults.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
 
     timeSpentByClass = {}
     for c in intervalsByClass:
-        results.write("----" + str(c) + "-----")
+        results.write("----" + str(c) + "-----\n")
         intervals = intervalsByClass[c]
         stats = getIntervalStats(intervals)
         for stat, value in stats.items():
@@ -1283,7 +1294,7 @@ if __name__ == '__main__':
     for c, time in timeSpentByClass.items():
         totalTime += time
 
-    results.write("-----Percentage of Time for each classifier------")
+    results.write("-----Percentage of Time for each classifier------\n")
     for c, time in timeSpentByClass.items():
         percentage = time / totalTime
         results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
