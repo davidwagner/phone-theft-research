@@ -62,7 +62,7 @@ def getUserFilesByDayAndInstrument(userID, instrument):
     
     userFiles = glob.glob(query)
     userFiles.sort()
-
+    
     # TODO: Need to filter for sensors that need data files with matching times as other
     # sensors (e.g. accelerometer and step count for Theft Classifier)
     
@@ -168,7 +168,7 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
             dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
     
-    #print(len(userData[sensors.ACCELEROMETER]))
+    print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
     # processLightSensorData(userData)
 
@@ -1248,8 +1248,21 @@ if __name__ == '__main__':
     NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
 
     file = open('testing-log-' + NOW_TIME + '.txt', 'w+')
-    classifications = runClassifiersOnUser(USER_ID, None, file)
     results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
-    for c in classifications:
-        results.write(str(c) + "\n")
-
+    users_run = open('testing-users-' + NOW_TIME + '.txt', 'w+')
+    for user in USERS:
+        print("USER: " + str(user))
+        users_run.write("USER: " + str(user))
+        file.write(str(user) + "-------\n")
+        if len(getUserFilesByDayAndInstrument(user, BOOT_TIME_SENSOR)) < 1:
+            continue    
+        classifications = runClassifiersOnUser(user, None, file)
+        results.write(str(user) + "--------\n")
+        for c in classifications:
+            interval = c[0]
+            duration = formatTimeValue(interval[1] - interval[0])
+            classification = c[1]
+            intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
+            results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
+        results.write("##########################\n")
+        file.write("##########################\n")
