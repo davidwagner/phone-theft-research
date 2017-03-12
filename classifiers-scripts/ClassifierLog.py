@@ -1340,5 +1340,10 @@ if __name__ == '__main__':
 
         
         for c in classifications:
-            results.write(str(c) + "\n")
+            interval = c[0]
+            duration = formatTimeValue(interval[1] - interval[0])
+            classification = c[1]
+            intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
+            results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
+        
 
