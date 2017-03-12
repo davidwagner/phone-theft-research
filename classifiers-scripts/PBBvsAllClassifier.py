@@ -21,7 +21,10 @@ class Classifier(BaseClassifier.BaseClassifier):
 		return 20
 
 	def getRelevantSensors(self):
-		return [s.ACCELEROMETER, S.LIGHT_SENSOR]
+		return [s.ACCELEROMETER, s.LIGHT_SENSOR]
+
+	def getName(self):
+		return "Pocket/Bag Classifier"
 
 
 	def createFeatures(self, windowOfData):

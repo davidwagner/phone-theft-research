@@ -42,7 +42,7 @@ USERS = set(ids)
 
 # RELEVANT_SENSORS = set([])
 # RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
-RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
+RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS, sensors.LIGHT_SENSOR]
 HEARTRATE_SENSOR = sensors.HEART_RATE
 # BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
 # WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
@@ -54,7 +54,7 @@ BOOT_TIME_SENSOR = sensors.ACCELEROMETER
 START_OF_TIME = datetime.datetime.min
 
 SANITY_TEST = False
-maxWindowSize = 50
+maxWindowSize = 100
 
 
 def getUserFilesByDayAndInstrument(userID, instrument):
@@ -73,6 +73,9 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
     currentBootTime = START_OF_TIME
     nextFileTime = START_OF_TIME
     nextFileTimeIndex = 0
+
+    print("USER FILES")
+    print(userFiles)
     
     for dataFile in userFiles:
         with open(dataFile) as f:  
@@ -93,18 +96,21 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                     bootTimes.append((fileTime, bootTime))
             
             else:
-                
+                print("FileTime", str(fileTime))
+                print("NextFileTIme", str(nextFileTime))
                 if fileTime > nextFileTime:
                     currentBootTime = bootTimes[nextFileTimeIndex][1] # boot time has changed, update
+                    print("Current Boot Time:", currentBootTime)
                     nextFileTimeIndex = nextFileTimeIndex + 1 if nextFileTimeIndex < len(bootTimes) - 1 else nextFileTimeIndex
                     nextFileTime = bootTimes[nextFileTimeIndex][0]
 
             firstRow[0] = convertToDateTime(firstRow[0], currentBootTime)
-            if len(firstRow) >= 5:
+            minLength = len(firstRow)
+            if len(firstRow) >= 2:
                 dataList.append(firstRow)
             count = 1
             for row in reader:
-                if len(row) >= 5:
+                if len(row) >= 2 and len(row) >= minLength:
                     row[0] = convertToDateTime(row[0], currentBootTime)
                     dataList.append(row)
 
@@ -112,6 +118,8 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
                     count += 1
                     if count > 10000:
                         break
+    # print("DATA LIST")
+    # print(len(dataList))
     return dataList
 
 def dataFilesToDataListAbsTime(userFiles):
@@ -164,12 +172,14 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
 
     for instrument in RELEVANT_SENSORS:
         if instrument != BOOT_TIME_SENSOR and instrument != sensors.PHONE_ACTIVE_SENSORS:
+            
             dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
     
     #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
-    # processLightSensorData(userData)
+    print("GONNA TRY TO GET LIGHT SENSOR DATA")
+    userData[sensors.LIGHT_SENSOR] = processLightSensorData(userData)
     userData[BOOT_TIME_SENSOR] = userData[BOOT_TIME_SENSOR][:-1]
     print("Length accel:", len(userData[BOOT_TIME_SENSOR]))
     print("Length active:", len(userData[sensors.PHONE_ACTIVE_SENSORS]))
@@ -191,6 +201,7 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     return userData
 
 def processLightSensorData(userData):
+    print("TRYING TO FIND LIGHT DATA")
     dataAccel = userData[sensors.ACCELEROMETER]
     dataLight = userData[sensors.LIGHT_SENSOR]
     dataLightProcessed = []
@@ -219,16 +230,19 @@ def processLightSensorData(userData):
     firstLightTime = dataLight[currentLightIndex][0]
     firstLightValue = dataLight[currentLightIndex][1] if prevLightValue == None else prevLightValue
 
+    print("GOT OUT OF FIRST WHILE")
     currentAccelTime = dataAccel[accelIndex][0]
     while currentAccelTime < firstLightTime:
         lightRow = [currentAccelTime, firstLightValue]
         dataLightProcessed.append(lightRow)
         accelIndex += 1
+        currentAccelTime = dataAccel[accelIndex][0]
 
 
     currentLightDate = dataLight[currentLightIndex][0]
     nextLightDate = dataLight[currentLightIndex + 1][0]
 
+    print("NOW ADDING DATA")
     for i in range(accelIndex, len(dataAccel) - 1):
         accelRow = dataAccel[i]
         accelRowNext = dataAccel[i + 1]
@@ -239,11 +253,11 @@ def processLightSensorData(userData):
         currentLightVal = dataLight[currentLightIndex][1]
 
         if accelDate >= nextLightDate:
-            if currentLightIndex + 1 < len(rawPosDataScreen):
+            if currentLightIndex + 1 < len(dataLight):
                 currentLightIndex += 1
-                currentLightDate = rawPosDataScreen[currentLightIndex][0]
-                if screenIndex + 1 < len(rawPosDataScreen):
-                    nextLightDate = rawPosDataScreen[screenIndex + 1][0]
+                currentLightDate = dataLight[currentLightIndex][0]
+                if currentLightIndex + 1 < len(dataLight):
+                    nextLightDate = dataLight[currentLightIndex + 1][0]
                 
             lightRow = [accelDate, currentLightVal]
             dataLightProcessed.append(lightRow)
@@ -252,8 +266,13 @@ def processLightSensorData(userData):
             lightRow = [accelDate, currentLightVal]
             dataLightProcessed.append(lightRow)
 
-    userData[sensors.LIGHT_SENSOR] = dataLightProcessed
-    
+    print("PROCESSING LIGHT SENSOR DATA")
+    print("Length:", len(dataLightProcessed))
+    # userData[sensors.LIGHT_SENSOR] = dataLightProcessed
+    print("SAMPLING LIGHT DATA")
+    for i in range(10000, 10050):
+        print(dataLightProcessed[i])
+    return dataLightProcessed
 
 def continuousWatchInterals(userID):
     watchData = getRelevantUserData(userID)
@@ -540,21 +559,31 @@ def processPhoneActiveData(ID, posDataAccel):
     
     signsChanged = lambda now, cur : [1 if now[i] != cur[i] else 0 for i in range(len(now))]
     for i in range(len(posDataAccel) - 1):
-        accelSignX = float(posDataAccel[i][1]) > 0
-        accelSignY = float(posDataAccel[i][2]) > 0
-        accelSignZ = float(posDataAccel[i][3]) > 0
-        
-        newSigns = [accelSignX, accelSignY, accelSignZ]
-        accelSigns = signsChanged(newSigns, curSigns)
-        curSigns = newSigns
-        
-        
-        numTouches = posDataTouch[i][1]
-        screenState = posDataScreen[i][1]
-        lockedState = posDataLocked[i][1]
-        
-        row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + accelSigns
-        posData.append(row)
+        try:
+            accelSignX = float(posDataAccel[i][1]) > 0
+            accelSignY = float(posDataAccel[i][2]) > 0
+            accelSignZ = float(posDataAccel[i][3]) > 0
+            
+            newSigns = [accelSignX, accelSignY, accelSignZ]
+            accelSigns = signsChanged(newSigns, curSigns)
+            curSigns = newSigns
+            
+            
+            numTouches = posDataTouch[i][1]
+            screenState = posDataScreen[i][1]
+            lockedState = posDataLocked[i][1]
+            
+            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + accelSigns
+            posData.append(row)
+
+        except (ValueError,IndexError):
+            print("BAD VALUE OF I:", i)
+            numTouches = posDataTouch[i][1]
+            screenState = posDataScreen[i][1]
+            lockedState = posDataLocked[i][1]
+            
+            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + signsChanged(curSigns, curSigns)
+            posData.append(row)
     
     # filename = 'compiled_' + os.path.basename(DIRECTORY) + '.csv'
     # # print(filename)
@@ -637,6 +666,9 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     results = {}
     pickleResults = {}
 
+    for instrument in RELEVANT_SENSORS:
+        print(instrument, ":", len(userData[instrument]))    
+
     numRows = min([len(userData[instrument]) for instrument in RELEVANT_SENSORS])
 
     classifications = []
@@ -653,6 +685,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     intervalsByClass["Unknown"] = []
 
     limit = numRows // maxWindowSize * maxWindowSize
+    print("LIMIT", limit)
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -705,6 +738,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
 
 
     classifications.append((currentInterval, currentClass))
+    print("CURRENT CLASS:", currentClass)
     intervalsByClass[currentClass].append(currentInterval)
 
     return classifications, intervalsByClass
@@ -1091,8 +1125,8 @@ def classifierPolicy(classifiedWindow):
     c = classifiers.CLASSIFIERS
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
         return classifiers.TABLE_CLASSIFIER
-    # elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
-    #     return classifiers.POCKET_BAG_CLASSIFIER
+    elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
+        return classifiers.POCKET_BAG_CLASSIFIER
     elif c[classifiers.HAND_CLASSIFIER] in averagedClassifications:
         return classifiers.HAND_CLASSIFIER
     else: 
@@ -1249,57 +1283,62 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    USER_ID = '6fdda897'
+    # USER_ID = '6fdda897'
 
     NOW = datetime.datetime.now()
     NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
 
     file = open('testing-log-' + NOW_TIME + '.txt', 'w+')
-    classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
     watchFile = open('watch-testing-log-' + NOW_TIME + '.txt', 'w+')
-    watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
     results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
     watchResults = open('watch-testing-results-' + NOW_TIME + '.txt', 'w+')
-    timeSpentByWatchState = {}
-    print(watchState)
-    for state in watchState:
-        watchResults.write("----" + str(state) + "-----" + "\n")
-        intervals = watchState[state]
-        stats = getIntervalStats(intervals)
-        for stat, val in stats.items():
-            watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
-            if stat == "totalTimeSpent":
-                timeSpentByWatchState[state] = val.total_seconds()
 
-    totalTime = 0
-    for c, time in timeSpentByWatchState.items():
-        totalTime += time
+    for USER_ID in USERS:
+        watchResults.write("#########" + USER_ID + "#######\n")
+        watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+        
+        timeSpentByWatchState = {}
+        print(watchState)
+        for state in watchState:
+            watchResults.write("----" + str(state) + "-----" + "\n")
+            intervals = watchState[state]
+            stats = getIntervalStats(intervals)
+            for stat, val in stats.items():
+                watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
+                if stat == "totalTimeSpent":
+                    timeSpentByWatchState[state] = val.total_seconds()
 
-    watchResults.write("-----Percentage of Time for each State ------" + "\n")
-    for c, time in timeSpentByWatchState.items():
-        percentage = time / totalTime
-        watchResults.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
+        totalTime = 0
+        for c, time in timeSpentByWatchState.items():
+            totalTime += time
 
-    timeSpentByClass = {}
-    for c in intervalsByClass:
-        results.write("----" + str(c) + "-----\n")
-        intervals = intervalsByClass[c]
-        stats = getIntervalStats(intervals)
-        for stat, value in stats.items():
-            results.write(str(stat) + "\t\t" + str(value) + "\n")
-            if stat == "totalTimeSpent":
-                timeSpentByClass[c] = value.total_seconds()
+        watchResults.write("-----Percentage of Time for each State ------" + "\n")
+        for c, time in timeSpentByWatchState.items():
+            percentage = time / totalTime
+            watchResults.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
 
-    totalTime = 0
-    for c, time in timeSpentByClass.items():
-        totalTime += time
+        classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
+        results.write("#########" + USER_ID + "#######\n")
+        timeSpentByClass = {}
+        for c in intervalsByClass:
+            results.write("----" + str(c) + "-----\n")
+            intervals = intervalsByClass[c]
+            stats = getIntervalStats(intervals)
+            for stat, value in stats.items():
+                results.write(str(stat) + "\t\t" + str(value) + "\n")
+                if stat == "totalTimeSpent":
+                    timeSpentByClass[c] = value.total_seconds()
 
-    results.write("-----Percentage of Time for each classifier------\n")
-    for c, time in timeSpentByClass.items():
-        percentage = time / totalTime
-        results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+        totalTime = 0
+        for c, time in timeSpentByClass.items():
+            totalTime += time
 
-    
-    for c in classifications:
-        results.write(str(c) + "\n")
+        results.write("-----Percentage of Time for each classifier------\n")
+        for c, time in timeSpentByClass.items():
+            percentage = time / totalTime
+            results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+
+        
+        for c in classifications:
+            results.write(str(c) + "\n")
 

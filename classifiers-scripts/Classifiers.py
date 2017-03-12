@@ -16,7 +16,7 @@ HAND_CLASSIFIER = "Hand Classifier"
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
     TABLE_CLASSIFIER: table.Classifier(),
-    # POCKET_BAG_CLASSIFIER: pbb.Classifier(),
+    POCKET_BAG_CLASSIFIER: pbb.Classifier(),
     # THEFT_CLASSIFIER: theft.Classifier()
     HAND_CLASSIFIER: hand.Classifier()
 }
