@@ -12,6 +12,7 @@ import argparse
 import Sensors as sensors
 import Classifiers as classifiers 
 import pickle
+import traceback
 
 from configsettings import *
 from collections import deque, Counter
@@ -1293,57 +1294,90 @@ if __name__ == '__main__':
     results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
     watchResults = open('watch-testing-results-' + NOW_TIME + '.txt', 'w+')
 
+    count = 0
     for USER_ID in USERS:
+        count += 1
+        print("Number of users processed:", count)
+        print("Currently on:", USER_ID)
         watchResults.write("#########" + USER_ID + "#######\n")
-        watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+        try:
+            watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+        except:
+            tb = traceback.format_exc()
+            watchResults.write("******EXCEPTION (while computing watch state)*******\n")
+            watchResults.write(tb)
+            watchResults.write("\n")
+
+        try:
+            timeSpentByWatchState = {}
+            # print(watchState)
+            for state in watchState:
+                watchResults.write("----" + str(state) + "-----" + "\n")
+                intervals = watchState[state]
+                stats = getIntervalStats(intervals)
+                for stat, val in stats.items():
+                    watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
+                    if stat == "totalTimeSpent":
+                        timeSpentByWatchState[state] = val.total_seconds()
+
+            totalTime = 0
+            for c, time in timeSpentByWatchState.items():
+                totalTime += time
+
+            watchResults.write("-----Percentage of Time for each State ------" + "\n")
+            for c, time in timeSpentByWatchState.items():
+                percentage = time / totalTime
+                watchResults.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
+        except:
+            tb = traceback.format_exc()
+            watchResults.write("******EXCEPTION (while writing watch results)*******\n")
+            watchResults.write(tb)
+            watchResults.write("\n")
         
-        timeSpentByWatchState = {}
-        print(watchState)
-        for state in watchState:
-            watchResults.write("----" + str(state) + "-----" + "\n")
-            intervals = watchState[state]
-            stats = getIntervalStats(intervals)
-            for stat, val in stats.items():
-                watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
-                if stat == "totalTimeSpent":
-                    timeSpentByWatchState[state] = val.total_seconds()
-
-        totalTime = 0
-        for c, time in timeSpentByWatchState.items():
-            totalTime += time
-
-        watchResults.write("-----Percentage of Time for each State ------" + "\n")
-        for c, time in timeSpentByWatchState.items():
-            percentage = time / totalTime
-            watchResults.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
-
-        classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
         results.write("#########" + USER_ID + "#######\n")
-        timeSpentByClass = {}
-        for c in intervalsByClass:
-            results.write("----" + str(c) + "-----\n")
-            intervals = intervalsByClass[c]
-            stats = getIntervalStats(intervals)
-            for stat, value in stats.items():
-                results.write(str(stat) + "\t\t" + str(value) + "\n")
-                if stat == "totalTimeSpent":
-                    timeSpentByClass[c] = value.total_seconds()
+        try: 
+            classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
+        except:
+            tb = traceback.format_exc()
+            watchResults.write("******EXCEPTION (while computing classifications)*******\n")
+            watchResults.write(tb)
+            watchResults.write("\n")
 
-        totalTime = 0
-        for c, time in timeSpentByClass.items():
-            totalTime += time
+        try:
+            timeSpentByClass = {}
+            for c in intervalsByClass:
+                results.write("----" + str(c) + "-----\n")
+                intervals = intervalsByClass[c]
+                stats = getIntervalStats(intervals)
+                for stat, value in stats.items():
+                    results.write(str(stat) + "\t\t" + str(value) + "\n")
+                    if stat == "totalTimeSpent":
+                        timeSpentByClass[c] = value.total_seconds()
 
-        results.write("-----Percentage of Time for each classifier------\n")
-        for c, time in timeSpentByClass.items():
-            percentage = time / totalTime
-            results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+            totalTime = 0
+            for c, time in timeSpentByClass.items():
+                totalTime += time
 
-        
-        for c in classifications:
-            interval = c[0]
-            duration = formatTimeValue(interval[1] - interval[0])
-            classification = c[1]
-            intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
-            results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
-        
+            results.write("-----Percentage of Time for each classifier------\n")
+            for c, time in timeSpentByClass.items():
+                percentage = time / totalTime
+                results.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+
+            results.write("-----Classifications over Time-------\n")
+            for c in classifications:
+                interval = c[0]
+                duration = formatTimeValue(interval[1] - interval[0])
+                classification = c[1]
+                intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
+                results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
+        except:
+            tb = traceback.format_exc()
+            watchResults.write("******EXCEPTION (while writing classification results)*******\n")
+            watchResults.write(tb)
+            watchResults.write("\n")
+    file.close()
+    watchFile.close()
+    results.close()
+    watchResults.close()
+    print("Yay I finished!")
 
