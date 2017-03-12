@@ -46,7 +46,7 @@ RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 HEARTRATE_SENSOR = sensors.HEART_RATE
 # BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
 # WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
-WATCH_SENSORS = [HEARTRATE_SENSOR]
+WATCH_SENSORS = [HEARTRATE_SENSOR, sensors.CONNECTED_DEVICES]
 YEAR_2000 = datetime.date(2000, 1, 1)
 
 BOOT_TIME_DELTA = datetime.timedelta(hours=1)
@@ -59,13 +59,12 @@ maxWindowSize = 50
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
-    
     userFiles = glob.glob(query)
     userFiles.sort()
 
     # TODO: Need to filter for sensors that need data files with matching times as other
     # sensors (e.g. accelerometer and step count for Theft Classifier)
-    
+    print(userFiles)
     return userFiles
 
 
@@ -255,8 +254,8 @@ def processLightSensorData(userData):
 
 def continuousWatchInterals(userID):
     watchData = getRelevantUserData(userID)
-    delta = datetime.delta(seconds=60)
-    allIntervals = []
+    delta = datetime.timedelta(seconds=60)
+    allIntervals = {}
 
     for instrument in WATCH_SENSORS:
         startTime = -1
@@ -271,78 +270,75 @@ def continuousWatchInterals(userID):
             if startTime == -1:
                 startTime = time
             elif time - prevTime > delta or prevState != state:
-                intervals.append((startTime, prevTime))
+                intervals.append((startTime, prevTime, prevState))
                 startTime = time
             prevState = state
             prevTime = time
 
         intervals.append((startTime, prevTime, prevState))
         allIntervals[instrument] = intervals 
-
     return allIntervals
 
 # returns interval and state (1 = phone is near, 0, phone is not near, -1 unknown state)
-def stateFromWatchData(allIntervals):
+def stateFromWatchData(allIntervals, file):
     i = 0
     j = 0
-    bluetoothIntervals = allIntervals[BLUETOOTH_SENSOR]
+    bluetoothIntervals = allIntervals[sensors.CONNECTED_DEVICES]
     heartRateIntervals = allIntervals[HEARTRATE_SENSOR]
-    delta = datetime.delta(seconds=10)
-    intervals = []
-
-    while i < len(heartRateIntervals) and j < len(bluetoothIntervals):
+    states = ["phoneNear", "phoneFar", "unknown"]
+    allIntervals = []
+    for h in heartRateIntervals:
+        start, end, state = h
+        allIntervals.append((start, end, "phoneNear"))
+    basisPeakIntervals = []
+    for b in bluetoothIntervals:
+        start, end, state = b
+        if str(state) == "Basis Peak":
+            basisPeakIntervals.append((start, end))
+    while i < len(heartRateIntervals) and j < len(basisPeakIntervals):
         hInterval = heartRateIntervals[i]
-        bInterval = bluetoothIntervals[j]
+        bInterval = basisPeakIntervals[j]
         hStart, hEnd, hState = hInterval
-        bStart, bEnd, bState = bInterval
-
-        while bEnd < hStart  and j < len(bluetoothIntervals):
-            bStart, bEnd, bState = bluetoothIntervals[j]
-            intervals.append((bStart, bEnd, -1))
+        bStart, bEnd = bInterval
+        while bEnd < hStart  and j < len(basisPeakIntervals):
+            bStart, bEnd = basisPeakIntervals[j]
+            allIntervals.append((bStart, bEnd, "unknown"))
             j += 1
         while hEnd < bStart and i < len(heartRateIntervals):
-            intervals.append((hStart, hEnd, -1))
-            i += 1
             hStart, hEnd, hState = heartRateIntervals[i]
-        if abs(bStart- hStart) > delta:
-            start = max(hStart, bStart)
-            intervals.append((min(bStart, hStart), maxStart, -1))
-        else:
-            start = min(hStart, bStart)
-
-        if abs(bEnd - hEnd) > delta:
-            end = min(bEnd, hEnd)
-            if end == bEnd:
-                j += 1
-            else:
-                bluetoothIntervals[j] = (end, bEnd, bState)
-            if hEnd == end:
-                i += 1
-            else:
-                heartRateIntervals[i] = (end, hEnd, hState)
-        else:
-            end = max(bEnd, hEnd)
             i += 1
+        if bStart < hStart and bEnd > hEnd:
+            allIntervals.append((bStart, hStart, "unknown"))
+            if j < len(basisPeakIntervals):
+                basisPeakIntervals[j] = ((hStart, bEnd))
+        if bEnd < hEnd:
             j += 1
-        intervals.append((start, end, 1))
-    while i < len(heartRateIntervals):
-        hStart, hEnd, hState = heartRateIntervals[i]
-        intervals.append((hStart, hEnd, -1))
-        i += 1
-    while j < len(bluetoothIntervals):
-        bStart, bEnd, bState = bluetoothIntervals[i]
-        intervals.append((bStart, bEnd, -1))
+        if hEnd < bEnd:
+            i += 1
+    while j < len(basisPeakIntervals):
+        bStart, bEnd = basisPeakIntervals[j]
+        allIntervals.append((bStart, bEnd, "unknown"))
         j += 1
     result = []
     prevTime = -1
-    for interval in intervals:
-        start, end, state = interval
+    for start, end in basisPeakIntervals:
+        print(start, end)
         if prevTime == -1:
             prevTime = end
-        elif start > prevTime + delta:
-            result.append((prevTime, start, 0))
-        result.append(interval)
+        elif start > prevTime:
+            allIntervals.append((prevTime, start, "phoneFar"))
         prevTime = end
+    allIntervals = sorted(allIntervals, key=lambda x: x[0])
+    logString = ""
+    result = {}
+    for start, end, state in allIntervals:
+        if state not in result:
+            result[state] = [(start, end)]
+        else:
+            result[state].append((start, end))
+        logString += state + " : ("  + str(start) + ", " + str(end) + ")"
+        logString += "\n"
+    file.write(logString)
     return result
 
 def processPhoneActiveData(ID, posDataAccel):
@@ -786,7 +782,7 @@ def processResults(results, writer, csvRow):
 def getIntervalStats(intervals):
     stats = {}
     intervalLengths = [intervalLength(interval) for interval in intervals]
-
+    print(intervalLengths)
     totalTimeSpent = datetime.timedelta(seconds=0)
     for interval in intervalLengths:
         totalTimeSpent += interval
@@ -1249,7 +1245,30 @@ if __name__ == '__main__':
 
     file = open('testing-log-' + NOW_TIME + '.txt', 'w+')
     classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
+    watchFile = open('watch-testing-log-' + NOW_TIME + '.txt', 'w+')
+    watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
     results = open('testing-results-' + NOW_TIME + '.txt', 'w+')
+    watchResults = open('watch-testing-results-' + NOW_TIME + '.txt', 'w+')
+    timeSpentByWatchState = {}
+    print(watchState)
+    for state in watchState:
+        watchResults.write("----" + str(state) + "-----" + "\n")
+        intervals = watchState[state]
+        stats = getIntervalStats(intervals)
+        for stat, val in stats.items():
+            watchResults.write(str(stat) + "\t\t" + str(val) + "\n")
+            if stat == "totalTimeSpent":
+                timeSpentByWatchState[state] = val.total_seconds()
+
+    totalTime = 0
+    for c, time in timeSpentByWatchState.items():
+        totalTime += time
+
+    watchResults.write("-----Percentage of Time for each State ------" + "\n")
+    for c, time in timeSpentByWatchState.items():
+        percentage = time / totalTime
+        watchResults.write(str(c) + "\t\t" + str(percentage * 100) + "%\n")
+
     timeSpentByClass = {}
     for c in intervalsByClass:
         results.write("----" + str(c) + "-----")
