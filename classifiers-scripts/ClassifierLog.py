@@ -1319,7 +1319,7 @@ if __name__ == '__main__':
                 intervals = watchState[state]
                 stats = getIntervalStats(intervals)
                 for stat, val in stats.items():
-                    watchResults.write(str(stat) + "\t\t" + str(formatTimeValue(val)) + "\n")
+                    watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
                     if stat == "totalTimeSpent":
                         timeSpentByWatchState[state] = val.total_seconds()
 
@@ -1330,7 +1330,7 @@ if __name__ == '__main__':
             watchResults.write("-----Percentage of Time for each State ------" + "\n")
             for c, time in timeSpentByWatchState.items():
                 percentage = time / totalTime
-                percentageString = str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n"
+                percentageString = str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n"
                 watchResults.write(percentageString)
                 watchSummary.write(percentageString)
         except:
@@ -1356,7 +1356,7 @@ if __name__ == '__main__':
                 intervals = intervalsByClass[c]
                 stats = getIntervalStats(intervals)
                 for stat, value in stats.items():
-                    results.write(str(stat) + "\t\t" + str(value) + "\n")
+                    results.write(str(stat) + "\t\t\t" + str(value) + "\n")
                     if stat == "totalTimeSpent":
                         timeSpentByClass[c] = value.total_seconds()
 
@@ -1367,8 +1367,8 @@ if __name__ == '__main__':
             results.write("-----Percentage of Time for each classifier------\n")
             for c, time in timeSpentByClass.items():
                 percentage = time / totalTime
-                results.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
-                resultsSummary.write(str(c) + "\t\t" + str(percentage * 100)[:5] + "%\n")
+                results.write(str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n")
+                resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n")
 
             results.write("-----Classifications over Time-------\n")
             for c in classifications:
