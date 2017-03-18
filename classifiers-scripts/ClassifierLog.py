@@ -1289,7 +1289,7 @@ if __name__ == '__main__':
     NOW = datetime.datetime.now()
     NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
     DIRECTORY_PATH = DIRECTORY
-    for DATA_DAY in ["2016_12_13", "2016_12_12"]:
+    for DATA_DAY in ["2016_12_13"]:
         print("DIRECTORY started as:", DIRECTORY)
         DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
         print("DIRECTORY now:", DIRECTORY)
@@ -1297,8 +1297,8 @@ if __name__ == '__main__':
         watchFile = open('watch-testing-log-' + DATA_DAY + '.txt', 'w+')
         results = open('testing-results-' + DATA_DAY + '.txt', 'w+')
         watchResults = open('watch-testing-results-' + DATA_DAY + '.txt', 'w+')
-        resultsSummary = open('testing-summary-' + DATA_DAY + '.txt', 'w+')
-        watchSummary = open('watch-summary-' + DATA_DAY + '.txt', 'w+')
+        resultsSummary = open('testing-summary-' + DATA_DAY + '.csv', 'w+')
+        watchSummary = open('watch-summary-' + DATA_DAY + '.csv', 'w+')
 
         count = 0
         for USER_ID in USERS:
@@ -1306,7 +1306,9 @@ if __name__ == '__main__':
             print("Number of users processed:", count)
             print("Currently on:", USER_ID)
             watchResults.write("#########" + USER_ID + "#######\n")
-            watchSummary.write("#########" + USER_ID + "#######\n")
+            # watchSummary.write("#########" + USER_ID + "#######\n")
+            watchSummaryWriter = csv.writer(watchSummary)
+            watchSummaryWriter.writerow(["User", "State", "Percentage of Time"])
             try:
                 watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
             except:
@@ -1334,9 +1336,10 @@ if __name__ == '__main__':
                 watchResults.write("-----Percentage of Time for each State ------" + "\n")
                 for c, time in timeSpentByWatchState.items():
                     percentage = time / totalTime
-                    percentageString = str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n"
+                    percentageString = str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n"
                     watchResults.write(percentageString)
-                    watchSummary.write(percentageString)
+                    percentageRow = [USER_ID, str(c), str(percentage * 100)]
+                    watchSummaryWriter.write(percentageRow)
             except:
                 tb = traceback.format_exc()
                 watchResults.write("******EXCEPTION (while writing watch results)*******\n")
@@ -1344,14 +1347,16 @@ if __name__ == '__main__':
                 watchResults.write("\n")
             
             results.write("#########" + USER_ID + "#######\n")
-            resultsSummary.write("#########" + USER_ID + "#######\n")
+            # resultsSummary.write("#########" + USER_ID + "#######\n")
+            resultsSummaryWriter = csv.writer(resultsSummary)
+            resultsSummaryWriter.writerow(["User", "Classifier", "Percentage of Time"])
             try: 
                 classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
             except:
                 tb = traceback.format_exc()
-                watchResults.write("******EXCEPTION (while computing classifications)*******\n")
-                watchResults.write(tb)
-                watchResults.write("\n")
+                results.write("******EXCEPTION (while computing classifications)*******\n")
+                results.write(tb)
+                results.write("\n")
 
             try:
                 timeSpentByClass = {}
@@ -1371,8 +1376,9 @@ if __name__ == '__main__':
                 results.write("-----Percentage of Time for each classifier------\n")
                 for c, time in timeSpentByClass.items():
                     percentage = time / totalTime
-                    results.write(str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n")
-                    resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100)[:5] + "%\n")
+                    results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
+                    # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
+                    resultsSummaryWriter.writerow([USER_ID, str(c), str(percentage * 100)])
 
                 results.write("-----Classifications over Time-------\n")
                 for c in classifications:
