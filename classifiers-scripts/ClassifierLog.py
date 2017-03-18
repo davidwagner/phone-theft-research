@@ -29,18 +29,6 @@ YESTERDAY = (NOW - datetime.timedelta(days=1)).strftime('%Y_%m_%d')
 # NOW_DAY = YESTERDAY
 NOW_DAY = '2016_11_01'
 
-ids = []
-usersToIdsFile = open(USERS_TO_IDS_FILE, 'rU')
-try:
-    reader = csv.reader(usersToIdsFile)
-    for row in reader:
-        userID = row[1]
-        ids.append(userID)
-finally:
-    usersToIdsFile.close()
-
-USERS = set(ids)
-
 # RELEVANT_SENSORS = set([])
 # RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
 RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS, sensors.LIGHT_SENSOR]
@@ -202,8 +190,10 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     return userData
 
 def processLightSensorData(userData):
-    # print("TRYING TO FIND LIGHT DATA")
+    
     dataAccel = userData[sensors.ACCELEROMETER]
+    if len(dataAccel) <= 1:
+        return []
     dataLight = userData[sensors.LIGHT_SENSOR]
     dataLightProcessed = []
     firstAccelTime = dataAccel[0][0]
@@ -267,12 +257,6 @@ def processLightSensorData(userData):
             lightRow = [accelDate, currentLightVal]
             dataLightProcessed.append(lightRow)
 
-    # print("PROCESSING LIGHT SENSOR DATA")
-    # print("Length:", len(dataLightProcessed))
-    # userData[sensors.LIGHT_SENSOR] = dataLightProcessed
-    # print("SAMPLING LIGHT DATA")
-    # for i in range(10000, 10050):
-    #     print(dataLightProcessed[i])
     return dataLightProcessed
 
 def continuousWatchInterals(userID):
@@ -365,32 +349,9 @@ def stateFromWatchData(allIntervals, file):
     return result
 
 def processPhoneActiveData(ID, posDataAccel):
-    # global DIRECTORY
-    # DIRECTORY = DIR
-    #if DIRECTORY[-1] != '/':
-        # DIRECTORY += '/'
-    
-    # ID = 'd792b61e'
-    # POS_DIR = DIRECTORY
-    # BOOT_TIMES = []
-    # START_TIME = datetime.datetime(2017, 1, 21, hour=13, minute=8)
-    # END_TIME = datetime.datetime(2017, 1, 21, hour=13, minute=19)
-    
-    # posFiles = getUserFilesByDayAndInstrument(ID, sensors.ACCELEROMETER, POS_DIR)
-    #rawPosData = dataFilesToDataList(posFiles, bootTimes=BOOT_TIMES, needsToComputeBootTime=True)
-    
-    # posDataAccel = []
-    
-    # if START_TIME != None and END_TIME != None:
-    #     START_TIME = datetime.datetime.strptime(START_TIME, '%Y_%m_%d_%H_%M_%S')
-    #     END_TIME = datetime.datetime.strptime(END_TIME, '%Y_%m_%d_%H_%M_%S')
-    #     posDataAccel = [row for row in rawPosData if row[0] > START_TIME and row[0] < END_TIME]
-    # else:
-    #     posDataAccel = rawPosData
-    
-    # for i in range(20):
-    #     # print(rawPosData[-1 * i][0])
-        
+    if len(posDataAccel) <= 1:
+        return []
+
     firstAccelTime = posDataAccel[0][0]
     
     posFilesTouch = getUserFilesByDayAndInstrument(ID, 'TouchScreenAsEvent')
@@ -532,25 +493,6 @@ def processPhoneActiveData(ID, posDataAccel):
             lockedRow = [accelDate, truthToNum(currLockedVal)]
             posDataLocked.append(lockedRow)
             
-        
-    # touchCount = 0
-    # for i in range(len(posDataTouch)):
-    #     # # print(posDataAccel[i])
-    #     if posDataTouch[i][1] > 0:
-    #         touchCount += 1
-    #         # # print(posDataTouch[i])
-    
-    # # # print("TOUCH COUNT:" + str(touchCount))
-    # """
-    # # print("PHONE SCREEN:")
-    # for i in range(10000):
-    #     # print(posDataScreen[i])
-    
-    # # print("PHONE LOCKED:")
-    # for i in range(10000):
-    #     # print(posDataLocked[i])
-    # """
-    
     posData = []
     curAccelSignX = float(posDataAccel[0][1]) > 0
     curAccelSignY = float(posDataAccel[0][2]) > 0
@@ -585,17 +527,6 @@ def processPhoneActiveData(ID, posDataAccel):
             
             row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + signsChanged(curSigns, curSigns)
             posData.append(row)
-    
-    # filename = 'compiled_' + os.path.basename(DIRECTORY) + '.csv'
-    # # print(filename)
-    # f = open(filename, 'w+')
-    # writer = csv.writer(f, delimiter = ',')
-    # for row in posData:
-    #     row[0] = formatTimeValue(row[0])
-    #     writer.writerow(row)
-        
-    # f.close()
-    # # print("Finished!")
     
     return posData
 
@@ -1155,6 +1086,9 @@ def formatTime(dateTime, withDate=False):
 
 def formatTimeDelta(timeDelta):
     totalSeconds = timeDelta.total_seconds()
+    return formatTotalSeconds(totalSeconds)
+
+def formatTotalSeconds(totalSeconds):
     hours = totalSeconds // 3600
     minutes = (totalSeconds % 3600) // 60
     seconds = totalSeconds % 60
@@ -1289,7 +1223,7 @@ if __name__ == '__main__':
     NOW = datetime.datetime.now()
     NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
     DIRECTORY_PATH = DIRECTORY
-    for DATA_DAY in ["2016_12_13"]:
+    for DATA_DAY in DATA_DATES:
         print("DIRECTORY started as:", DIRECTORY)
         DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
         print("DIRECTORY now:", DIRECTORY)
@@ -1299,6 +1233,10 @@ if __name__ == '__main__':
         watchResults = open('watch-testing-results-' + DATA_DAY + '.txt', 'w+')
         resultsSummary = open('testing-summary-' + DATA_DAY + '.csv', 'w+')
         watchSummary = open('watch-summary-' + DATA_DAY + '.csv', 'w+')
+        resultsSummaryWriter = csv.writer(resultsSummary)
+        watchSummaryWriter = csv.writer(watchSummary)
+        resultsSummaryWriter.writerow(["User", "Classifier", "Percentage of Time"])
+        watchSummaryWriter.writerow(["User", "State", "Percentage of Time", "Hours", "Total Hours"])
 
         count = 0
         for USER_ID in USERS:
@@ -1307,8 +1245,8 @@ if __name__ == '__main__':
             print("Currently on:", USER_ID)
             watchResults.write("#########" + USER_ID + "#######\n")
             # watchSummary.write("#########" + USER_ID + "#######\n")
-            watchSummaryWriter = csv.writer(watchSummary)
-            watchSummaryWriter.writerow(["User", "State", "Percentage of Time"])
+            
+            
             try:
                 watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
             except:
@@ -1348,8 +1286,7 @@ if __name__ == '__main__':
             
             results.write("#########" + USER_ID + "#######\n")
             # resultsSummary.write("#########" + USER_ID + "#######\n")
-            resultsSummaryWriter = csv.writer(resultsSummary)
-            resultsSummaryWriter.writerow(["User", "Classifier", "Percentage of Time"])
+            
             try: 
                 classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
             except:
@@ -1378,7 +1315,7 @@ if __name__ == '__main__':
                     percentage = time / totalTime
                     results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
                     # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
-                    resultsSummaryWriter.writerow([USER_ID, str(c), str(percentage * 100)])
+                    resultsSummaryWriter.writerow([USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
 
                 results.write("-----Classifications over Time-------\n")
                 for c in classifications:
