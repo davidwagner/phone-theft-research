@@ -1249,13 +1249,6 @@ if __name__ == '__main__':
             
             try:
                 watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
-            except:
-                tb = traceback.format_exc()
-                watchResults.write("******EXCEPTION (while computing watch state)*******\n")
-                watchResults.write(tb)
-                watchResults.write("\n")
-
-            try:
                 timeSpentByWatchState = {}
                 # print(watchState)
                 for state in watchState:
@@ -1280,7 +1273,7 @@ if __name__ == '__main__':
                     watchSummaryWriter.write(percentageRow)
             except:
                 tb = traceback.format_exc()
-                watchResults.write("******EXCEPTION (while writing watch results)*******\n")
+                watchResults.write("******EXCEPTION (while computing watch state)*******\n")
                 watchResults.write(tb)
                 watchResults.write("\n")
             
@@ -1289,13 +1282,6 @@ if __name__ == '__main__':
             
             try: 
                 classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
-            except:
-                tb = traceback.format_exc()
-                results.write("******EXCEPTION (while computing classifications)*******\n")
-                results.write(tb)
-                results.write("\n")
-
-            try:
                 timeSpentByClass = {}
                 for c in intervalsByClass:
                     results.write("----" + str(c) + "-----\n")
@@ -1326,9 +1312,10 @@ if __name__ == '__main__':
                     results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
             except:
                 tb = traceback.format_exc()
-                watchResults.write("******EXCEPTION (while writing classification results)*******\n")
-                watchResults.write(tb)
-                watchResults.write("\n")
+                results.write("******EXCEPTION (while computing classifications)*******\n")
+                results.write(tb)
+                results.write("\n")
+
         file.close()
         watchFile.close()
         results.close()
