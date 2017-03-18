@@ -1221,18 +1221,18 @@ if __name__ == '__main__':
     # USER_ID = '6fdda897'
 
     NOW = datetime.datetime.now()
-    NOW_TIME = NOW.strftime('%Y_%m_%d_%H_%M_%S')
+    NOW_TIME = NOW.strftime('%m_%d_%H_%M')
     DIRECTORY_PATH = DIRECTORY
     for DATA_DAY in DATA_DATES:
         print("DIRECTORY started as:", DIRECTORY)
         DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
         print("DIRECTORY now:", DIRECTORY)
-        file = open('testing-log-' + DATA_DAY + '.txt', 'w+')
-        watchFile = open('watch-testing-log-' + DATA_DAY + '.txt', 'w+')
-        results = open('testing-results-' + DATA_DAY + '.txt', 'w+')
-        watchResults = open('watch-testing-results-' + DATA_DAY + '.txt', 'w+')
-        resultsSummary = open('testing-summary-' + DATA_DAY + '.csv', 'w+')
-        watchSummary = open('watch-summary-' + DATA_DAY + '.csv', 'w+')
+        file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
         resultsSummaryWriter = csv.writer(resultsSummary)
         watchSummaryWriter = csv.writer(watchSummary)
         resultsSummaryWriter.writerow(["User", "Classifier", "Percentage of Time"])
