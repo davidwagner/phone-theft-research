@@ -1237,10 +1237,10 @@ if __name__ == '__main__':
     watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
 
     for DATA_DAY in DATA_DATES:
+        print("DIRECTORY started as:", DIRECTORY)
+        DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
+        print("DIRECTORY now:", DIRECTORY)
         if not FULL_STUDY_RUN:
-            print("DIRECTORY started as:", DIRECTORY)
-            DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
-            print("DIRECTORY now:", DIRECTORY)
             file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
             watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
             results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
