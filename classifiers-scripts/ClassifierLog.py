@@ -1329,10 +1329,11 @@ if __name__ == '__main__':
                 results.write("******EXCEPTION (while computing classifications)*******\n")
                 results.write(tb)
                 results.write("\n")
-
-        file.close()
-        watchFile.close()
-        results.close()
-        watchResults.close()
+                
+        if not FULL_STUDY_RUN:
+            file.close()
+            watchFile.close()
+            results.close()
+            watchResults.close()
     print("Yay I finished!")
 
