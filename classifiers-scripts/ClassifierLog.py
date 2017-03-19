@@ -1221,22 +1221,36 @@ if __name__ == '__main__':
     # USER_ID = '6fdda897'
 
     NOW = datetime.datetime.now()
-    NOW_TIME = NOW.strftime('%m_%d_%H_%M')
+    NOW_TIME = NOW.strftime('_%m_%d_%H_%M')
     DIRECTORY_PATH = DIRECTORY
+
+    DATA_DAY = 'FULL_STUDY_RUN'
+    file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+    watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+    results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+    watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+    resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+    watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+    resultsSummaryWriter = csv.writer(resultsSummary)
+    watchSummaryWriter = csv.writer(watchSummary)
+    resultsSummaryWriter.writerow(["Day","User", "Classifier", "Percentage of Time"])
+    watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
+
     for DATA_DAY in DATA_DATES:
-        print("DIRECTORY started as:", DIRECTORY)
-        DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
-        print("DIRECTORY now:", DIRECTORY)
-        file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        resultsSummaryWriter = csv.writer(resultsSummary)
-        watchSummaryWriter = csv.writer(watchSummary)
-        resultsSummaryWriter.writerow(["User", "Classifier", "Percentage of Time"])
-        watchSummaryWriter.writerow(["User", "State", "Percentage of Time", "Hours", "Total Hours"])
+        if not FULL_STUDY_RUN:
+            print("DIRECTORY started as:", DIRECTORY)
+            DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
+            print("DIRECTORY now:", DIRECTORY)
+            file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+            watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+            results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+            watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+            resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+            watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+            resultsSummaryWriter = csv.writer(resultsSummary)
+            watchSummaryWriter = csv.writer(watchSummary)
+            resultsSummaryWriter.writerow(["Day", "User", "Classifier", "Percentage of Time"])
+            watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
 
         count = 0
         for USER_ID in USERS:
@@ -1269,7 +1283,7 @@ if __name__ == '__main__':
                     percentage = time / totalTime
                     percentageString = str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n"
                     watchResults.write(percentageString)
-                    percentageRow = [USER_ID, str(c), str(percentage * 100)]
+                    percentageRow = [DATA_DAY, USER_ID, str(c), str(percentage * 100)]
                     watchSummaryWriter.write(percentageRow)
             except:
                 tb = traceback.format_exc()
@@ -1301,7 +1315,7 @@ if __name__ == '__main__':
                     percentage = time / totalTime
                     results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
                     # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
-                    resultsSummaryWriter.writerow([USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
+                    resultsSummaryWriter.writerow([DATA_DAY, USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
 
                 results.write("-----Classifications over Time-------\n")
                 for c in classifications:
