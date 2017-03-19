@@ -1257,79 +1257,77 @@ if __name__ == '__main__':
             count += 1
             print("Number of users processed:", count)
             print("Currently on:", USER_ID)
-            watchResults.write("#########" + USER_ID + "#######\n")
-            # watchSummary.write("#########" + USER_ID + "#######\n")
             
+            if not RUN_CLASSIFIERS_ONLY:
+                watchResults.write("#########" + USER_ID + "#######\n")
+                try:
+                    watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+                    timeSpentByWatchState = {}
+                    # print(watchState)
+                    for state in watchState:
+                        watchResults.write("----" + str(state) + "-----" + "\n")
+                        intervals = watchState[state]
+                        stats = getIntervalStats(intervals)
+                        for stat, val in stats.items():
+                            watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
+                            if stat == "totalTimeSpent":
+                                timeSpentByWatchState[state] = val.total_seconds()
+
+                    totalTime = 0
+                    for c, time in timeSpentByWatchState.items():
+                        totalTime += time
+
+                    watchResults.write("-----Percentage of Time for each State ------" + "\n")
+                    for c, time in timeSpentByWatchState.items():
+                        percentage = time / totalTime
+                        percentageString = str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n"
+                        watchResults.write(percentageString)
+                        percentageRow = [DATA_DAY, USER_ID, str(c), str(percentage * 100)]
+                        watchSummaryWriter.writerow(percentageRow)
+                except:
+                    tb = traceback.format_exc()
+                    watchResults.write("******EXCEPTION (while computing watch state)*******\n")
+                    watchResults.write(tb)
+                    watchResults.write("\n")
             
-            try:
-                watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
-                timeSpentByWatchState = {}
-                # print(watchState)
-                for state in watchState:
-                    watchResults.write("----" + str(state) + "-----" + "\n")
-                    intervals = watchState[state]
-                    stats = getIntervalStats(intervals)
-                    for stat, val in stats.items():
-                        watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
-                        if stat == "totalTimeSpent":
-                            timeSpentByWatchState[state] = val.total_seconds()
+            if not RUN_WATCH_ONLY:
+                results.write("#########" + USER_ID + "#######\n")
+                try: 
+                    classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
+                    timeSpentByClass = {}
+                    for c in intervalsByClass:
+                        results.write("----" + str(c) + "-----\n")
+                        intervals = intervalsByClass[c]
+                        stats = getIntervalStats(intervals)
+                        for stat, value in stats.items():
+                            results.write(str(stat) + "\t\t\t" + str(value) + "\n")
+                            if stat == "totalTimeSpent":
+                                timeSpentByClass[c] = value.total_seconds()
 
-                totalTime = 0
-                for c, time in timeSpentByWatchState.items():
-                    totalTime += time
+                    totalTime = 0
+                    for c, time in timeSpentByClass.items():
+                        totalTime += time
 
-                watchResults.write("-----Percentage of Time for each State ------" + "\n")
-                for c, time in timeSpentByWatchState.items():
-                    percentage = time / totalTime
-                    percentageString = str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n"
-                    watchResults.write(percentageString)
-                    percentageRow = [DATA_DAY, USER_ID, str(c), str(percentage * 100)]
-                    watchSummaryWriter.write(percentageRow)
-            except:
-                tb = traceback.format_exc()
-                watchResults.write("******EXCEPTION (while computing watch state)*******\n")
-                watchResults.write(tb)
-                watchResults.write("\n")
-            
-            results.write("#########" + USER_ID + "#######\n")
-            # resultsSummary.write("#########" + USER_ID + "#######\n")
-            
-            try: 
-                classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
-                timeSpentByClass = {}
-                for c in intervalsByClass:
-                    results.write("----" + str(c) + "-----\n")
-                    intervals = intervalsByClass[c]
-                    stats = getIntervalStats(intervals)
-                    for stat, value in stats.items():
-                        results.write(str(stat) + "\t\t\t" + str(value) + "\n")
-                        if stat == "totalTimeSpent":
-                            timeSpentByClass[c] = value.total_seconds()
+                    results.write("-----Percentage of Time for each classifier------\n")
+                    for c, time in timeSpentByClass.items():
+                        percentage = time / totalTime
+                        results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
+                        # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
+                        resultsSummaryWriter.writerow([DATA_DAY, USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
 
-                totalTime = 0
-                for c, time in timeSpentByClass.items():
-                    totalTime += time
+                    results.write("-----Classifications over Time-------\n")
+                    for c in classifications:
+                        interval = c[0]
+                        duration = formatTimeValue(interval[1] - interval[0])
+                        classification = c[1]
+                        intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
+                        results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
+                except:
+                    tb = traceback.format_exc()
+                    results.write("******EXCEPTION (while computing classifications)*******\n")
+                    results.write(tb)
+                    results.write("\n")
 
-                results.write("-----Percentage of Time for each classifier------\n")
-                for c, time in timeSpentByClass.items():
-                    percentage = time / totalTime
-                    results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
-                    # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
-                    resultsSummaryWriter.writerow([DATA_DAY, USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
-
-                results.write("-----Classifications over Time-------\n")
-                for c in classifications:
-                    interval = c[0]
-                    duration = formatTimeValue(interval[1] - interval[0])
-                    classification = c[1]
-                    intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
-                    results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
-            except:
-                tb = traceback.format_exc()
-                results.write("******EXCEPTION (while computing classifications)*******\n")
-                results.write(tb)
-                results.write("\n")
-                
         if not FULL_STUDY_RUN:
             file.close()
             watchFile.close()
