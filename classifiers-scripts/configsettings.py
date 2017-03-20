@@ -6,6 +6,9 @@ USERS_TO_IDS_FILE = "../data/users_r3_watch.csv"
 DIRECTORY = "../data/Decrypted_Data/"
 # DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############USERS###########################
+FULL_STUDY_RUN = True
+RUN_WATCH_ONLY = False
+RUN_CLASSIFIERS_ONLY = False
 READ_USERS_FROM_FILE = True
 USERS = []
 if READ_USERS_FROM_FILE:
