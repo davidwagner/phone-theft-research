@@ -45,6 +45,11 @@ START_OF_TIME = datetime.datetime.min
 SANITY_TEST = False
 maxWindowSize = 100
 
+START_TIME_FILTER = datetime.time(hour=8)
+END_TIME_FILTER = datetime.time(hour=22)
+# START_TIME_FILTER = None
+# END_TIME_FILTER = None
+
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
@@ -96,12 +101,17 @@ def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
             firstRow[0] = convertToDateTime(firstRow[0], currentBootTime)
             minLength = len(firstRow)
             if len(firstRow) >= 2:
-                dataList.append(firstRow)
+                if (START_TIME_FILTER == None or firstRow[0].time() >= START_TIME_FILTER) and (END_TIME_FILTER == None or firstRow[0].time() < END_TIME_FILTER):
+                    dataList.append(firstRow)
             count = 1
             for row in reader:
                 if len(row) >= 2 and len(row) >= minLength:
                     row[0] = convertToDateTime(row[0], currentBootTime)
-                    dataList.append(row)
+                    if (START_TIME_FILTER == None or firstRow[0].time() >= START_TIME_FILTER):
+                        if (END_TIME_FILTER == None or firstRow[0].time() < END_TIME_FILTER):
+                            dataList.append(row)
+                        else:
+                            return dataList
 
                 if SANITY_TEST:
                     count += 1
@@ -120,7 +130,9 @@ def dataFilesToDataListAbsTime(userFiles):
                 if len(row) > 1:
                     timestamp = int(row[1]) / 1000
                     row[0] = datetime.datetime.fromtimestamp(timestamp)
-                    dataList.append(row)
+                    if (START_TIME_FILTER != None or firstRow[0].time() >= START_TIME_FILTER):
+                        if (END_TIME_FILTER != None or firstRow[0].time() < END_TIME_FILTER):
+                            dataList.append(row)
     # print "Number of heartrate files"
     # print len(dataList)
     return dataList
