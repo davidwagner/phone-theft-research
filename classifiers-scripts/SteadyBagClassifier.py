@@ -3,7 +3,7 @@ import BaseClassifier
 import Sensors as s
 import numpy
 
-windowSize = 5
+windowSize = 50
 
 class Classifier(BaseClassifier.BaseClassifier):
 
@@ -12,9 +12,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def classify(self, windows):
 
 		"""Edit as Necessary"""
-		thresholdX = 0.8
-		thresholdY = 0.2
-		thresholdZ = 0.9
+		thresholdX = 0.3
+		thresholdY = 0.3
+		thresholdZ = 0.3
 
 		if s.ACCELEROMETER not in windows:
 			raise Exception("Accelerometer not found")
@@ -23,7 +23,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 		if len(windows[s.ACCELEROMETER]) != windowSize:
 			raise Exception("Window Size is incorrect")
 
-		
+		for i in windows[s.LIGHT_SENSOR]:
+			if float(i[1]) > 25:
+				return 0
 
 		"""Take average of the entire window"""
 		xValues = []
@@ -35,12 +37,8 @@ class Classifier(BaseClassifier.BaseClassifier):
 			yValues.append(float(row[2]))
 			zValues.append(float(row[3]))
 
-		xVal = numpy.mean(xValues)
-		yVal = numpy.mean(yValues)
-		zVal = numpy.mean(zValues)
 
-
-		if (abs(xVal-0) < thresholdX and abs(yVal-0) < thresholdY and abs(zVal-9.8) < thresholdZ):
+		if (max(xValues) - min(xValues) < thresholdX and max(yValues) - min(yValues) < thresholdY and max(zValues) - min(zValues) < thresholdZ):
 			return 1
 
 		return 0
@@ -50,10 +48,10 @@ class Classifier(BaseClassifier.BaseClassifier):
 		return windowSize
 
 	def getRelevantSensors(self):
-		return [s.ACCELEROMETER]
+		return [s.ACCELEROMETER, s.LIGHT_SENSOR]
 
 	def getName(self):
-		return "Table Classifier"
+		return "Steady State Bag Classifier"
 
 
 
