@@ -1393,39 +1393,44 @@ if __name__ == '__main__':
                     results.write(tb)
                     results.write("\n")
 
-            bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
-            bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
-            onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
-            onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
-            
             activatedFile = open('activated-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+            if activatedIntervalsWatch == None or activatedIntervalsPhone == None:
+                activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
-            totalActivatedTestTimes = 0
-            stateTimes = {}
-            for stateP in activatedIntervalsPhone:
-                for stateW in activatedIntervalsWatch:
-                    state = "Phone: " + stateP + " Watch: " + stateW
-                    print(state)
-                    activatedFile.write(str(state) + '\n')
-                    # print("Phone Intervals:", activatedIntervalsPhone[stateP])
-                    # print("Watch Intervals:", activatedIntervalsWatch[stateW])
-                    commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
-                    # print("COMMON INTERVALS:", commonIntervals)
-                    stats = getIntervalStats(commonIntervals)
-                    print(stats["totalTimeSpent"])
-                    activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
+            else:
+                bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+                bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+                onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+                onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
+                
+                
 
-                    timeSeconds = stats["totalTimeSpent"].total_seconds()
-                    totalActivatedTestTimes += timeSeconds
-                    stateTimes[state] = timeSeconds
+                totalActivatedTestTimes = 0
+                stateTimes = {}
+                for stateP in activatedIntervalsPhone:
+                    for stateW in activatedIntervalsWatch:
+                        state = "Phone: " + stateP + " Watch: " + stateW
+                        print(state)
+                        activatedFile.write(str(state) + '\n')
+                        # print("Phone Intervals:", activatedIntervalsPhone[stateP])
+                        # print("Watch Intervals:", activatedIntervalsWatch[stateW])
+                        commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
+                        # print("COMMON INTERVALS:", commonIntervals)
+                        stats = getIntervalStats(commonIntervals)
+                        print(stats["totalTimeSpent"])
+                        activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
+
+                        timeSeconds = stats["totalTimeSpent"].total_seconds()
+                        totalActivatedTestTimes += timeSeconds
+                        stateTimes[state] = timeSeconds
 
 
-            print("ACTIVATION PERCENTAGES")
-            activatedFile.write("ACTIVATION PERCENTAGES")
-            for state, time in stateTimes.items():
-                percentage = time / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
-                print(state, "-->", percentage)
-                activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
+                print("ACTIVATION PERCENTAGES")
+                activatedFile.write("ACTIVATION PERCENTAGES")
+                for state, time in stateTimes.items():
+                    percentage = time / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
+                    print(state, "-->", percentage)
+                    activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
 
 
         if not FULL_STUDY_RUN:
