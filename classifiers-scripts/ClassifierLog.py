@@ -320,24 +320,21 @@ def stateFromWatchData(allIntervals, file):
         bInterval = basisPeakIntervals[j]
         hStart, hEnd, hState = hInterval
         bStart, bEnd = bInterval
-        try:
-            while bEnd < hStart  and j < len(basisPeakIntervals):
-                bStart, bEnd = basisPeakIntervals[j]
-                allIntervals.append((bStart, bEnd, "unknown"))
-                j += 1
-            while hEnd < bStart and i < len(heartRateIntervals):
-                hStart, hEnd, hState = heartRateIntervals[i]
-                i += 1
-            if bStart < hStart and bEnd > hEnd:
-                allIntervals.append((bStart, hStart, "unknown"))
-                if j < len(basisPeakIntervals):
-                    basisPeakIntervals[j] = ((hStart, bEnd))
-            if bEnd < hEnd:
-                j += 1
-            if hEnd < bEnd:
-                i += 1
-        except TypeError:
-            print(hInterval)
+        while bEnd < hStart  and j < len(basisPeakIntervals):
+            bStart, bEnd = basisPeakIntervals[j]
+            allIntervals.append((bStart, bEnd, "unknown"))
+            j += 1
+        while hEnd < bStart and i < len(heartRateIntervals):
+            hStart, hEnd, hState = heartRateIntervals[i]
+            i += 1
+        if bStart < hStart and bEnd > hEnd:
+            allIntervals.append((bStart, hStart, "unknown"))
+            if j < len(basisPeakIntervals):
+                basisPeakIntervals[j] = ((hStart, bEnd))
+        if bEnd < hEnd:
+            j += 1
+        if hEnd < bEnd:
+            i += 1
 
     while j < len(basisPeakIntervals):
         bStart, bEnd = basisPeakIntervals[j]
