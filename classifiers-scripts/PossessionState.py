@@ -1,11 +1,15 @@
 import datetime
-import Classifiers as c
+# import Classifiers as classifiers
+TABLE_CLASSIFIER = "Table Classifier"
+POCKET_BAG_CLASSIFIER = "Pocket/Bag Classifier"
+THEFT_CLASSIFIER = "Theft Classifier"
+HAND_CLASSIFIER = "Hand Classifier"
 
 unlockIndex = 3
 PHONE_ACTIVATED = "activated"
 PHONE_DEACTIVATED = "deactivated"
 SAFE_PERIOD = datetime.timedelta(minutes=3)
-BENIGN_CLASSIFIERS = set([c.POCKET_BAG_CLASSIFIER, c.HAND_CLASSIFIER])
+BENIGN_CLASSIFIERS = set([POCKET_BAG_CLASSIFIER, HAND_CLASSIFIER])
 START_OF_TIME = datetime.datetime.min
 # unlock = 0, locked = 1
 class PossessionState():
@@ -17,10 +21,8 @@ class PossessionState():
 		self.lastUnlockedTime = START_OF_TIME
 		self.lastBenignTime = START_OF_TIME
 		self.lastClassificationTimes = {}
-
-		if self.isUnlocked():
-			self.state = PHONE_ACTIVATED
-			self.lastUnlockedTime = self.getStateTime()
+		self.intervals = []
+		self.currentInterval = (self.getStateTime(), self.getStateTime())
 
 	def isUnlocked(self):
 		if self.dataIndex >= len(self.activeSensorData) - 1:
@@ -46,10 +48,17 @@ class PossessionState():
 			self.lastBenignTime = time
 
 		currentTime = self.getStateTime()
-		assert(currentTime == time)
+		while currentTime != None and currentTime < time:
+			self.dataIndex += 1
+			currentTime = self.getStateTime()
+
+		# print("POSESSION TIMES:", currentTime, time)
+		if currentTime != time:
+			print("DIFFERENT TIMES!", currentTime, time)
 		timeSinceLastUnlocked = currentTime - self.lastUnlockedTime
 		timeSinceLastBenign = currentTime - self.lastBenignTime
 
+		prevState = self.state
 		if self.isUnlocked():
 			self.state = PHONE_ACTIVATED
 			self.lastUnlockedTime = self.getStateTime()
@@ -61,16 +70,34 @@ class PossessionState():
 		else:
 			self.state = PHONE_DEACTIVATED
 
-		self.dataIndex += 1
+		if self.state != prevState:
+			interval = (self.currentInterval[0], currentTime)
+			self.intervals.append((interval, prevState))
+			self.currentInterval = (currentTime, currentTime)
 
 	def getLastBenignTime(self):
 		lastBenignTime = START_OF_TIME
 		for c in BENIGN_CLASSIFIERS:
 			if c in self.lastClassificationTimes:
-				time = self.lastClassificationTimes[c]:
+				time = self.lastClassificationTimes[c]
 				if time > lastBenignTime:
 					lastBenignTime = time 
 		return lastBenignTime
+
+	def getIntervals(self):
+		interval = (self.currentInterval[0], self.getStateTime())
+		self.intervals.append((interval, self.state))
+
+		return self.intervals
+
+	def getIntervalsByState(self):
+		intervalsByState = {PHONE_ACTIVATED : [], PHONE_DEACTIVATED : []}
+		for interval in self.getIntervals():
+			state = interval[1]
+			intervalsByState[state].append(interval[0])
+
+		return intervalsByState
+
 
 
 
