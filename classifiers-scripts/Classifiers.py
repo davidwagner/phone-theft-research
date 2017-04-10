@@ -20,8 +20,8 @@ CLASSIFIERS = {
     TABLE_CLASSIFIER: table.Classifier(),
     POCKET_BAG_CLASSIFIER: pbb.Classifier(),
     # THEFT_CLASSIFIER: theft.Classifier()
-    HAND_CLASSIFIER: hand.Classifier()
-    STEADY_BAG_CLASSIFIER: sbb.Classifier()
+    HAND_CLASSIFIER: hand.Classifier(),
+    # STEADY_BAG_CLASSIFIER: sbb.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"
