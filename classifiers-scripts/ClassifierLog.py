@@ -1426,12 +1426,19 @@ if __name__ == '__main__':
 
 
                 print("ACTIVATION PERCENTAGES")
-                activatedFile.write("ACTIVATION PERCENTAGES")
+                activatedFile.write("ACTIVATION PERCENTAGES\n")
                 for state, time in stateTimes.items():
                     percentage = time / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
                     print(state, "-->", percentage)
                     activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
 
+                for stateP, intervals in activatedIntervalsPhone.items():
+                    activatedFile.write(str(stateP) + "\n")
+                    activatedFile.write(str([formatTimeInterval(interval) for interval in intervals]) + "\n")
+                
+                for stateW in activatedIntervalsWatch:
+                    activatedFile.write(str(stateP) + "\n")
+                    activatedFile.write(str([formatTimeInterval(interval) for interval in intervals]) + "\n")    
 
         if not FULL_STUDY_RUN:
             file.close()
