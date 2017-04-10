@@ -11,6 +11,7 @@ import argparse
 # import classifier
 import Sensors as sensors
 import Classifiers as classifiers 
+import PossessionState
 import pickle
 import traceback
 
@@ -630,6 +631,8 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
 
     limit = numRows // maxWindowSize * maxWindowSize
     print("LIMIT", limit)
+
+    possessionState = PossessionState.PossessionState(userData[sensors.PHONE_ACTIVE_SENSORS], SMOOTHING_NUM)
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -664,13 +667,14 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
 
         resultsBuffer.append((windowStartTime, windowClassification))
         resultsCounter[windowClassification] += 1
+        # print("WINDOW START TIME:", windowStartTime)
         if len(resultsBuffer) >= SMOOTHING_NUM:
             middleWindow = resultsBuffer[SMOOTHING_NUM // 2]
             middleWindowStartTime = middleWindow[0]
-
+            # print("MIDDLE WINDOW START TIME:", middleWindowStartTime)
             newClassification = resultsCounter.most_common(1)[0][0]
             
-            
+            possessionState.updateState(middleWindowStartTime, newClassification)
             if currentClass == -1:
                 currentClass = newClassification
                 # currentInterval = (middleWindowStartTime, middleWindowStartTime)
@@ -687,12 +691,13 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             removedClassification = removed[1]
             resultsCounter[removedClassification] -= 1
 
+    print("HELLOOOOOOOOO")
 
     classifications.append((currentInterval, currentClass))
     print("CURRENT CLASS:", currentClass)
     intervalsByClass[currentClass].append(currentInterval)
 
-    return classifications, intervalsByClass
+    return classifications, intervalsByClass, possessionState
 
 
 def logResultsToFile(classifierResults, classifier_name, resultsFile):
@@ -1277,6 +1282,9 @@ if __name__ == '__main__':
             print("Number of users processed:", count)
             print("Currently on:", USER_ID)
             
+            activatedIntervalsWatch = None
+            activatedIntervalsPhone = None
+
             if not RUN_CLASSIFIERS_ONLY:
                 watchResults.write("#########" + USER_ID + "#######\n")
                 try:
@@ -1305,6 +1313,7 @@ if __name__ == '__main__':
                         watchSummaryWriter.writerow(percentageRow)
                 except:
                     tb = traceback.format_exc()
+                    print(tb)
                     watchResults.write("******EXCEPTION (while computing watch state)*******\n")
                     watchResults.write(tb)
                     watchResults.write("\n")
@@ -1312,8 +1321,14 @@ if __name__ == '__main__':
             if not RUN_WATCH_ONLY:
                 results.write("#########" + USER_ID + "#######\n")
                 try: 
-                    classifications, intervalsByClass = runClassifiersOnUser(USER_ID, None, file)
+                    classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, file)
+                    activatedIntervalsPhone = possessionState.getIntervalsByState()
+                    # print("ACTIVATED REPORT:")
+                    # for interval in possessionState.getIntervals():
+                    #     print(interval)
+                    # print("END ACTIVATED REPORT")
                     timeSpentByClass = {}
+
                     for c in intervalsByClass:
                         results.write("----" + str(c) + "-----\n")
                         intervals = intervalsByClass[c]
@@ -1343,6 +1358,7 @@ if __name__ == '__main__':
                         results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
                 except:
                     tb = traceback.format_exc()
+                    print(tb)
                     results.write("******EXCEPTION (while computing classifications)*******\n")
                     results.write(tb)
                     results.write("\n")
