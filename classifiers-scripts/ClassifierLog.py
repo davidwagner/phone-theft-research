@@ -1395,7 +1395,7 @@ if __name__ == '__main__':
 
             activatedFile = open('activated-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
             if activatedIntervalsWatch == None or activatedIntervalsPhone == None:
-                activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+                activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
 
             else:
                 bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
