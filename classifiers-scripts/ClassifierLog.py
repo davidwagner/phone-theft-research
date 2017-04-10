@@ -320,21 +320,25 @@ def stateFromWatchData(allIntervals, file):
         bInterval = basisPeakIntervals[j]
         hStart, hEnd, hState = hInterval
         bStart, bEnd = bInterval
-        while bEnd < hStart  and j < len(basisPeakIntervals):
-            bStart, bEnd = basisPeakIntervals[j]
-            allIntervals.append((bStart, bEnd, "unknown"))
-            j += 1
-        while hEnd < bStart and i < len(heartRateIntervals):
-            hStart, hEnd, hState = heartRateIntervals[i]
-            i += 1
-        if bStart < hStart and bEnd > hEnd:
-            allIntervals.append((bStart, hStart, "unknown"))
-            if j < len(basisPeakIntervals):
-                basisPeakIntervals[j] = ((hStart, bEnd))
-        if bEnd < hEnd:
-            j += 1
-        if hEnd < bEnd:
-            i += 1
+        try:
+            while bEnd < hStart  and j < len(basisPeakIntervals):
+                bStart, bEnd = basisPeakIntervals[j]
+                allIntervals.append((bStart, bEnd, "unknown"))
+                j += 1
+            while hEnd < bStart and i < len(heartRateIntervals):
+                hStart, hEnd, hState = heartRateIntervals[i]
+                i += 1
+            if bStart < hStart and bEnd > hEnd:
+                allIntervals.append((bStart, hStart, "unknown"))
+                if j < len(basisPeakIntervals):
+                    basisPeakIntervals[j] = ((hStart, bEnd))
+            if bEnd < hEnd:
+                j += 1
+            if hEnd < bEnd:
+                i += 1
+            except TypeError:
+                print(hInterval)
+
     while j < len(basisPeakIntervals):
         bStart, bEnd = basisPeakIntervals[j]
         allIntervals.append((bStart, bEnd, "unknown"))
@@ -360,6 +364,18 @@ def stateFromWatchData(allIntervals, file):
         logString += "\n"
     file.write(logString)
     return result
+
+def watchActivationStates(watchStates):
+    activated = []
+    deactivated = []
+    activated = watchStates["phoneNear"]
+    deactivated.append(watchStates["unkown"])
+    deactivated.append(watchStates["phoneFar"])
+    deactivated = sorted(deactivated, key=lambda x: x[0])
+    mergeAdjacentIntervals(deactivated)
+    return activated, deactivated
+
+
 
 def processPhoneActiveData(ID, posDataAccel):
     if len(posDataAccel) <= 1:
@@ -1289,6 +1305,8 @@ if __name__ == '__main__':
                 watchResults.write("#########" + USER_ID + "#######\n")
                 try:
                     watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+                    activatedWatchStates = watchActivationStates(watchState)
+                    # HERE STEVEN :)
                     timeSpentByWatchState = {}
                     # print(watchState)
                     for state in watchState:
