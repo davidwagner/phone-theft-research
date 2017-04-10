@@ -1441,7 +1441,7 @@ if __name__ == '__main__':
                     activatedFile.write(str([formatTimeInterval(interval) for interval in intervals]) + "\n")
                 
                 for stateW in activatedIntervalsWatch:
-                    activatedFile.write(str(stateP) + "\n")
+                    activatedFile.write(str(stateW) + "\n")
                     activatedFile.write(str([formatTimeInterval(interval) for interval in intervals]) + "\n")    
 
         if not FULL_STUDY_RUN:
