@@ -336,8 +336,8 @@ def stateFromWatchData(allIntervals, file):
                 j += 1
             if hEnd < bEnd:
                 i += 1
-            except TypeError:
-                print(hInterval)
+        except TypeError:
+            print(hInterval)
 
     while j < len(basisPeakIntervals):
         bStart, bEnd = basisPeakIntervals[j]
@@ -369,9 +369,11 @@ def watchActivationStates(watchStates):
     activated = []
     deactivated = []
     activated = watchStates["phoneNear"]
-    deactivated.append(watchStates["unkown"])
-    deactivated.append(watchStates["phoneFar"])
+    deactivated += watchStates["unknown"]
+    deactivated += watchStates["phoneFar"]
+    
     deactivated = sorted(deactivated, key=lambda x: x[0])
+    print("DEACTIVATED WATCH:", deactivated)
     mergeAdjacentIntervals(deactivated)
     return activated, deactivated
 
@@ -861,7 +863,7 @@ def findConflictingClassifications(results, includeTheft):
 
     return conflicitingClassifications
 
-def mergeAdjacentIntervals(intervals):
+def mergeAdjacentIntervalsByValue(intervals):
     i = 0
     while i + 1 < len(intervals):
         curr = intervals[i]
@@ -871,6 +873,18 @@ def mergeAdjacentIntervals(intervals):
             del intervals[i + 1]
         else:
             i += 1   
+
+def mergeAdjacentIntervals(intervals):
+    i = 0
+    while i + 1 < len(intervals):
+        curr = intervals[i]
+        next = intervals[i + 1]
+        if curr[1] == next[0]:
+            intervals[i] = (curr[0], next[1])
+            del intervals[i + 1]
+        else:
+            i += 1   
+
 
 def filterSpikesFromIntervals(intervals, intervalsByValue):
     spikeLength = datetime.timedelta(seconds=1)
@@ -978,9 +992,9 @@ def findCommonIntervals(intervals1, intervals2):
     if len(intervals1) == 0 and len(intervals2) == 0:
         return []
     if len(intervals1) == 0:
-        return intervals2
+        return []
     if len(intervals2) == 0:
-        return intervals1 
+        return []
 
     i1 = 0
     i2 = 0
@@ -1306,6 +1320,7 @@ if __name__ == '__main__':
                 try:
                     watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
                     activatedWatchStates = watchActivationStates(watchState)
+                    activatedIntervalsWatch = {PossessionState.PHONE_ACTIVATED: activatedWatchStates[0], PossessionState.PHONE_DEACTIVATED: activatedWatchStates[1]}
                     # HERE STEVEN :)
                     timeSpentByWatchState = {}
                     # print(watchState)
@@ -1380,6 +1395,41 @@ if __name__ == '__main__':
                     results.write("******EXCEPTION (while computing classifications)*******\n")
                     results.write(tb)
                     results.write("\n")
+
+            bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+            bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+            onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+            onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
+            
+            activatedFile = open('activated-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+
+            totalActivatedTestTimes = 0
+            stateTimes = {}
+            for stateP in activatedIntervalsPhone:
+                for stateW in activatedIntervalsWatch:
+                    state = "Phone: " + stateP + " Watch: " + stateW
+                    print(state)
+                    activatedFile.write(str(state) + '\n')
+                    # print("Phone Intervals:", activatedIntervalsPhone[stateP])
+                    # print("Watch Intervals:", activatedIntervalsWatch[stateW])
+                    commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
+                    # print("COMMON INTERVALS:", commonIntervals)
+                    stats = getIntervalStats(commonIntervals)
+                    print(stats["totalTimeSpent"])
+                    activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
+
+                    timeSeconds = stats["totalTimeSpent"].total_seconds()
+                    totalActivatedTestTimes += timeSeconds
+                    stateTimes[state] = timeSeconds
+
+
+            print("ACTIVATION PERCENTAGES")
+            activatedFile.write("ACTIVATION PERCENTAGES")
+            for state, time in stateTimes.items():
+                percentage = time / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
+                print(state, "-->", percentage)
+                activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
+
 
         if not FULL_STUDY_RUN:
             file.close()
