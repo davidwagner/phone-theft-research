@@ -640,7 +640,9 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     firstTime = userData[sensors.ACCELEROMETER][0][0]
     currentInterval = (firstTime, firstTime)
 
+    print("HELLO CLASSIFIERS")
     for c in classifiers.CLASSIFIERS:
+        print(c)
         intervalsByClass[c] = []
     intervalsByClass["Unknown"] = []
 
@@ -1108,6 +1110,8 @@ def classifierPolicy(classifiedWindow):
     c = classifiers.CLASSIFIERS
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
         return classifiers.TABLE_CLASSIFIER
+    elif c[classifiers.STEADY_BAG_CLASSIFIER] in averagedClassifications:
+        return classifiers.POCKET_BAG_CLASSIFIER
     elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
         return classifiers.POCKET_BAG_CLASSIFIER
     elif c[classifiers.HAND_CLASSIFIER] in averagedClassifications:

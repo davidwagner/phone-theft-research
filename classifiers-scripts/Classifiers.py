@@ -13,7 +13,7 @@ TABLE_CLASSIFIER = "Table Classifier"
 POCKET_BAG_CLASSIFIER = "Pocket/Bag Classifier"
 THEFT_CLASSIFIER = "Theft Classifier"
 HAND_CLASSIFIER = "Hand Classifier"
-STEADY_BAG_CLASSIFIER = "Steady Bag Classifier"
+STEADY_BAG_CLASSIFIER = "Steady State Bag Classifier"
 
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
@@ -21,7 +21,7 @@ CLASSIFIERS = {
     POCKET_BAG_CLASSIFIER: pbb.Classifier(),
     # THEFT_CLASSIFIER: theft.Classifier()
     HAND_CLASSIFIER: hand.Classifier(),
-    # STEADY_BAG_CLASSIFIER: sbb.Classifier()
+    STEADY_BAG_CLASSIFIER: sbb.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"
