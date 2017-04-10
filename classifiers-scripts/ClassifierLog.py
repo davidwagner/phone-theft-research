@@ -649,13 +649,19 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             # if i % 50000 == 0 and c ==classifiers.HAND_CLASSIFIER:
             #     print("TYPE: ", type(results))
 
-        logString = ""
+        logString = windowStartTime.strftime("%H:%M:%S") + "| " 
+
+        windowClassification = classifierPolicy(classifierResults)
+        logString += "___" + windowClassification[0] + "___ " 
         for c, results in classifierResults.items():
-            logString += c.getName() + ": " + str(results) + ";"
+            r = Counter()
+            for result in results:
+                r[result] += 1
+            r = dict(r)
+            logString += '"' + c.getName()[0] + '"' + ":" + str(r) + "; "
         logString += "\n"
         resultsFile.write(logString)
 
-        windowClassification = classifierPolicy(classifierResults)
         resultsBuffer.append((windowStartTime, windowClassification))
         resultsCounter[windowClassification] += 1
         if len(resultsBuffer) >= SMOOTHING_NUM:
@@ -663,10 +669,11 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             middleWindowStartTime = middleWindow[0]
 
             newClassification = resultsCounter.most_common(1)[0][0]
-            # newWindow = (middleWindow[0], newClassification)
-            # resultsBuffer[SMOOTHING_NUM // 2] = newWindow
+            
+            
             if currentClass == -1:
                 currentClass = newClassification
+                # currentInterval = (middleWindowStartTime, middleWindowStartTime)
             elif currentClass != newClassification:
                 classifications.append((currentInterval, currentClass))
                 intervalsByClass[currentClass].append(currentInterval)
