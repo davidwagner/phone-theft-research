@@ -13,8 +13,9 @@ BENIGN_CLASSIFIERS = set([POCKET_BAG_CLASSIFIER, HAND_CLASSIFIER])
 START_OF_TIME = datetime.datetime.min
 # unlock = 0, locked = 1
 class PossessionState():
-	def __init__(self, sensorData, smoothingNum):
+	def __init__(self, sensorData, unlockData, smoothingNum):
 		self.activeSensorData = sensorData
+		self.unlockData = unlockData
 
 		self.dataIndex = smoothingNum // 2
 		self.state = PHONE_DEACTIVATED

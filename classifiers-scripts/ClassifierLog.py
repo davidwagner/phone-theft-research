@@ -179,7 +179,7 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
             userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
     
     #print(len(userData[sensors.ACCELEROMETER]))
-    userData[sensors.PHONE_ACTIVE_SENSORS] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
+    userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
     # print("GONNA TRY TO GET LIGHT SENSOR DATA")
     userData[sensors.LIGHT_SENSOR] = processLightSensorData(userData)
     userData[BOOT_TIME_SENSOR] = userData[BOOT_TIME_SENSOR][:-1]
@@ -556,7 +556,7 @@ def processPhoneActiveData(ID, posDataAccel):
             row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + signsChanged(curSigns, curSigns)
             posData.append(row)
     
-    return posData
+    return posData, rawPosDataLocked
 
 
 
@@ -649,7 +649,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     limit = numRows // maxWindowSize * maxWindowSize
     print("LIMIT", limit)
 
-    possessionState = PossessionState.PossessionState(userData[sensors.PHONE_ACTIVE_SENSORS], SMOOTHING_NUM)
+    possessionState = PossessionState.PossessionState(userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM)
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -1407,7 +1407,13 @@ if __name__ == '__main__':
                 onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
                 onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
                 
-                
+                ### CALCULATE UNLOCKS ###
+
+                unlockData = possessionState.unlockData
+                activatedIntervals = activatedIntervalsPhone["activated"]
+                numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+
+                ##########################
 
                 totalActivatedTestTimes = 0
                 stateTimes = {}
