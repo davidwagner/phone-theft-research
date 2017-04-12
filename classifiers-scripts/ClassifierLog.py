@@ -850,7 +850,7 @@ def processResults(results, writer, csvRow):
 def getIntervalStats(intervals):
     stats = {}
     intervalLengths = [intervalLength(interval) for interval in intervals]
-    print(intervalLengths)
+    # print(intervalLengths)
     totalTimeSpent = datetime.timedelta(seconds=0)
     for interval in intervalLengths:
         totalTimeSpent += interval
@@ -859,6 +859,11 @@ def getIntervalStats(intervals):
     avgLength = "N/A"
     longestInterval = "N/A"
     shortestInterval = "N/A"
+
+    if totalTimeSpent.total_seconds() < 0:
+        print("WTF!!!")
+        for interval in intervals:
+            print(formatTimeInterval(interval))
 
     if len(intervals) > 0:
         medianLength = intervalLength(intervals[len(intervals) // 2])
@@ -1389,6 +1394,7 @@ if __name__ == '__main__':
                     for state in watchState:
                         watchResults.write("----" + str(state) + "-----" + "\n")
                         intervals = watchState[state]
+                        print("WTF!", state)
                         stats = getIntervalStats(intervals)
                         for stat, val in stats.items():
                             watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
@@ -1491,6 +1497,14 @@ if __name__ == '__main__':
                 stateTimes = {}
                 for stateP in activatedIntervalsPhone:
                     for stateW in activatedIntervalsWatch:
+                        if stateP == "activated" and stateW == "deactivated":
+                            print("WTF PHONE ACTIVATED")
+                            for interval in activatedIntervalsPhone[stateP]:
+                                print(formatTimeInterval(interval))
+                            print("WTF WATCH DEACTIVATED")
+                            for interval in activatedIntervalsPhone[stateW]:
+                                print(formatTimeInterval(interval))
+
                         state = "Phone: " + stateP + " Watch: " + stateW
                         print(state)
                         # activatedFile.write(str(state) + '\n')
@@ -1510,7 +1524,7 @@ if __name__ == '__main__':
                 print("ACTIVATION PERCENTAGES")
                 print(str(stateTimes))
                 activatedFile.write("######ACTIVATION CONFUSION MATRIX#######\n")
-                header = " " * 15 + "\t" + "Watch Activated\t" + "Watch Deactivated\n"
+                header = " " * 15 + "\t" + "Watch Activated\t\t" + "Watch Deactivated\n"
                 activatedFile.write(header)
                 percentRow = []
                 timeRow = []
@@ -1518,9 +1532,11 @@ if __name__ == '__main__':
                     state1 = "Phone: " + stateP + " Watch: " + "activated"
                     time1 = stateTimes[state1].total_seconds()
                     percentage1 = time1 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
-                    
+                    print("Time1:", time1)
+
                     state2 = "Phone: " + stateP + " Watch: " + "deactivated"
                     time2 = stateTimes[state2].total_seconds()
+                    print("Time2:", time2)
                     percentage2 = time2 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
                     
                     if stateP == "activated":
