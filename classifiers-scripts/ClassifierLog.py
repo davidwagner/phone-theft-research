@@ -58,7 +58,6 @@ def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
     userFiles = glob.glob(query)
     userFiles.sort()
-
     # TODO: Need to filter for sensors that need data files with matching times as other
     # sensors (e.g. accelerometer and step count for Theft Classifier)
     # print(userFiles)
@@ -325,40 +324,76 @@ def stateFromWatchData(allIntervals, file):
         start, end, state = b
         if str(state) == "Basis Peak":
             basisPeakIntervals.append((start, end))
-    while i < len(heartRateIntervals) and j < len(basisPeakIntervals):
-        hInterval = heartRateIntervals[i]
-        bInterval = basisPeakIntervals[j]
-        hStart, hEnd, hState = hInterval
-        bStart, bEnd = bInterval
-        while bEnd < hStart  and j < len(basisPeakIntervals):
-            bStart, bEnd = basisPeakIntervals[j]
-            allIntervals.append((bStart, bEnd, "unknown"))
-            j += 1
-        while hEnd < bStart and i < len(heartRateIntervals):
-            hStart, hEnd, hState = heartRateIntervals[i]
-            i += 1
-        if bStart < hStart and bEnd > hEnd:
-            allIntervals.append((bStart, hStart, "unknown"))
-            if j < len(basisPeakIntervals):
-                basisPeakIntervals[j] = ((hStart, bEnd))
-        if bEnd < hEnd:
-            j += 1
-        if hEnd < bEnd:
-            i += 1
-
-    while j < len(basisPeakIntervals):
-        bStart, bEnd = basisPeakIntervals[j]
-        allIntervals.append((bStart, bEnd, "unknown"))
-        j += 1
-    result = []
+    noHeartIntervals = []
     prevTime = -1
-    for start, end in basisPeakIntervals:
-        print(start, end)
+    for start, end, state in heartRateIntervals:
         if prevTime == -1:
             prevTime = end
         elif start > prevTime:
-            allIntervals.append((prevTime, start, "phoneFar"))
+            noHeartIntervals.append((prevTime, start))
         prevTime = end
+
+    while i < len(noHeartIntervals) and j < len(basisPeakIntervals):
+        hInterval = noHeartIntervals[i]
+        bInterval = basisPeakIntervals[j]
+        hStart, hEnd = hInterval
+        bStart, bEnd = bInterval
+        if hStart < bStart:
+            allIntervals.append((hStart, bStart, "phoneFar"))
+            if bEnd < hEnd:
+                allIntervals.append((bStart, bEnd, "unknown"))
+                j += 1
+                noHeartIntervals[i] = (bEnd, hEnd)
+            else: 
+                allIntervals.append((bStart, hEnd, "unknown"))
+                i += 1
+                basisPeakIntervals[j] = (hEnd, bEnd)
+        else:
+            bStart = hStart
+            if hEnd < bEnd:
+                allIntervals.append((bStart, hEnd, "unknown"))
+                i += 1
+                basisPeakIntervals[j] = (hEnd, bEnd)
+            else:
+                allIntervals.append((bStart, bEnd, "unknown"))
+                j += 1 
+                noHeartIntervals[i] = (bEnd, hEnd)
+
+    while i < len(noHeartIntervals):
+        hInterval = noHeartIntervals[i]
+        hStart, hEnd = hInterval
+        allIntervals.append((hStart, hEnd, "phoneFar"))
+        i += 1
+
+        # while bEnd < hStart  and j < len(basisPeakIntervals):
+        #     bStart, bEnd = basisPeakIntervals[j]
+        #     allIntervals.append((bStart, bEnd, "unknown"))
+        #     j += 1
+        # while hEnd < bStart and i < len(heartRateIntervals):
+        #     hStart, hEnd, hState = heartRateIntervals[i]
+        #     i += 1
+        # if bStart < hStart and bEnd > hEnd:
+        #     allIntervals.append((bStart, hStart, "unknown"))
+        #     if j < len(basisPeakIntervals):
+        #         basisPeakIntervals[j] = ((hStart, bEnd))
+        # if bEnd < hEnd:
+        #     j += 1
+        # if hEnd < bEnd:
+        #     i += 1
+
+    # while j < len(basisPeakIntervals):
+    #     bStart, bEnd = basisPeakIntervals[j]
+    #     allIntervals.append((bStart, bEnd, "unknown"))
+    #     j += 1
+    # result = []
+    # prevTime = -1
+    # for start, end in basisPeakIntervals:
+    #     if prevTime == -1:
+    #         prevTime = end
+    #     elif start > prevTime:
+    #         allIntervals.append((prevTime, start, "phoneFar"))
+    #     prevTime = end
+
     allIntervals = sorted(allIntervals, key=lambda x: x[0])
     logString = ""
     result = {}
@@ -375,9 +410,12 @@ def stateFromWatchData(allIntervals, file):
 def watchActivationStates(watchStates):
     activated = []
     deactivated = []
-    activated = watchStates["phoneNear"]
-    deactivated += watchStates["unknown"]
-    deactivated += watchStates["phoneFar"]
+    if "phoneNear" in watchStates:
+        activated = watchStates["phoneNear"]
+    if "unknown" in watchStates:
+        deactivated += watchStates["unknown"]
+    if "phoneFar" in watchStates:
+        deactivated += watchStates["phoneFar"]
     
     deactivated = sorted(deactivated, key=lambda x: x[0])
     print("DEACTIVATED WATCH:", deactivated)
