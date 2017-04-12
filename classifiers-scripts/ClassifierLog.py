@@ -338,7 +338,13 @@ def stateFromWatchData(allIntervals, file):
         bInterval = basisPeakIntervals[j]
         hStart, hEnd = hInterval
         bStart, bEnd = bInterval
-        if hStart < bStart:
+
+        if hEnd < bStart:
+            allIntervals.append((hEnd, bStart, "phoneFar"))
+            i += 1
+        elif bEnd < hStart:
+            j += 1
+        elif hStart < bStart:
             allIntervals.append((hStart, bStart, "phoneFar"))
             if bEnd < hEnd:
                 allIntervals.append((bStart, bEnd, "unknown"))
