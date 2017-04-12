@@ -17,6 +17,7 @@ import traceback
 
 from configsettings import *
 from collections import deque, Counter
+from UnlockTimeChecker import computeUnlocks
 
 DUMP_RESULTS = True
 
@@ -180,6 +181,8 @@ def getRelevantUserData(userID, logInfo=False, logFile=None):
     
     #print(len(userData[sensors.ACCELEROMETER]))
     userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
+    print("KEYGUARD", len(userData[sensors.KEYGUARD]))
+
     # print("GONNA TRY TO GET LIGHT SENSOR DATA")
     userData[sensors.LIGHT_SENSOR] = processLightSensorData(userData)
     userData[BOOT_TIME_SENSOR] = userData[BOOT_TIME_SENSOR][:-1]
@@ -1411,8 +1414,11 @@ if __name__ == '__main__':
 
                 unlockData = possessionState.unlockData
                 activatedIntervals = activatedIntervalsPhone["activated"]
-                numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+                pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
+                pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
 
+                numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+                print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
                 ##########################
 
                 totalActivatedTestTimes = 0
