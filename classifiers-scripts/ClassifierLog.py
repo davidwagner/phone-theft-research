@@ -1065,19 +1065,25 @@ def findCommonIntervals(intervals1, intervals2):
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1]
         interval2 = intervals2[i2]
-        # # print(i1, i2)
+        print("Interval1:", formatTimeInterval(interval1))
+        print("Interval2:", formatTimeInterval(interval2))
+        print("i1", i1, "i2", i2)
+
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
 
         if interval1[0] >= interval2[0]:
+            print("Interval1 starts after Interval2")
             laterStartingInterval, earlierStartingInterval = interval1, interval2
             later_i, earlier_i = i1, i2
         else:
+            print("Interval2 starts after Interval1")
             laterStartingInterval, earlierStartingInterval = interval2, interval1
             later_i, earlier_i = i2, i1
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
             # print("GOODBYE")
+            print("Later starting interval starts completely after early interval")
             if earlier_i == i1:
                 i1 += 1
             else:
@@ -1086,24 +1092,28 @@ def findCommonIntervals(intervals1, intervals2):
         else:
             # print("HELLO")
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
-
+            print("Earlier ending interval:", formatTimeInterval(earlierEndingInterval))
+            
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            # print commonIntervals
+            print("Common Intervals:")
+            for interval in commonIntervals:
+                print(formatTimeInterval(interval))
+
 
             if earlierStartingInterval[1] == laterStartingInterval[1]:
-                # print "End times are equal"
+                print("End times are equal")
                 i1 += 1
                 i2 += 1
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                # print "Early start ends earlier, advance early"
+                print("Early start ends earlier, advance early")
                 if earlier_i == i1:
                     i1 += 1
                 else:
                     i2 += 1
                 # print i1, i2
             else:
-                # print "Early start ends later, advance later"
+                print("Early start ends later, advance later")
                 if later_i == i1:
                     i1 += 1
                 else:
