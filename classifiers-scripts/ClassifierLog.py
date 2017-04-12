@@ -340,7 +340,7 @@ def stateFromWatchData(allIntervals, file):
         bStart, bEnd = bInterval
 
         if hEnd < bStart:
-            allIntervals.append((hEnd, bStart, "phoneFar"))
+            allIntervals.append((hStart, hEnd, "phoneFar"))
             i += 1
         elif bEnd < hStart:
             j += 1
