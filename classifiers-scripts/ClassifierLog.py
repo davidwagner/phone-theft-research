@@ -6,6 +6,7 @@ import datetime
 import sys
 import shutil
 import argparse
+import time as TIMER
 # import matplotlib.pyplot as plt
 # from matplotlib.dates import SecondLocator, MinuteLocator, HourLocator, DateFormatter, date2num
 # import classifier
@@ -1323,6 +1324,8 @@ def main():
 if __name__ == '__main__':
     # main()
     # USER_ID = '6fdda897'
+    start_time = TIMER.time()
+    # print("Start:", start_time)
 
     NOW = datetime.datetime.now()
     NOW_TIME = NOW.strftime('_%m_%d_%H_%M')
@@ -1465,6 +1468,7 @@ if __name__ == '__main__':
 
                 numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
                 print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
+                activatedFile.write("***********" + USER_ID + "*************" + "\n")
                 activatedFile.write("#####UNLOCKS SAVED#######\n")
                 activatedFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
                 activatedFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
@@ -1540,5 +1544,9 @@ if __name__ == '__main__':
             watchFile.close()
             results.close()
             watchResults.close()
+    # print("Start:", start_time)
+    # print("Time:", time.time())
+
+    print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
 
