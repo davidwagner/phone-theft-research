@@ -24,7 +24,7 @@ def computeUnlocks(keyguardData, activationIntervals):
 				if intervalIndex >= len(activationIntervals):
 					return (unlocksSaved, totalUnlocks, savedTimes)
 
-			if unlockTime >= activationIntervals[intervalIndex][0] and unlockTime <= activationIntervals[intervalIndex][1]
+			if unlockTime >= activationIntervals[intervalIndex][0] and unlockTime <= activationIntervals[intervalIndex][1]:
 				unlocksSaved += 1
 				savedTimes.append(unlockTime)
 
