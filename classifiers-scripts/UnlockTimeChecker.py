@@ -9,26 +9,30 @@ def computeUnlocks(keyguardData, activationIntervals):
 
 	intervalIndex = 0
 
-	keyGuardState = keyguardData[0][1]
+	keyGuardState = keyguardData[0][2]
 
 	for event in keyguardData:
-		tempState = event[1]
+		tempState = event[2]
+		# print("Keyguard:", keyGuardState, "Temp:", tempState)
 
 		if keyGuardState == "true" and tempState == "false":
 			unlockTime = event[0]
+			print("Unlocked:", unlockTime)
 			totalUnlocks += 1
 
-			while unlockTime > activationIntervals[intervalIndex][1]:
+			while intervalIndex < len(activationIntervals) and unlockTime > activationIntervals[intervalIndex][1]:
 				intervalIndex += 1
 
 				if intervalIndex >= len(activationIntervals):
-					return (unlocksSaved, totalUnlocks, savedTimes)
+					break
+					# return (unlocksSaved, totalUnlocks, savedTimes)
 
-			if unlockTime >= activationIntervals[intervalIndex][0] and unlockTime <= activationIntervals[intervalIndex][1]:
+			if intervalIndex < len(activationIntervals) and unlockTime >= activationIntervals[intervalIndex][0] and unlockTime <= activationIntervals[intervalIndex][1]:
 				unlocksSaved += 1
 				savedTimes.append(unlockTime)
 
-			keyguardState = tempState
+		keyGuardState = tempState
+		# print("Updating keyguard state, now:", keyGuardState)
 
 
 	return (unlocksSaved, totalUnlocks, savedTimes)
