@@ -53,8 +53,8 @@ class PossessionState():
 			currentTime = self.getStateTime()
 
 		# print("POSESSION TIMES:", currentTime, time)
-		if currentTime != time:
-			print("DIFFERENT TIMES!", currentTime, time)
+		#if currentTime != time:
+			# print("DIFFERENT TIMES!", currentTime, time)
 		timeSinceLastUnlocked = currentTime - self.lastUnlockedTime
 		timeSinceLastBenign = currentTime - self.lastBenignTime
 
