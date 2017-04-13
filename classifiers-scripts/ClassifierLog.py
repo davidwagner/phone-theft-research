@@ -1486,9 +1486,13 @@ if __name__ == '__main__':
                     activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
 
                 else:
+                    print("********Finding both activated**********")
                     bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+                    print("********Finding both deactivated**********")
                     bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+                    print("********Finding phone activated**********")
                     onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+                    print("********Finding watch activated**********")
                     onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
                     
                     # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
