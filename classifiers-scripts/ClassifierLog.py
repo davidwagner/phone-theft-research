@@ -859,6 +859,8 @@ def getIntervalStats(intervals):
     # print(intervalLengths)
     totalTimeSpent = datetime.timedelta(seconds=0)
     for interval in intervalLengths:
+        if type(interval) is int:
+            continue
         totalTimeSpent += interval
 
     medianLength = "N/A"
