@@ -1077,16 +1077,16 @@ def findCommonIntervals(intervals1, intervals2):
         if interval1[0] >= interval2[0]:
             print("Interval1 starts after Interval2")
             laterStartingInterval, earlierStartingInterval = interval1, interval2
-            later_i, earlier_i = i1, i2
+            later_i, earlier_i = "i1", "i2"
         else:
             print("Interval2 starts after Interval1")
             laterStartingInterval, earlierStartingInterval = interval2, interval1
-            later_i, earlier_i = i2, i1
+            later_i, earlier_i = "i2", "i1"
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
             # print("GOODBYE")
             print("Later starting interval starts completely after early interval")
-            if earlier_i == i1:
+            if earlier_i == "i1":
                 i1 += 1
             else:
                 i2 += 1
@@ -1109,14 +1109,14 @@ def findCommonIntervals(intervals1, intervals2):
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
                 print("Early start ends earlier, advance early")
-                if earlier_i == i1:
+                if earlier_i == "i1":
                     i1 += 1
                 else:
                     i2 += 1
                 # print i1, i2
             else:
                 print("Early start ends later, advance later")
-                if later_i == i1:
+                if later_i == "i1":
                     i1 += 1
                 else:
                     i2 += 1
@@ -1229,8 +1229,8 @@ def formatTimeInterval(timeInterval, withDate=False):
         return '(' + formatTime(timeInterval[0]) + '--' + formatTime(timeInterval[1]) + ')' 
 
 def formatTimeValue(timeValue):
-    if type(timeValue) is str:
-        return timeValue 
+    if type(timeValue) is str or type(timeValue) is int:
+        return str(timeValue) 
     if type(timeValue) is datetime.datetime:
         return formatTime(timeValue)
     elif type(timeValue) is datetime.timedelta:
