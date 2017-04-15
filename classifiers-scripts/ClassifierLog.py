@@ -1208,6 +1208,8 @@ def timeStringsToDateTimes(timeStrings):
     return [timeStringToDateTime(timeString) for timeString in timeStrings]
 
 def formatTime(dateTime, withDate=False):
+    if type(dateTime) is not datetime.datetime:
+        return str(datetime)
     if withDate:
         return dateTime.strftime('%b %d|%H:%M:%S')
     return dateTime.strftime('%H:%M:%S')
