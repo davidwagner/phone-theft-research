@@ -424,7 +424,7 @@ def watchActivationStates(watchStates):
         deactivated += watchStates["phoneFar"]
     
     deactivated = sorted(deactivated, key=lambda x: x[0])
-    print("DEACTIVATED WATCH:", deactivated)
+    # print("DEACTIVATED WATCH:", deactivated)
     mergeAdjacentIntervals(deactivated)
     return activated, deactivated
 
@@ -696,14 +696,13 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     firstTime = userData[sensors.ACCELEROMETER][0][0]
     currentInterval = (firstTime, firstTime)
 
-    print("HELLO CLASSIFIERS")
     for c in classifiers.CLASSIFIERS:
-        print(c)
+        # print(c)
         intervalsByClass[c] = []
     intervalsByClass["Unknown"] = []
 
     limit = numRows // maxWindowSize * maxWindowSize
-    print("LIMIT", limit)
+    # print("LIMIT", limit)
 
     possessionState = PossessionState.PossessionState(userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM)
     for i in range(0, limit, maxWindowSize):
@@ -764,10 +763,8 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
             removedClassification = removed[1]
             resultsCounter[removedClassification] -= 1
 
-    print("HELLOOOOOOOOO")
 
     classifications.append((currentInterval, currentClass))
-    print("CURRENT CLASS:", currentClass)
     intervalsByClass[currentClass].append(currentInterval)
 
     return classifications, intervalsByClass, possessionState
@@ -1067,25 +1064,25 @@ def findCommonIntervals(intervals1, intervals2):
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1]
         interval2 = intervals2[i2]
-        print("Interval1:", formatTimeInterval(interval1))
-        print("Interval2:", formatTimeInterval(interval2))
-        print("i1", i1, "i2", i2)
+        # print("Interval1:", formatTimeInterval(interval1))
+        # print("Interval2:", formatTimeInterval(interval2))
+        # print("i1", i1, "i2", i2)
 
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
 
         if interval1[0] >= interval2[0]:
-            print("Interval1 starts after Interval2")
+            # print("Interval1 starts after Interval2")
             laterStartingInterval, earlierStartingInterval = interval1, interval2
             later_i, earlier_i = "i1", "i2"
         else:
-            print("Interval2 starts after Interval1")
+            # print("Interval2 starts after Interval1")
             laterStartingInterval, earlierStartingInterval = interval2, interval1
             later_i, earlier_i = "i2", "i1"
 
         if laterStartingInterval[0] >= earlierStartingInterval[1]:
             # print("GOODBYE")
-            print("Later starting interval starts completely after early interval")
+            # print("Later starting interval starts completely after early interval")
             if earlier_i == "i1":
                 i1 += 1
             else:
@@ -1094,28 +1091,28 @@ def findCommonIntervals(intervals1, intervals2):
         else:
             # print("HELLO")
             earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
-            print("Earlier ending interval:", formatTimeInterval(earlierEndingInterval))
+            # print("Earlier ending interval:", formatTimeInterval(earlierEndingInterval))
             
             commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            print("Common Intervals:")
-            for interval in commonIntervals:
-                print(formatTimeInterval(interval))
+            # print("Common Intervals:")
+            # for interval in commonIntervals:
+            #     print(formatTimeInterval(interval))
 
 
             if earlierStartingInterval[1] == laterStartingInterval[1]:
-                print("End times are equal")
+                # print("End times are equal")
                 i1 += 1
                 i2 += 1
 
             elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                print("Early start ends earlier, advance early")
+                # print("Early start ends earlier, advance early")
                 if earlier_i == "i1":
                     i1 += 1
                 else:
                     i2 += 1
                 # print i1, i2
             else:
-                print("Early start ends later, advance later")
+                # print("Early start ends later, advance later")
                 if later_i == "i1":
                     i1 += 1
                 else:
@@ -1414,7 +1411,7 @@ if __name__ == '__main__':
                     for state in watchState:
                         watchResults.write("----" + str(state) + "-----" + "\n")
                         intervals = watchState[state]
-                        print("WTF!", state)
+                        # print("WTF!", state)
                         stats = getIntervalStats(intervals)
                         for stat, val in stats.items():
                             watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
@@ -1490,14 +1487,14 @@ if __name__ == '__main__':
                     activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
 
                 else:
-                    print("********Finding both activated**********")
-                    bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
-                    print("********Finding both deactivated**********")
-                    bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
-                    print("********Finding phone activated**********")
-                    onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
-                    print("********Finding watch activated**********")
-                    onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
+                    # print("********Finding both activated**********")
+                    # bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+                    # print("********Finding both deactivated**********")
+                    # bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+                    # print("********Finding phone activated**********")
+                    # onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+                    # print("********Finding watch activated**********")
+                    # onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
                     
                     # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
                     ### CALCULATE UNLOCKS ###
@@ -1537,7 +1534,7 @@ if __name__ == '__main__':
                             commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
                             # print("COMMON INTERVALS:", commonIntervals)
                             stats = getIntervalStats(commonIntervals)
-                            print(stats["totalTimeSpent"])
+                            # print(stats["totalTimeSpent"])
                             # activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
 
                             timeSeconds = stats["totalTimeSpent"].total_seconds()
