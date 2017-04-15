@@ -1427,7 +1427,7 @@ if __name__ == '__main__':
 
                     watchResults.write("-----Percentage of Time for each State ------" + "\n")
                     for c, time in timeSpentByWatchState.items():
-                        percentage = time / totalTime
+                        percentage = time / totalTime if totalTime != 0 else 0
                         percentageString = str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n"
                         watchResults.write(percentageString)
                         percentageRow = [DATA_DAY, USER_ID, str(c), str(percentage * 100)]
