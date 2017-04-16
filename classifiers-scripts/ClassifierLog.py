@@ -304,7 +304,8 @@ def continuousWatchInterals(userID):
             prevState = state
             prevTime = time
 
-        intervals.append((startTime, prevTime, prevState))
+        if prevTime != -1 and startTime != -1 and prevTime != -1:
+            intervals.append((startTime, prevTime, prevState))
         allIntervals[instrument] = intervals 
     return allIntervals
 
