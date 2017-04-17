@@ -13,7 +13,7 @@ BENIGN_CLASSIFIERS = set([POCKET_BAG_CLASSIFIER, HAND_CLASSIFIER])
 START_OF_TIME = datetime.datetime.min
 # unlock = 0, locked = 1
 class PossessionState():
-	def __init__(self, sensorData, unlockData, smoothingNum):
+	def __init__(self, sensorData, unlockData, smoothingNum, safePeriod=SAFE_PERIOD):
 		self.activeSensorData = sensorData
 		self.unlockData = unlockData
 
@@ -24,6 +24,7 @@ class PossessionState():
 		self.lastClassificationTimes = {}
 		self.intervals = []
 		self.currentInterval = (self.getStateTime(), self.getStateTime())
+		self.SAFE_PERIOD = safePeriod
 
 	def isUnlocked(self):
 		if self.dataIndex >= len(self.activeSensorData) - 1:
@@ -64,7 +65,7 @@ class PossessionState():
 			self.state = PHONE_ACTIVATED
 			self.lastUnlockedTime = self.getStateTime()
 		elif self.state == PHONE_ACTIVATED: 
-			if timeSinceLastBenign <= SAFE_PERIOD:
+			if timeSinceLastBenign <= self.SAFE_PERIOD:
 				self.state = PHONE_ACTIVATED
 			else:
 				self.state = PHONE_DEACTIVATED
