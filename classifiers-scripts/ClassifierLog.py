@@ -372,35 +372,6 @@ def stateFromWatchData(allIntervals, file):
         allIntervals.append((hStart, hEnd, "phoneFar"))
         i += 1
 
-        # while bEnd < hStart  and j < len(basisPeakIntervals):
-        #     bStart, bEnd = basisPeakIntervals[j]
-        #     allIntervals.append((bStart, bEnd, "unknown"))
-        #     j += 1
-        # while hEnd < bStart and i < len(heartRateIntervals):
-        #     hStart, hEnd, hState = heartRateIntervals[i]
-        #     i += 1
-        # if bStart < hStart and bEnd > hEnd:
-        #     allIntervals.append((bStart, hStart, "unknown"))
-        #     if j < len(basisPeakIntervals):
-        #         basisPeakIntervals[j] = ((hStart, bEnd))
-        # if bEnd < hEnd:
-        #     j += 1
-        # if hEnd < bEnd:
-        #     i += 1
-
-    # while j < len(basisPeakIntervals):
-    #     bStart, bEnd = basisPeakIntervals[j]
-    #     allIntervals.append((bStart, bEnd, "unknown"))
-    #     j += 1
-    # result = []
-    # prevTime = -1
-    # for start, end in basisPeakIntervals:
-    #     if prevTime == -1:
-    #         prevTime = end
-    #     elif start > prevTime:
-    #         allIntervals.append((prevTime, start, "phoneFar"))
-    #     prevTime = end
-
     allIntervals = sorted(allIntervals, key=lambda x: x[0])
     logString = ""
     result = {}
@@ -412,21 +383,32 @@ def stateFromWatchData(allIntervals, file):
         logString += state + " : ("  + str(start) + ", " + str(end) + ")"
         logString += "\n"
     file.write(logString)
-    return result
+    return result, allIntervals
 
 def watchActivationStates(watchStates):
     activated = []
     deactivated = []
-    if "phoneNear" in watchStates:
-        activated = watchStates["phoneNear"]
-    if "unknown" in watchStates:
-        deactivated += watchStates["unknown"]
-    if "phoneFar" in watchStates:
-        deactivated += watchStates["phoneFar"]
+    delta = datetime.timedelta(minutes=3)
+    for start, end, state in watchStates:
+        if state == "phoneNear":
+            activated.append((start, end))
+        else:
+            if end - start > delta:
+                deactivated.append((start, end))
+            else:
+                activated.append((start, end))
+    # if "phoneNear" in watchStates:
+    #     activated = watchStates["phoneNear"]
+    # if "unknown" in watchStates:
+    #     deactivated += watchStates["unknown"]
+    # if "phoneFar" in watchStates:
+    #     deactivated += watchStates["phoneFar"]
     
+    activated = sorted(activated, key=lambda x: x[0])
     deactivated = sorted(deactivated, key=lambda x: x[0])
     # print("DEACTIVATED WATCH:", deactivated)
     mergeAdjacentIntervals(deactivated)
+    mergeAdjacentIntervals(activated)
     return activated, deactivated
 
 
@@ -1403,8 +1385,8 @@ if __name__ == '__main__':
             if not RUN_CLASSIFIERS_ONLY:
                 watchResults.write("#########" + USER_ID + "#######\n")
                 try:
-                    watchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
-                    activatedWatchStates = watchActivationStates(watchState)
+                    watchState, continousWatchState = stateFromWatchData(continuousWatchInterals(USER_ID), watchFile)
+                    activatedWatchStates = watchActivationStates(continousWatchState)
                     activatedIntervalsWatch = {PossessionState.PHONE_ACTIVATED: activatedWatchStates[0], PossessionState.PHONE_DEACTIVATED: activatedWatchStates[1]}
                     # HERE STEVEN :)
                     timeSpentByWatchState = {}
