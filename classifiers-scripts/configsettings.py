@@ -2,14 +2,14 @@ import csv
 ##### CONFIGURE FOR OWN MACHINE ###############
 # Replace with your own
 DASHBOARDDIR = '../data/Classifier_Results_TEST/'
-USERS_TO_IDS_FILE = "../data/users_r3_watch.csv"
-DIRECTORY = "../data/Decrypted_Data/"
+USERS_TO_IDS_FILE = "../joanna_watch.csv"
+DIRECTORY = "../../"
 # DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############USERS###########################
 FULL_STUDY_RUN = True
-RUN_WATCH_ONLY = False
+RUN_WATCH_ONLY = True
 RUN_CLASSIFIERS_ONLY = False
-READ_USERS_FROM_FILE = True
+READ_USERS_FROM_FILE = False
 USERS = []
 if READ_USERS_FROM_FILE:
 	ids = []
@@ -24,6 +24,6 @@ if READ_USERS_FROM_FILE:
 
 	USERS = ids
 else:
-	USERS = []
+	USERS = ["6fdda897"]
 ###############DAYS###########################
-DATA_DATES = ["2016_12_13"]
+DATA_DATES = ["Integration_Test_Small"]
