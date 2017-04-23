@@ -12,9 +12,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def classify(self, windows):
 
 		"""Edit as Necessary"""
-		thresholdX = 0.8
-		thresholdY = 0.2
-		thresholdZ = 0.9
+		thresholdX = 1
+		thresholdY = 1
+		thresholdZ = 1
 
 		if s.ACCELEROMETER not in windows:
 			raise Exception("Accelerometer not found")
@@ -40,7 +40,7 @@ class Classifier(BaseClassifier.BaseClassifier):
 		zVal = numpy.mean(zValues)
 
 
-		if (abs(xVal-0) < thresholdX and abs(yVal-0) < thresholdY and abs(zVal-9.8) < thresholdZ):
+		if (abs(xVal-0) < thresholdX and abs(yVal-0) < thresholdY and abs(zVal-9.5) < thresholdZ):
 			return 1
 
 		return 0
