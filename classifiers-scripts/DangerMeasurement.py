@@ -2,6 +2,7 @@ import ClassifierLog as cl
 import Sensors as sensors
 from configsettings import *
 import datetime
+import traceback
 
 def stats(intervals):
 	firstStart, firstEnd, s = intervals[0]
