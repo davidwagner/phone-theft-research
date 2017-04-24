@@ -25,13 +25,14 @@ def continousIntervals(userData):
 	prevTime = -1
 	intervals = []
 	prevState = -1
+	delta = datetime.timedelta(seconds=60)
 
 	for row in userData:
 		time = row[0]
 		state = row[-1]
 		if startTime == -1:
 			startTime = time
-		elif prevState != state:
+		elif time - prevTime > delta or prevState != state:
 			intervals.append((startTime, prevTime, prevState))
 			startTime = time
 		prevState = state
@@ -57,8 +58,10 @@ if __name__ == '__main__':
 
 		dataFiles = cl.getUserFilesByDayAndInstrument(USER_ID, sensors.CONNECTED_DEVICES)
 		userData = cl.dataFilesToDataListAbsTime(dataFiles)
+		#print(userData)
 
 		intervals = continousIntervals(userData)
+		print(intervals)
 		freq = len(intervals) - 1
 		percentConnected, percentDropped, totalTime = stats(intervals)
 		phoneModel = ""
