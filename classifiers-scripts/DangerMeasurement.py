@@ -55,22 +55,27 @@ if __name__ == '__main__':
 		print("Number of users processed:", count)
 		print("Currently on:", USER_ID)
 		cl.DIRECTORY = DIRECTORY + "/" + DATA_DATES[0] + "/"
+		try :
+			dataFiles = cl.getUserFilesByDayAndInstrument(USER_ID, sensors.CONNECTED_DEVICES)
+			userData = cl.dataFilesToDataListAbsTime(dataFiles)
+			#print(userData)
 
-		dataFiles = cl.getUserFilesByDayAndInstrument(USER_ID, sensors.CONNECTED_DEVICES)
-		userData = cl.dataFilesToDataListAbsTime(dataFiles)
-		#print(userData)
+			intervals = continousIntervals(userData)
+			freq = len(intervals) - 1
+			percentConnected, percentDropped, totalTime = stats(intervals)
+			phoneModel = ""
+			allUsers.append((USER_ID, freq, percentDropped, percentConnected, phoneModel))
 
-		intervals = continousIntervals(userData)
-		print(intervals)
-		freq = len(intervals) - 1
-		percentConnected, percentDropped, totalTime = stats(intervals)
-		phoneModel = ""
-		allUsers.append((USER_ID, freq, percentDropped, percentConnected, phoneModel))
-
+		except:
+			tb = traceback.format_exc()
+			print(tb)
+			summaryFile.write("******EXCEPTION (while computing " + USER_ID + " )*******\n")
+			summaryFile.write(tb)
 	sortedUsers = sorted(allUsers, key=lambda x: x[1])
 	for userId, freq, percentDropped, percentConnected, phoneModel in sortedUsers:
 		summaryWriter.writerow([userId, freq, percentDropped, percentConnected, phoneModel])
 	summaryFile.close()
+
 
 
 
