@@ -3,7 +3,7 @@ import BaseClassifier
 import Sensors as s
 import numpy
 
-windowSize = 50
+windowSize = 10
 
 class Classifier(BaseClassifier.BaseClassifier):
 
@@ -12,9 +12,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def classify(self, windows):
 
 		"""Edit as Necessary"""
-		thresholdX = 0.3
-		thresholdY = 0.3
-		thresholdZ = 0.3
+		thresholdX = 0.6
+		thresholdY = 0.6
+		thresholdZ = 0.6
 
 		if s.ACCELEROMETER not in windows:
 			raise Exception("Accelerometer not found")
