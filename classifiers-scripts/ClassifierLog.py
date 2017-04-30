@@ -1026,6 +1026,70 @@ def findCommonIntervalsByValue(intervals1, intervals2, value):
 
     return commonIntervals
 
+def compareIntervals(intervals1, intervals2):
+    i1 = 0
+    i2 = 0
+    interval1 = intervals1[i1][0]
+    interval2 = intervals2[i2][0]
+    class1 = intervals1[i1][1]
+    class2 = intervals1[i2][1]
+
+    startTime = interval1[0] if interval1[0] > interval2[0] else interval2[0]
+    endTime = None
+
+    comparedIntervals = []
+    matchingIntervals = []
+    conflictingIntervals = []
+    while i1 < len(intervals1) and i2 < len(intervals2):
+        interval1 = intervals1[i1][0]
+        interval2 = intervals2[i2][0]
+        class1 = intervals1[i1][1]
+        class2 = intervals2[i2][1]
+
+        if interval1[1] == interval2[1]:
+            endTime = interval1[1]
+            i1 += 1
+            i2 += 1
+        elif interval1[1] < interval2[1]:
+            endTime = interval1[1]
+            i1 += 1
+        else:
+            endTime = interval2[1]
+            i2 += 1
+
+        comparedClass = None
+        matchingClasses = False
+        if class1 == class2:
+            comparedClass = class1
+            matchingClasses = True
+        else:
+            comparedClass = str(class1) + " | " + str(class2)
+
+        comparedInterval = ((startTime, endTime), comparedClass, matchingClasses)
+        comparedIntervals.append(comparedInterval)
+
+        if matchingClasses:
+            matchingIntervals.append(comparedInterval)
+        else:
+            conflictingIntervals.append(comparedInterval)
+
+        startTime = endTime
+
+    return comparedIntervals, matchingIntervals, conflictingIntervals
+
+### Joanna Finish #####
+# actualIntervals is a list of intervals, classifications like [((startTime, endTime), "table"), ((start, end), "pocket")]
+def checkClassifications(actualIntervals, expectedIntervals=None):
+    # However you want to load the expectedIntervals, maybe parse a text file?
+    # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
+
+    comparedIntervals, matchingIntervals, conflictingIntervals = comparedIntervals(actualIntervals, expectedIntervals)
+
+    # Write the results to some file, probably also calculate some stats on what % of time we match/don't match
+    # All of comparedIntervals, matchingIntervals, and conflictingIntervals have the following format:
+    # ((startDateTime, endDateTime), classificationString, isMatchingClassifications)
+    # the classificationString is either one classifier if the expected/actual matched, else two classifier names
+
 def findCommonIntervals(intervals1, intervals2):
     # print("Finding common intervals!")
     # print intervals1
@@ -1047,9 +1111,6 @@ def findCommonIntervals(intervals1, intervals2):
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1]
         interval2 = intervals2[i2]
-        # print("Interval1:", formatTimeInterval(interval1))
-        # print("Interval2:", formatTimeInterval(interval2))
-        # print("i1", i1, "i2", i2)
 
         laterStartingInterval, earlierStartingInterval = None, None
         later_i, earlier_i = None, None
@@ -1448,11 +1509,12 @@ if __name__ == '__main__':
                 results.write("#########" + USER_ID + "#######\n")
                 try: 
                     classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, file)
+                    
+                    ### Joanna Finish ###
+                    checkClassifications(classifications)
+                    #####################
+
                     activatedIntervalsPhone = possessionState.getIntervalsByState()
-                    # print("ACTIVATED REPORT:")
-                    # for interval in possessionState.getIntervals():
-                    #     print(interval)
-                    # print("END ACTIVATED REPORT")
                     timeSpentByClass = {}
 
                     for c in intervalsByClass:
