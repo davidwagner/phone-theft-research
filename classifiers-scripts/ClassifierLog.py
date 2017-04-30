@@ -687,7 +687,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     limit = numRows // maxWindowSize * maxWindowSize
     # print("LIMIT", limit)
 
-    possessionState = PossessionState.PossessionState(userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM)
+    possessionState = PossessionState.PossessionState(userData, userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM)
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -1289,6 +1289,28 @@ def calculateBootTime(userFiles):
 def getUserFileTimes(userFiles):
     return [timeStringToDateTime(getTimeFromFile(filename)) in filename in userFiles]
 
+def continousIntervalsBleConnected(userData):
+    startTime = -1
+    prevTime = -1
+    intervals = []
+    prevState = -1
+    delta = datetime.timedelta(seconds=60)
+
+    for row in userData:
+        time = row[0]
+        state = row[-1]
+        if startTime == -1:
+            startTime = time
+        elif time - prevTime > delta or prevState != state:
+            intervals.append((startTime, prevTime, prevState))
+            startTime = time
+        prevState = state
+        prevTime = time
+
+    if prevTime != -1 and startTime != -1 and prevTime != -1:
+        intervals.append((startTime, prevTime, prevState))
+    return intervals
+
 
 
 def main():
@@ -1372,6 +1394,9 @@ if __name__ == '__main__':
         activatedSummaryWriter = csv.writer(activatedSummary)
         activatedSummaryWriter.writerow(["Day", "User", "Unlocks Saved", "Unlocks Total", "Percent Both Activated", "Percent Only Phone Activated", "Percent Only Watch Activated", "Percent Both Deactivated", "Both Activated", "Only Phone Activated", "Only Watch Activated", "Both Deactivated"])
 
+        smartUnlockSummary = open('smart-unlock-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        smartUnlockSummaryWriter = csv.writer(smartUnlockSummary)
+        smartUnlockFile = open('smart-unlock-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
         count = 0
         for USER_ID in USERS:
@@ -1463,6 +1488,54 @@ if __name__ == '__main__':
                     results.write("******EXCEPTION (while computing classifications)*******\n")
                     results.write(tb)
                     results.write("\n")
+
+            if activatedIntervalsPhone != None:
+                try:
+                    unlockData = possessionState.unlockData
+                    userData = possessionState.allData
+                    activatedIntervals = activatedIntervalsPhone["activated"]
+
+                    activatedIntervalsBle = continousIntervalsBleConnected(userData[sensors.CONNECTED_DEVICES])
+
+                    # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
+                    # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
+
+                    numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+
+                    numUnlocksSavedBle, numUnlocksTotalBle, unlockTimesBle = computeUnlocks(unlockData, activatedIntervalsBle)
+                    
+                    print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
+                    smartUnlockFile.write("#####UNLOCKS SAVED#######\n")
+                    smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
+                    smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
+
+                    smartUnlockFile.write("#####UNLOCKS SAVED (BLE) #######\n")
+                    smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSavedBle) + "\n")
+                    smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotalBle) + "\n")
+
+                    ##########################
+
+                    activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksSavedBle, numUnlocksTotal]
+                    smartUnlockSummaryWriter.writerow(activatedRow)
+
+                    smartUnlockFile.write("####### VERBOSE INFO #########\n")
+                    smartUnlockFile.write("######## SAVED UNLOCK TIMES #######\n")
+
+                    for time in unlockTimes:
+                        smartUnlockFile.write(formatTimeValue(time) + "\n")
+
+                    smartUnlockFile.write("######## SAVED UNLOCK TIMES (BLE) #######\n")
+
+                    for time in unlockTimesBle:
+                        smartUnlockFile.write(formatTimeValue(time) + "\n")
+
+                except:
+                    tb = traceback.format_exc()
+                    print(tb)
+                    smartUnlockFile.write("******EXCEPTION (while computing activations)*******\n")
+                    smartUnlockFile.write(tb)
+                    smartUnlockFile.write("\n")
+
 
             try:
                 activatedFile.write("***********" + USER_ID + "*************" + "\n")
