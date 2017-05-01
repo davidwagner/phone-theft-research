@@ -1077,13 +1077,67 @@ def compareIntervals(intervals1, intervals2):
 
     return comparedIntervals, matchingIntervals, conflictingIntervals
 
+
+def totalTimeOfIntervals(intervals):
+    timeConnected = datetime.timedelta(seconds=00)
+    prevState = -1
+    for interval, classified, state in intervals:
+        start = interval[0]
+        end = interval[1]
+        timeInBetween = end - start
+        timeConnected += timeInBetween
+        prevState = end
+
+    return timeConnected
+
+
+def getExpectedIntervals(file):
+    intervals = []
+    with open(file) as f:  
+        reader = csv.reader(f)
+        prevTime = -1
+        prevState = -1
+        for row in reader: 
+            startTime = datetime.datetime.strptime(row[0] + " " + row[1], "%m/%d/%y %H:%M")
+            if prevTime != -1:
+                intervals.append(((prevTime, startTime), prevState))
+            prevTime = startTime
+            prevState = row[2]
+    return intervals
+
+
 ### Joanna Finish #####
 # actualIntervals is a list of intervals, classifications like [((startTime, endTime), "table"), ((start, end), "pocket")]
 def checkClassifications(actualIntervals, expectedIntervals=None):
     # However you want to load the expectedIntervals, maybe parse a text file?
     # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
 
-    comparedIntervals, matchingIntervals, conflictingIntervals = comparedIntervals(actualIntervals, expectedIntervals)
+    comparedIntervals, matchingIntervals, conflictingIntervals = compareIntervals(actualIntervals, expectedIntervals)
+
+    file = open('diary-study-stats' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+
+    file.write("############ DIARY STUDY COMPARISON ############## \n")
+
+    interval1, classification1, ismatch1 = comparedIntervals[0]
+    interval2, classification2, ismatch2 = comparedIntervals[-1]
+    totalTime = interval2[1] - interval1[0]
+    matchingTime = totalTimeOfIntervals(matchingIntervals)
+    conflictingTime = totalTimeOfIntervals(conflictingIntervals)
+
+    file.write("Total Time: " + formatTimeValue(totalTime) + "\n")
+    file.write("Total time matching: " + formatTimeValue(matchingTime) +"\n")
+    file.write("% of time matched: " + str(1.0 * matchingTime/totalTime) + "\n")
+    file.write("Total time conflicting: " + formatTimeValue(conflictingTime) + "\n")
+    file.write("% of time conflicted: " + str(1.0 * conflictingTime/totalTime) + "\n")
+
+    file.write("\n")
+    file.write("\n")
+
+    file.write("All conflicting intervals: \n")
+    for interval, classificationString, isMatching in conflictingIntervals:
+        file.write(formatTimeValue(interval) + ": " + classificationString + "\n")
+
+    file.close()
 
     # Write the results to some file, probably also calculate some stats on what % of time we match/don't match
     # All of comparedIntervals, matchingIntervals, and conflictingIntervals have the following format:
@@ -1510,8 +1564,9 @@ if __name__ == '__main__':
                 try: 
                     classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, file)
                     
+                    expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
                     ### Joanna Finish ###
-                    checkClassifications(classifications)
+                    checkClassifications(classifications, expectedIntervalsDiary)
                     #####################
 
                     activatedIntervalsPhone = possessionState.getIntervalsByState()
