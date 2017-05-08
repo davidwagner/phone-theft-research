@@ -36,8 +36,19 @@ TODO: Won
 \subsubsection{Steady State}
 TODO: Won
 \subsubsection{Hand}
-TODO: Joanna
+We wish to also identify when the phone is in the hand of the user.
+ Assuming that the phone is passcode protected, this phone state is benign and implies that the user has control over the phone. 
+The most common scenarios for this state is when the user is either actively using the phone or holding it [with straight arms pointing to the ground]
+ Two telling characteristics of these two scenarios is the physical position of the phone and the user?s activity on the phone. 
+The phone is most commonly positioned to be either at an angle with the screen facing up or with the side of the phone pointing down. 
+To capture the physical position of the phone, we used the averages and standard deviations of the  acceleration and its magnitude of the x, y, z direction as features. 
+The user could also be doing a range of actions, such as walking, with the phone in his hand, which could make the acceleration averages negligible. 
+[In order to capture other movements of the user], we also featurized the number of times the acceleration changed signs. 
 
+A typical scenario of a user actively using his phone is unlocking the keyguard of his phone and touching the screen multiple times and during which, the phone screen is on. 
+To capture the active usage of the user, we used the number of times the user touch the screen and the fraction of time when the screen is one and when the phone is unlocked. 
+
+We used soft margin SVM linear classifier with a RBF (Gaussian) kernel to classify between positives and negatives. 
 \section{Evaluation}
 \subsection{Diary Study}
 TODO: Joanna
