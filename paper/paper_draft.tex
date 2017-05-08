@@ -12,9 +12,9 @@
 \graphicspath{ {images/} }
 
 \newpage
-\title{The MIPS Datapath}
-\author{CS61C Spring 2017}
-\date{ }
+\title{Inferring Phone Behavior}
+\author{TBD}
+\date{TBD}
 \begin{document}
 \maketitle
 \tableofcontents
@@ -27,7 +27,56 @@
 \subsection{Problem}
 TODO: Won
 \subsection{Architecture}
-TODO: Steven
+The software can be divided into sections: 1) Determining where the phone is relative to the user using binary classifiers
+2) A state-ful policy that combines the phone's location with its activity to track whether the phone should be activated or deactivated.
+
+Before making any inference of a user's phone being in their possession, it was necessary to determine the location
+of the phone relative to the user.
+Classifiers were built to identify phone locations that were common throughout the phone's use and as disjoint from 
+each other as possible. These phone locations were the phone being:
+\begin{enumerate}
+\item \textit{Table}|still on a table, or other flat surface
+\item \textit{Pocket/Bag}|in the user's pocket or in a bag on their person
+\item \textit{Steady State}|still in a bag, or other container in which the phone is not flat
+\item \textit{Hand}|in the user's hand
+\end{enumerate}
+
+An individual classifier was built for each of these possible phone locations, due to the varying sets of features among
+the locations. Each classifier was a binary classifier that indicated positively if the phone was in the corresponding location,
+and negatively otherwise. Features were extracted from the sensor data naturally available to Android smartphones. The construction
+and reasoning of each classifier is explained in detail in the next section.
+
+In order to determine the phone's location based on the classifiers, relevant sensor data was divided into windows of one second. One second
+was chosen because it was the maximum length of a window among the classifiers, so enough data for at least that amount of time was necessary
+for all of the classifiers to output a classification. Since classifiers with smaller windows than this maximum length would then have multiple 
+classifications within this window of one second (e.g. the table classifier would classify twenty of its 0.05s windows within one second), a classifier's
+multiple classifications were then reduced to a single classification by taking the majority vote among the classifications. 
+
+If multiple classifiers classified positively, that the phone was in the corresponding location, the phone's location was then determined by conservatively taking the most dangerous
+of those locations. A location was considered dangerous if it was ambiguous if a phone would be with the user in that location (e.g. a phone still on the table
+may be when the user has set it down momentarily or when the user has forgotten it and left it unattended on the table). Accordingly, a ranking of (most) danger
+among the four phone locations was established as follows:
+\begin{enumerate}
+\item \textit{Table}
+\item \textit{Steady State}
+\item \textit{Pocket/Bag}
+\item \textit{Hand}
+\end{enumerate}
+
+Finally, instead of directly assigning each second of time with its resulting classified location, each second of data was buffered in a "smoothing" window 
+of 11 seconds in order to account for short, sudden changes in phone location that could not happen within the span of 1-2 seconds. For example, a 
+"smoothing" window may contain five straight seconds of a \textit{Table} classification, then one second of a \textit{Pocket/Bag} classification, and then 
+another five straight seconds of \textit{Table}. A phone would likely not be able to switch from those two locations within a single second, so the classification
+of \textit{Pocket/Bag} was likely anomalous and that second should instead be classified as \textit{Table}. Therefore, the actual classification of a second of
+data was classified as the majority classification among the five seconds before, the second itself, and the five seconds after. This introduced robustness
+to fleeting outliers, although at the cost of an additional five seconds of latency. 
+
+Following these preprocessing steps, the software would then have a concluded location of the phone at every second.
+
+The software then combined the phone's location with phone unlock events in order to continuously decide whether the phone was in
+the user's possession (activated state) or it was unable to be determined (deactivated state).
+
+
 \subsection{Classifiers}
 \subsubsection{Table}
 TODO: Won
