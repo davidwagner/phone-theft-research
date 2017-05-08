@@ -25,16 +25,32 @@
 
 \section{Problem Structure \& Design}
 \subsection{Problem}
-TODO: Won
+\indent We aim to create a program that would detect situations in which it is possible a phone may be compromised as well as situations where the phone is most likely in a safe state such that an appopriate policy can be enacted. 
+For example, in this paper we look at the example policy of allowing the unlock of a phone without a password if the phone is determined to be in a safe state. 
+We limit the time frame of this program to run during the hours in the day between 7 am and 8 pm. 
 \subsection{Architecture}
 TODO: Steven
 \subsection{Classifiers}
 \subsubsection{Table}
-TODO: Won
+\indent Detecting if a phone is on a table utilized the accelerometer as the sole phone sensor and operated on a window size of 50. 
+The script would output that a phone was on a table if 3 cases were met: 
+The average reading of acceleration in the z-direction during the 500 ms in question would have to be within some threshold value of 9.5 and the average reading of acceleration in the x and y-directions would have to be within some threshold of 0.  
+The threshold values were adjusted during the trial period and were finally set to 1 for all three threshold values. 
+
+Note to self: We should do tests to explain why the threshold value aren't something else. 
+
+\indent This methodology is somewhat crude in that it would only sense cases where a phone is perfectly flat on a relatively level table. 
+Most notable of the cases that are excluded are if the phone is on a stand or otherwise unlevel resting position. 
+However, this case is taken care of in the Steady State section (link).
 \subsubsection{Pocket/Bag}
-TODO: Won
+
 \subsubsection{Steady State}
-TODO: Won
+\indent The goal of this is to detect cases in which the phone is not moving for long periods of time. 
+Common cases of this include the phone being left in a bag or backpack, a phone resting on a stand or another unlevel resting position, and the phone resting insider a person's pocket while the person is sitting down. T
+he script would output true for this section if the accelereometer reading for all three directions has not changed by a value of more than X for Y seconds.
+
+Note to self: Again, play around with X/Y thresholds. 
+
 \subsubsection{Hand}
 We wish to also identify when the phone is in the hand of the user.
  Assuming that the phone is passcode protected, this phone state is benign and implies that the user has control over the phone. 
