@@ -3,14 +3,15 @@ import csv
 # Replace with your own
 DASHBOARDDIR = '../data/Classifier_Results_TEST/'
 USERS_TO_IDS_FILE = "../joanna_watch.csv"
-DIRECTORY = "../../DiaryStudy"
-DIARY_STUDY_FILE = "../../diary_state.txt"
+DIRECTORY = "../data/diary_irwin/"
+DIARY_STUDY_FILE = "../data/diary_irwin/diary_state.txt"
 # DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############USERS###########################
 FULL_STUDY_RUN = False
 RUN_WATCH_ONLY = False
 RUN_CLASSIFIERS_ONLY = True
 READ_USERS_FROM_FILE = False
+SANITY_TEST = False
 USERS = []
 if READ_USERS_FROM_FILE:
 	ids = []
@@ -25,6 +26,6 @@ if READ_USERS_FROM_FILE:
 
 	USERS = ids
 else:
-	USERS = ["34341b69"]
+	USERS = [""]
 ###############DAYS###########################
-DATA_DATES = ["4_17"]
+DATA_DATES = ["diary_data"]

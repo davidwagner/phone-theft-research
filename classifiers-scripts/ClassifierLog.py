@@ -15,6 +15,9 @@ import Classifiers as classifiers
 import PossessionState
 import pickle
 import traceback
+import Intervals
+import TimeFileUtils
+import DataProcessing
 
 from configsettings import *
 from collections import deque, Counter
@@ -25,6 +28,8 @@ DUMP_RESULTS = True
 if DIRECTORY[-1] != '/':
     DIRECTORY += '/'
 
+maxWindowSize = 100
+
 NOW = datetime.datetime.now()
 # NOW_DAY = NOW.strftime('%Y_%m_%d')
 
@@ -32,261 +37,20 @@ YESTERDAY = (NOW - datetime.timedelta(days=1)).strftime('%Y_%m_%d')
 # NOW_DAY = YESTERDAY
 NOW_DAY = '2016_11_01'
 
-# RELEVANT_SENSORS = set([])
-# RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS]
-RELEVANT_SENSORS = [sensors.ACCELEROMETER, sensors.PHONE_ACTIVE_SENSORS, sensors.LIGHT_SENSOR]
-HEARTRATE_SENSOR = sensors.HEART_RATE
-# BLUETOOTH_SENSOR = sensors.BLUETOOTH_CONNECTED
-# WATCH_SENSORS = [HEARTRATE_SENSOR, BLUETOOTH_SENSOR]
-WATCH_SENSORS = [HEARTRATE_SENSOR, sensors.CONNECTED_DEVICES]
 YEAR_2000 = datetime.date(2000, 1, 1)
-
-BOOT_TIME_DELTA = datetime.timedelta(hours=1)
-BOOT_TIME_SENSOR = sensors.ACCELEROMETER
-START_OF_TIME = datetime.datetime.min
-
-SANITY_TEST = False
-maxWindowSize = 100
-
-START_TIME_FILTER = datetime.time(hour=8)
-END_TIME_FILTER = datetime.time(hour=22)
-# START_TIME_FILTER = None
-# END_TIME_FILTER = None
-
-
-def getUserFilesByDayAndInstrument(userID, instrument):
-    query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
-    userFiles = glob.glob(query)
-    userFiles.sort()
-    # TODO: Need to filter for sensors that need data files with matching times as other
-    # sensors (e.g. accelerometer and step count for Theft Classifier)
-    # print(userFiles)
-    return userFiles
-
-
-def dataFilesToDataList(userFiles, bootTimes, needsToComputeBootTime=False):
-    dataList = []
-    currentBootTime = START_OF_TIME
-    nextFileTime = START_OF_TIME
-    nextFileTimeIndex = 0
-
-    # print("USER FILES")
-    # print(userFiles)
-    
-    for dataFile in userFiles:
-        with open(dataFile) as f:  
-            reader = csv.reader(f)
-            
-            fileTime = timeStringToDateTime(getTimeFromFile(dataFile))
-
-            firstRow = next(reader)
-            firstTime = datetime.timedelta(milliseconds=int(firstRow[0]))
-
-            if needsToComputeBootTime:
-                bootTime = fileTime - firstTime
-
-                difference = bootTime - currentBootTime if bootTime > currentBootTime else currentBootTime - bootTime
-
-                if difference > BOOT_TIME_DELTA:
-                    currentBootTime = bootTime 
-                    bootTimes.append((fileTime, bootTime))
-            
-            else:
-                # print("FileTime", str(fileTime))
-                # print("NextFileTIme", str(nextFileTime))
-                if fileTime > nextFileTime:
-                    currentBootTime = bootTimes[nextFileTimeIndex][1] # boot time has changed, update
-                    # print("Current Boot Time:", currentBootTime)
-                    nextFileTimeIndex = nextFileTimeIndex + 1 if nextFileTimeIndex < len(bootTimes) - 1 else nextFileTimeIndex
-                    nextFileTime = bootTimes[nextFileTimeIndex][0]
-
-            firstRow[0] = convertToDateTime(firstRow[0], currentBootTime)
-            minLength = len(firstRow)
-            if len(firstRow) >= 2:
-                if (START_TIME_FILTER == None or firstRow[0].time() >= START_TIME_FILTER) and (END_TIME_FILTER == None or firstRow[0].time() < END_TIME_FILTER):
-                    dataList.append(firstRow)
-            count = 1
-            for row in reader:
-                if len(row) >= 2 and len(row) >= minLength:
-                    row[0] = convertToDateTime(row[0], currentBootTime)
-                    if (START_TIME_FILTER == None or firstRow[0].time() >= START_TIME_FILTER):
-                        if (END_TIME_FILTER == None or firstRow[0].time() < END_TIME_FILTER):
-                            dataList.append(row)
-                        else:
-                            return dataList
-
-                if SANITY_TEST:
-                    count += 1
-                    if count > 10000:
-                        break
-    # print("DATA LIST")
-    # print(len(dataList))
-    return dataList
-
-def dataFilesToDataListAbsTime(userFiles):
-    dataList = []
-    for dataFile in userFiles:
-        with open(dataFile) as f:
-            reader = csv.reader(f)
-            for row in reader:
-                if len(row) > 1:
-                    timestamp = int(row[1]) / 1000
-                    row[0] = datetime.datetime.fromtimestamp(timestamp)
-                    if (START_TIME_FILTER != None or firstRow[0].time() >= START_TIME_FILTER):
-                        if (END_TIME_FILTER != None or firstRow[0].time() < END_TIME_FILTER):
-                            dataList.append(row)
-    # print "Number of heartrate files"
-    # print len(dataList)
-    return dataList
-
-def getReferenceBootTimes(userID):
-    userFiles = getUserFilesByDayAndInstrument(userID, BOOT_TIME_SENSOR)
-
-    bootTimes = []
-    currentBootTime = START_OF_TIME
-    
-    for dataFile in userFiles:
-        with open(dataFile) as f:  
-            reader = csv.reader(f)
-            
-            fileTime = timeStringToDateTime(getTimeFromFile(dataFile))
-
-            firstRow = reader.next()
-            firstTime = datetime.timedelta(milliseconds=int(firstRow[0]))
-
-            bootTime = fileTime - firstTime
-
-            difference = bootTime - currentBootTime if bootTime > currentBootTime else currentBootTime - bootTime
-
-            if difference > BOOT_TIME_DELTA:
-                currentBootTime = bootTime 
-                bootTimes.append((fileTime, bootTime))
-
-    return bootTimes
-
-
-
-def getRelevantUserData(userID, logInfo=False, logFile=None):
-    userData = {}
-    bootTimes = []
-
-    dataFiles = getUserFilesByDayAndInstrument(userID, BOOT_TIME_SENSOR)
-    userData[BOOT_TIME_SENSOR] = dataFilesToDataList(dataFiles, bootTimes, True)
-
-    for instrument in RELEVANT_SENSORS:
-        if instrument != BOOT_TIME_SENSOR and instrument != sensors.PHONE_ACTIVE_SENSORS:
-            
-            dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
-            userData[instrument] = dataFilesToDataList(dataFiles, bootTimes)
-    
-    #print(len(userData[sensors.ACCELEROMETER]))
-    userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD] = processPhoneActiveData(userID, userData[sensors.ACCELEROMETER])
-    print("KEYGUARD", len(userData[sensors.KEYGUARD]))
-
-    # print("GONNA TRY TO GET LIGHT SENSOR DATA")
-    userData[sensors.LIGHT_SENSOR] = processLightSensorData(userData)
-    userData[BOOT_TIME_SENSOR] = userData[BOOT_TIME_SENSOR][:-1]
-    print("Length accel:", len(userData[BOOT_TIME_SENSOR]))
-    print("Length active:", len(userData[sensors.PHONE_ACTIVE_SENSORS]))
-
-    for instrument in WATCH_SENSORS:
-        dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
-        # print "Heart Rate Files"
-        # print dataFiles
-        userData[instrument] = dataFilesToDataListAbsTime(dataFiles)
-
-    if logInfo:
-        logFile.write("Data Files Analyzed:\n")
-        for filename in dataFiles:
-            logFile.write(getTimeFromFile(filename) + "_.csv" + '\n')
-        logFile.write("Boot Times Computed:\n")
-        for bootTime in bootTimes:
-            logFile.write("Files after " + str(formatTime(bootTime[0], withDate=True)) + ", have boot time: " + str(formatTime(bootTime[1], withDate=True)) + '\n')
-
-    return userData
-
-def processLightSensorData(userData):
-    
-    dataAccel = userData[sensors.ACCELEROMETER]
-    if len(dataAccel) <= 1:
-        return []
-    dataLight = userData[sensors.LIGHT_SENSOR]
-    dataLightProcessed = []
-    firstAccelTime = dataAccel[0][0]
-    
-    firstLightTime = None
-    firstLightValue = None
-
-    currentLightIndex = -1
-    startLightIndex = -1
-    accelIndex = 0
-    if len(dataLight) <= 1:
-        return
-
-    currentLightIndex = 0
-    currentTime = dataLight[currentLightIndex][0]
-    prevLightValue = None
-    while currentTime < firstAccelTime: 
-        currentLightIndex += 1
-        if currentLightIndex >= len(dataLight):
-            break
-        currentTime = dataLight[currentLightIndex][0]
-        prevLightValue = dataLight[currentLightIndex][1]
-
-    startLightIndex = currentLightIndex
-    firstLightTime = dataLight[currentLightIndex][0]
-    firstLightValue = dataLight[currentLightIndex][1] if prevLightValue == None else prevLightValue
-
-    # print("GOT OUT OF FIRST WHILE")
-    currentAccelTime = dataAccel[accelIndex][0]
-    while currentAccelTime < firstLightTime:
-        lightRow = [currentAccelTime, firstLightValue]
-        dataLightProcessed.append(lightRow)
-        accelIndex += 1
-        currentAccelTime = dataAccel[accelIndex][0]
-
-
-    currentLightDate = dataLight[currentLightIndex][0]
-    nextLightDate = dataLight[currentLightIndex + 1][0]
-
-    # print("NOW ADDING DATA")
-    for i in range(accelIndex, len(dataAccel) - 1):
-        accelRow = dataAccel[i]
-        accelRowNext = dataAccel[i + 1]
-        
-        accelDate = accelRow[0]
-        accelDateNext = accelRowNext[0]
-        
-        currentLightVal = dataLight[currentLightIndex][1]
-
-        if accelDate >= nextLightDate:
-            if currentLightIndex + 1 < len(dataLight):
-                currentLightIndex += 1
-                currentLightDate = dataLight[currentLightIndex][0]
-                if currentLightIndex + 1 < len(dataLight):
-                    nextLightDate = dataLight[currentLightIndex + 1][0]
-                
-            lightRow = [accelDate, currentLightVal]
-            dataLightProcessed.append(lightRow)
-        
-        else:
-            lightRow = [accelDate, currentLightVal]
-            dataLightProcessed.append(lightRow)
-
-    return dataLightProcessed
 
 def continuousWatchInterals(userID):
     userData = {}
-    for instrument in WATCH_SENSORS:
-        dataFiles = getUserFilesByDayAndInstrument(userID, instrument)
+    for instrument in sensors.WATCH_SENSORS:
+        dataFiles = getUserFilesByDayAndInstrument(userID, DIRECTORY, instrument)
         # print "Heart Rate Files"
         # print dataFiles
-        userData[instrument] = dataFilesToDataListAbsTime(dataFiles)
+        userData[instrument] = DataProcessing.dataFilesToDataListAbsTime(dataFiles)
     watchData = userData
     delta = datetime.timedelta(seconds=60)
     allIntervals = {}
 
-    for instrument in WATCH_SENSORS:
+    for instrument in sensors.WATCH_SENSORS:
         startTime = -1
         prevTime = -1
         intervals = []
@@ -314,7 +78,7 @@ def stateFromWatchData(allIntervals, file):
     i = 0
     j = 0
     bluetoothIntervals = allIntervals[sensors.CONNECTED_DEVICES]
-    heartRateIntervals = allIntervals[HEARTRATE_SENSOR]
+    heartRateIntervals = allIntervals[sensors.HEARTRATE_SENSOR]
     states = ["phoneNear", "phoneFar", "unknown"]
     allIntervals = []
     for h in heartRateIntervals:
@@ -407,198 +171,9 @@ def watchActivationStates(watchStates):
     activated = sorted(activated, key=lambda x: x[0])
     deactivated = sorted(deactivated, key=lambda x: x[0])
     # print("DEACTIVATED WATCH:", deactivated)
-    mergeAdjacentIntervals(deactivated)
-    mergeAdjacentIntervals(activated)
+    Intervals.mergeAdjacentIntervals(deactivated)
+    Intervals.mergeAdjacentIntervals(activated)
     return activated, deactivated
-
-
-
-def processPhoneActiveData(ID, posDataAccel):
-    if len(posDataAccel) <= 1:
-        return []
-
-    firstAccelTime = posDataAccel[0][0]
-    
-    posFilesTouch = getUserFilesByDayAndInstrument(ID, 'TouchScreenAsEvent')
-    rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
-    # # print("RAW DATA TOUCH")
-    # # print(rawPosDataTouch)
-    
-    posFilesScreen = getUserFilesByDayAndInstrument(ID, 'TriggeredScreenState')
-    rawPosDataScreen = dataFilesToDataListAbsTime(posFilesScreen)
-    
-    posFilesLocked = getUserFilesByDayAndInstrument(ID, 'TriggeredKeyguard')
-    rawPosDataLocked = dataFilesToDataListAbsTime(posFilesLocked)
-
-
-
-    currScreenDate = None
-    nextScreenDate = None
-    currScreenVal = None
-    currLockedDate = None
-    nextLockedDate = None
-    currLockedVal = None
-    
-    touchIndex = -1
-    if len(rawPosDataTouch) > 0:
-
-        touchIndex = 0
-        currentTime = rawPosDataTouch[touchIndex][0]
-        while currentTime < firstAccelTime: 
-            touchIndex += 1
-            if touchIndex >= len(rawPosDataTouch):
-                break
-            currentTime = rawPosDataTouch[touchIndex][0]
-
-        startTouchIndex = touchIndex
-    
-    screenIndex = -1
-    if len(rawPosDataScreen) > 0:
-        screenIndex = 0
-        currentTime = rawPosDataScreen[screenIndex][0]
-        while currentTime < firstAccelTime:
-            screenIndex += 1
-            if screenIndex >= len(rawPosDataScreen):
-                break
-            currentTime = rawPosDataScreen[screenIndex][0]
-            # # print(currentTime)
-            # # print(screenIndex)
-        currScreenDate = rawPosDataScreen[screenIndex][0]
-        currScreenVal = rawPosDataScreen[screenIndex][2]
-        if len(rawPosDataScreen) > 1:
-            nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
-    
-    lockedIndex = -1
-    if len(rawPosDataLocked) > 0:
-        lockedIndex = 0
-        currentTime = rawPosDataLocked[lockedIndex][0]
-        while currentTime < firstAccelTime:
-            lockedIndex += 1
-            if lockedIndex >= len(rawPosDataLocked):
-                break
-            currentTime = rawPosDataLocked[lockedIndex][0]
-        currLockedDate = rawPosDataLocked[lockedIndex][0]
-        currLockedVal = rawPosDataLocked[lockedIndex][2]
-        if len(rawPosDataLocked) > 1:
-            nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
-    
-    posDataTouch = []
-    posDataScreen = []
-    posDataLocked = []
-    
-    # # print(firstAccelTime)
-    # # print(screenIndex)
-    
-    truthToNum = lambda x : 0 if str(x) == 'false' else 1
-    
-    for i in range(len(posDataAccel) - 1):
-        accelRow = posDataAccel[i]
-        accelRowNext = posDataAccel[i + 1]
-        
-        accelDate = accelRow[0]
-        accelDateNext = accelRowNext[0]
-        
-        # Calculate number of touch events starting at this row time and before next row time
-        # touchDate >= firstAccelTime
-        if len(rawPosDataTouch) == 0 or touchIndex >= len(rawPosDataTouch) or rawPosDataTouch[touchIndex][0] >= accelDateNext: # No touch events
-            touchRow = [accelDate, 0]
-            posDataTouch.append(touchRow)
-            ## print("TOUCH DATE:" + str(touchDate))
-            ## print("ACCEL DATE:" + str(accelDate))
-            
-        else: #touchDate < AccelDateNext
-            numTouches = 0
-            touchDate = rawPosDataTouch[touchIndex][0]
-            while touchDate < accelDateNext and touchIndex < len(rawPosDataTouch):
-                # # print("TOUCH RECOGNIZED!")
-                numTouches += 1
-                touchIndex += 1
-                if touchIndex < len(rawPosDataTouch) - 1:
-                    touchDate = rawPosDataTouch[touchIndex][0]
-                
-            touchRow = [accelDate, numTouches]
-            posDataTouch.append(touchRow)
-        
-        
-        # Calculate if screen on in this interval
-        if currScreenDate == None or nextScreenDate == None:
-            screenRow = [accelDate, 0]
-            posDataScreen.append(screenRow)
-
-        elif accelDate >= nextScreenDate:
-            if screenIndex + 1 < len(rawPosDataScreen):
-                screenIndex += 1
-                currScreenDate = rawPosDataScreen[screenIndex][0]
-                currScreenVal = rawPosDataScreen[screenIndex][2]
-                if screenIndex + 1 < len(rawPosDataScreen):
-                    nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
-                
-            screenRow = [accelDate, truthToNum(currScreenVal)]
-            posDataScreen.append(screenRow)
-        
-        else:
-            screenRow = [accelDate, truthToNum(currScreenVal)]
-            posDataScreen.append(screenRow)
-        
-        # Calculate if locked on in this interval
-
-        if currLockedDate == None or nextLockedDate == None:
-            screenRow = [accelDate, 0]
-            posDataLocked.append(screenRow)
-        elif accelDate >= nextLockedDate:
-            if lockedIndex + 1 < len(rawPosDataLocked):
-                lockedIndex += 1
-                currLockedDate = rawPosDataLocked[lockedIndex][0]
-                currLockedVal = rawPosDataLocked[lockedIndex][2]
-                if lockedIndex + 1 < len(rawPosDataLocked):
-                    nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
-                
-            lockedRow = [accelDate, truthToNum(currLockedVal)]
-            posDataLocked.append(lockedRow)
-        
-        else:
-            lockedRow = [accelDate, truthToNum(currLockedVal)]
-            posDataLocked.append(lockedRow)
-            
-    posData = []
-    curAccelSignX = float(posDataAccel[0][1]) > 0
-    curAccelSignY = float(posDataAccel[0][2]) > 0
-    curAccelSignZ = float(posDataAccel[0][3]) > 0
-    
-    curSigns = [curAccelSignX, curAccelSignY, curAccelSignZ]
-    
-    signsChanged = lambda now, cur : [1 if now[i] != cur[i] else 0 for i in range(len(now))]
-    for i in range(len(posDataAccel) - 1):
-        try:
-            accelSignX = float(posDataAccel[i][1]) > 0
-            accelSignY = float(posDataAccel[i][2]) > 0
-            accelSignZ = float(posDataAccel[i][3]) > 0
-            
-            newSigns = [accelSignX, accelSignY, accelSignZ]
-            accelSigns = signsChanged(newSigns, curSigns)
-            curSigns = newSigns
-            
-            
-            numTouches = posDataTouch[i][1]
-            screenState = posDataScreen[i][1]
-            lockedState = posDataLocked[i][1]
-            
-            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + accelSigns
-            posData.append(row)
-
-        except (ValueError,IndexError):
-            print("BAD VALUE OF I:", i)
-            numTouches = posDataTouch[i][1]
-            screenState = posDataScreen[i][1]
-            lockedState = posDataLocked[i][1]
-            
-            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + signsChanged(curSigns, curSigns)
-            posData.append(row)
-    
-    return posData, rawPosDataLocked
-
-
-
 
 def runClassifier(classifier, userData):
     windowSize = classifier.getWindowTime()
@@ -626,7 +201,7 @@ def runClassifier(classifier, userData):
 # {0 : [list of times], 1 : [list of times]}
 
 def getHeartRateTimes(userData):
-    heartRateData = userData[HEARTRATE_SENSOR]
+    heartRateData = userData[sensors.HEARTRATE_SENSOR]
     intervals = []
     # # print "Heart rate data"
     # # print len(heartRateData)
@@ -658,17 +233,17 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
         resultsFile.write(str(userID) + '\n')
         resultsFile.write("###########################\n")
     # print(userID)
-    userData = getRelevantUserData(userID, logInfo=True, logFile=resultsFile)
+    userData = DataProcessing.getRelevantUserData(userID, DIRECTORY, logInfo=True, logFile=resultsFile)
     heartRateTimes = getHeartRateTimes(userData)
 
     csvRow = [userID]
     results = {}
     pickleResults = {}
 
-    for instrument in RELEVANT_SENSORS:
+    for instrument in sensors.RELEVANT_SENSORS:
         print(instrument, ":", len(userData[instrument]))    
 
-    numRows = min([len(userData[instrument]) for instrument in RELEVANT_SENSORS])
+    numRows = min([len(userData[instrument]) for instrument in sensors.RELEVANT_SENSORS])
 
     classifications = []
     intervalsByClass = {}
@@ -691,7 +266,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile):
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
-        for instrument in RELEVANT_SENSORS:
+        for instrument in sensors.RELEVANT_SENSORS:
             data = userData[instrument][i:i + maxWindowSize] 
             windowOfData[instrument] = data
             windowStartTime = getWindowStartTime(data)
@@ -760,7 +335,7 @@ def logResultsToFile(classifierResults, classifier_name, resultsFile):
     resultIntervals, resultIntervalsByValue = classifierResults
     resultsFile.write("Result Intervals\n")
     for interval in resultIntervals:
-        interval = (formatTimeInterval(interval[0], withDate=True), interval[1])
+        interval = (TimeFileUtils.formatTimeInterval(interval[0], withDate=True), interval[1])
         resultsFile.write(str(interval) + '\n')
 
     posTimes = resultIntervalsByValue[1]
@@ -768,11 +343,11 @@ def logResultsToFile(classifierResults, classifier_name, resultsFile):
 
     resultsFile.write("Positive Intervals\n")
     for interval in posTimes:
-        resultsFile.write(formatTimeInterval(interval, withDate=True) + ' ; ' + formatTimeValue(intervalLength(interval)) + '\n')
+        resultsFile.write(TimeFileUtils.formatTimeInterval(interval, withDate=True) + ' ; ' + TimeFileUtils.formatTimeValue(intervalLength(interval)) + '\n')
 
     resultsFile.write("Negative Intervals\n")
     for interval in negTimes:
-        resultsFile.write(formatTimeInterval(interval, withDate=True) + ' ; ' + formatTimeValue(intervalLength(interval)) + '\n')
+        resultsFile.write(TimeFileUtils.formatTimeInterval(interval, withDate=True) + ' ; ' + TimeFileUtils.formatTimeValue(intervalLength(interval)) + '\n')
 
 
 
@@ -789,7 +364,7 @@ def processTheftResults(results, writer, csvRow):
     longestPosIntervalString = "No false positive periods"
 
     if len(posTimes) > 0:
-        posTimesString = intervalsToString(posTimes)
+        posTimesString = TimeFileUtils.intervalsToString(posTimes)
         longestPosInterval = posTimes[0]
         longestPosIntervalLength = intervalLength(posTimes[0])
         for interval in posTimes:
@@ -798,7 +373,7 @@ def processTheftResults(results, writer, csvRow):
                 longestPosIntervalLength = length
                 longestPosInterval = interval
 
-        longestPosIntervalString = formatTimeInterval(longestPosInterval)
+        longestPosIntervalString = TimeFileUtils.formatTimeInterval(longestPosInterval)
 
     csvRow += [longestPosIntervalString, posTimesString, str(numPos), str(numNeg), str(numTotal)]       
 
@@ -810,8 +385,8 @@ def processResults(results, writer, csvRow):
     negativeIntervals = sorted(resultIntervalsByValue[0], key=intervalLength) 
     positiveIntervals = sorted(resultIntervalsByValue[1], key=intervalLength)
 
-    negStats = getIntervalStats(negativeIntervals)
-    posStats = getIntervalStats(positiveIntervals)
+    negStats = Intervals.getIntervalStats(negativeIntervals)
+    posStats = Intervals.getIntervalStats(positiveIntervals)
 
     negTime = negStats["totalTimeSpent"].total_seconds()
     posTime = posStats["totalTimeSpent"].total_seconds()
@@ -825,72 +400,25 @@ def processResults(results, writer, csvRow):
     csvRow.append(posTimePercentage)
     for stat in stats:
         val = posStats[stat]
-        csvRow.append(formatTimeValue(val))
+        csvRow.append(TimeFileUtils.formatTimeValue(val))
     
     csvRow.append(negTimePercentage)
     for stat in stats:
         val = negStats[stat]
-        csvRow.append(formatTimeValue(val))
-        
-
-def getIntervalStats(intervals):
-    stats = {}
-    intervalLengths = [intervalLength(interval) for interval in intervals]
-    # print(intervalLengths)
-    totalTimeSpent = datetime.timedelta(seconds=0)
-    for interval in intervalLengths:
-        if type(interval) is int:
-            continue
-        totalTimeSpent += interval
-
-    medianLength = "N/A"
-    avgLength = "N/A"
-    longestInterval = "N/A"
-    shortestInterval = "N/A"
-
-    if totalTimeSpent.total_seconds() < 0:
-        print("WTF!!!")
-        for interval in intervals:
-            print(formatTimeInterval(interval))
-
-    if len(intervals) > 0:
-        medianLength = intervalLength(intervals[len(intervals) // 2])
-        avgLength = totalTimeSpent / len(intervalLengths)
-        longestInterval = intervals[-1]
-        shortestInterval = intervals[0]
-
-
-    stats["totalTimeSpent"] = totalTimeSpent
-    stats["medianLength"] = medianLength
-    stats["avgLength"] = avgLength
-    stats["longestInterval"] = longestInterval
-    stats["shortestInterval"] = shortestInterval
-    
-
-    return stats
-
-def getIntervalStatHeaders(classifier_name):
-    headers = ["% Time Positive", "Total Time Positive", "Median Period Length", "Average Period Length",
-               "Longest Positive Period", "Shortest Positive Period", "% Time Negatve", "Total Time Negative", "Median Period Length", "Average Period Length",
-               "Longest Negative Period", "Shortest Negative Period",]
-
-    classifier = " (" + classifier_name  + ")"
-    return [header + classifier for header in headers]
-
-
+        csvRow.append(TimeFileUtils.formatTimeValue(val))
 
 def processAllClassifierResults(results, csvRow):
     conflicitingClassifications = findConflictingClassifications(results, False)
     # print "These classifications conflict"
     # print conflicitingClassifications
     if len(conflicitingClassifications) > 0:
-        csvRow += [intervalsToString(conflicitingClassifications)]
+        csvRow += [TimeFileUtils.intervalsToString(conflicitingClassifications)]
     else:
         csvRow += ["No times when multiple classifiers output 1"]
 
     conflicitingClassificationsIncludingTheft = findConflictingClassifications(results, True)
     if len(conflicitingClassifications) > 0:
-        csvRow += [intervalsToString(conflicitingClassificationsIncludingTheft)]
+        csvRow += [TimeFileUtils.intervalsToString(conflicitingClassificationsIncludingTheft)]
     else:
         csvRow += ["No times when multiple classifiers output 1"]
 
@@ -901,190 +429,19 @@ def findConflictingClassifications(results, includeTheft):
     for classifier in results:
         if includeTheft or classifier != classifiers.THEFT_CLASSIFIER:
             intervals = results[classifier][1][conflictingVal]
-            conflicitingClassifications = findCommonIntervals(conflicitingClassifications, intervals)
+            conflicitingClassifications = Intervals.findCommonIntervals(conflicitingClassifications, intervals)
 
-    return conflicitingClassifications
-
-def mergeAdjacentIntervalsByValue(intervals):
-    i = 0
-    while i + 1 < len(intervals):
-        curr = intervals[i]
-        next = intervals[i + 1]
-        if curr[1] == next[1]:
-            intervals[i] = ((curr[0][0], next[0][1]), curr[1])
-            del intervals[i + 1]
-        else:
-            i += 1   
-
-def mergeAdjacentIntervals(intervals):
-    i = 0
-    while i + 1 < len(intervals):
-        curr = intervals[i]
-        next = intervals[i + 1]
-        if curr[1] == next[0]:
-            intervals[i] = (curr[0], next[1])
-            del intervals[i + 1]
-        else:
-            i += 1   
-
-
-def filterSpikesFromIntervals(intervals, intervalsByValue):
-    spikeLength = datetime.timedelta(seconds=1)
-    i = 1
-    indexAddedToIntervalsByValue = -1
-    while i < len(intervals) - 1:
-        interval, intervalBefore, intervalAfter = intervals[i], intervals[i - 1], intervals[i + 1]
-
-        timeInterval = interval[0]
-
-        if timeInterval[1] - timeInterval[0] <= spikeLength:
-            newTimeInterval = (intervalBefore[0][0], intervalAfter[0][1])
-            intervals[i - 1] = (newTimeInterval, intervalBefore[1])
-            del intervals[i:i+2]
-        else:
-            timeIntervalBefore = intervalBefore[0]
-            classification = intervalBefore[1]
-            intervalsByValue[classification].append(timeIntervalBefore)
-            indexAddedToIntervalsByValue = i - 1
-            i += 1
-
-    for j in range(indexAddedToIntervalsByValue + 1, len(intervals)):
-        interval = intervals[j]
-        timeInterval = interval[0]
-        classification = interval[1]
-        intervalsByValue[classification].append(timeInterval)
-
-
-def findCommonIntervalsByValue(intervals1, intervals2, value):
-    # print("Finding common intervals!")
-    # print intervals1
-    # print intervals2
-
-    if len(intervals1) == 0 and len(intervals2) == 0:
-        return []
-    if len(intervals1) == 0:
-        return intervals2
-    if len(intervals2) == 0:
-        return intervals1 
-
-    def advance(intervals, i, value):
-        while i < len(intervals) and intervals[i][1] != value:
-            # print(i)
-            i += 1
-        return i 
-
-    i1 = advance(intervals1, 0, value) 
-    i2 = advance(intervals2, 0, value)
-    # print i1, i2 
-    
-    commonIntervals = []
-    while i1 < len(intervals1) and i2 < len(intervals2):
-        interval1 = intervals1[i1][0]
-        interval2 = intervals2[i2][0]
-        # # print(i1, i2)
-        laterStartingInterval, earlierStartingInterval = None, None
-        later_i, earlier_i = None, None
-
-        if interval1[0] >= interval2[0]:
-            laterStartingInterval, earlierStartingInterval = interval1, interval2
-            later_i, earlier_i = i1, i2
-        else:
-            laterStartingInterval, earlierStartingInterval = interval2, interval1
-            later_i, earlier_i = i2, i1
-
-        if laterStartingInterval[0] >= earlierStartingInterval[1]:
-            if earlier_i == i1:
-                i1 = advance(intervals1, i1, value)
-            else:
-                i2 = advance(intervals2, i2, value)
-        
-        else:
-            earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
-
-            commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            # print commonIntervals
-
-            if earlierStartingInterval[1] == laterStartingInterval[1]:
-                # print "End times are equal"
-                i1 = advance(intervals1, i1, value)
-                i2 = advance(intervals2, i2, value)
-
-            elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                # print "Early start ends earlier, advance early"
-                if earlier_i == i1:
-                    i1 = advance(intervals1, i1, value)
-                else:
-                    i2 = advance(intervals2, i2, value)
-                # print i1, i2
-            else:
-                # print "Early start ends later, advance later"
-                if later_i == i1:
-                    i1 = advance(intervals1, i1, value)
-                else:
-                    i2 = advance(intervals2, i2, value)
-                # print i1, i2
-
-    return commonIntervals
-
-def compareIntervals(intervals1, intervals2):
-    i1 = 0
-    i2 = 0
-    interval1 = intervals1[i1][0]
-    interval2 = intervals2[i2][0]
-    class1 = intervals1[i1][1]
-    class2 = intervals1[i2][1]
-
-    startTime = interval1[0] if interval1[0] > interval2[0] else interval2[0]
-    endTime = None
-
-    comparedIntervals = []
-    matchingIntervals = []
-    conflictingIntervals = []
-    while i1 < len(intervals1) and i2 < len(intervals2):
-        interval1 = intervals1[i1][0]
-        interval2 = intervals2[i2][0]
-        class1 = intervals1[i1][1]
-        class2 = intervals2[i2][1]
-
-        if interval1[1] == interval2[1]:
-            endTime = interval1[1]
-            i1 += 1
-            i2 += 1
-        elif interval1[1] < interval2[1]:
-            endTime = interval1[1]
-            i1 += 1
-        else:
-            endTime = interval2[1]
-            i2 += 1
-
-        comparedClass = None
-        matchingClasses = False
-        if class1 == class2:
-            comparedClass = class1
-            matchingClasses = True
-        else:
-            comparedClass = str(class1) + " | " + str(class2)
-
-        comparedInterval = ((startTime, endTime), comparedClass, matchingClasses)
-        comparedIntervals.append(comparedInterval)
-
-        if matchingClasses:
-            matchingIntervals.append(comparedInterval)
-        else:
-            conflictingIntervals.append(comparedInterval)
-
-        startTime = endTime
-
-    return comparedIntervals, matchingIntervals, conflictingIntervals
-
+    return conflicitingClassifications    
 
 def totalTimeOfIntervals(intervals):
     timeConnected = datetime.timedelta(seconds=00)
     prevState = -1
+    print("Calculating Total Time:")
     for interval, classified, state in intervals:
         start = interval[0]
         end = interval[1]
         timeInBetween = end - start
+        print(str(start), str(end), str(timeInBetween))
         timeConnected += timeInBetween
         prevState = end
 
@@ -1112,7 +469,7 @@ def checkClassifications(actualIntervals, expectedIntervals=None):
     # However you want to load the expectedIntervals, maybe parse a text file?
     # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
 
-    comparedIntervals, matchingIntervals, conflictingIntervals = compareIntervals(actualIntervals, expectedIntervals)
+    comparedIntervals, matchingIntervals, conflictingIntervals = Intervals.compareIntervals(actualIntervals, expectedIntervals)
 
     file = open('diary-study-stats' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
@@ -1124,10 +481,10 @@ def checkClassifications(actualIntervals, expectedIntervals=None):
     matchingTime = totalTimeOfIntervals(matchingIntervals)
     conflictingTime = totalTimeOfIntervals(conflictingIntervals)
 
-    file.write("Total Time: " + formatTimeValue(totalTime) + "\n")
-    file.write("Total time matching: " + formatTimeValue(matchingTime) +"\n")
+    file.write("Total Time: " + TimeFileUtils.formatTimeValue(totalTime) + "\n")
+    file.write("Total time matching: " + TimeFileUtils.formatTimeValue(matchingTime) +"\n")
     file.write("% of time matched: " + str(1.0 * matchingTime/totalTime) + "\n")
-    file.write("Total time conflicting: " + formatTimeValue(conflictingTime) + "\n")
+    file.write("Total time conflicting: " + TimeFileUtils.formatTimeValue(conflictingTime) + "\n")
     file.write("% of time conflicted: " + str(1.0 * conflictingTime/totalTime) + "\n")
 
     file.write("\n")
@@ -1135,7 +492,7 @@ def checkClassifications(actualIntervals, expectedIntervals=None):
 
     file.write("All conflicting intervals: \n")
     for interval, classificationString, isMatching in conflictingIntervals:
-        file.write(formatTimeValue(interval) + ": " + classificationString + "\n")
+        file.write(TimeFileUtils.formatTimeValue(interval) + ": " + classificationString + "\n")
 
     file.close()
 
@@ -1143,122 +500,6 @@ def checkClassifications(actualIntervals, expectedIntervals=None):
     # All of comparedIntervals, matchingIntervals, and conflictingIntervals have the following format:
     # ((startDateTime, endDateTime), classificationString, isMatchingClassifications)
     # the classificationString is either one classifier if the expected/actual matched, else two classifier names
-
-def findCommonIntervals(intervals1, intervals2):
-    # print("Finding common intervals!")
-    # print intervals1
-    # print intervals2
-
-    if len(intervals1) == 0 and len(intervals2) == 0:
-        return []
-    if len(intervals1) == 0:
-        return []
-    if len(intervals2) == 0:
-        return []
-
-    i1 = 0
-    i2 = 0
-    # print "Starting"
-    # print i1, i2 
-    
-    commonIntervals = []
-    while i1 < len(intervals1) and i2 < len(intervals2):
-        interval1 = intervals1[i1]
-        interval2 = intervals2[i2]
-
-        laterStartingInterval, earlierStartingInterval = None, None
-        later_i, earlier_i = None, None
-
-        if interval1[0] >= interval2[0]:
-            # print("Interval1 starts after Interval2")
-            laterStartingInterval, earlierStartingInterval = interval1, interval2
-            later_i, earlier_i = "i1", "i2"
-        else:
-            # print("Interval2 starts after Interval1")
-            laterStartingInterval, earlierStartingInterval = interval2, interval1
-            later_i, earlier_i = "i2", "i1"
-
-        if laterStartingInterval[0] >= earlierStartingInterval[1]:
-            # print("GOODBYE")
-            # print("Later starting interval starts completely after early interval")
-            if earlier_i == "i1":
-                i1 += 1
-            else:
-                i2 += 1
-        
-        else:
-            # print("HELLO")
-            earlierEndingInterval = earlierStartingInterval if earlierStartingInterval[1] <= laterStartingInterval[1] else laterStartingInterval
-            # print("Earlier ending interval:", formatTimeInterval(earlierEndingInterval))
-            
-            commonIntervals.append((laterStartingInterval[0], earlierEndingInterval[1]))
-            # print("Common Intervals:")
-            # for interval in commonIntervals:
-            #     print(formatTimeInterval(interval))
-
-
-            if earlierStartingInterval[1] == laterStartingInterval[1]:
-                # print("End times are equal")
-                i1 += 1
-                i2 += 1
-
-            elif earlierStartingInterval[1] < laterStartingInterval[1]:
-                # print("Early start ends earlier, advance early")
-                if earlier_i == "i1":
-                    i1 += 1
-                else:
-                    i2 += 1
-                # print i1, i2
-            else:
-                # print("Early start ends later, advance later")
-                if later_i == "i1":
-                    i1 += 1
-                else:
-                    i2 += 1
-                # print i1, i2
-
-    return commonIntervals
-
-
-
-def plotIntervals(intervals):
-    times = []
-    values = []
-
-    for interval in intervals:
-        time = interval[0]
-        times.append(time[0])
-        times.append(time[1])
-        values.append(interval[1])
-        values.append(interval[1])
-
-    times = date2num(times)
-
-    seconds = SecondLocator()   # every year
-    minutes = MinuteLocator()  # every month
-    hours = HourLocator()
-    hoursFmt = DateFormatter('%H:%M')
-    minutesFmt = DateFormatter('%H:%M:%S')
-
-    fig, ax = plt.subplots()
-    ax.plot_date(times, values, '-')
-
-    # format the ticks
-    ax.xaxis.set_major_locator(hours)
-    ax.xaxis.set_major_formatter(hoursFmt)
-    ax.xaxis.set_minor_locator(minutes)
-    ax.autoscale_view()
-
-
-    # format the coords message box
-    ax.fmt_xdata = DateFormatter('%H:%M')
-    ax.grid(True)
-
-    axes = plt.gca()
-    axes.set_ylim([-0.25, 1.25])
-
-    fig.autofmt_xdate()
-    plt.show()
 
 
 def intervalLength(interval):
@@ -1287,107 +528,6 @@ def classifierPolicy(classifiedWindow):
     else: 
         return "Unknown"
 
-###### Utilities #######
-
-def filesToTimesToFilesDict(files, userID, instrument):
-    timesToFiles = {}
-    for f in files:
-        time = getTimeFromFile(f, userID, instrument, True)
-        timesToFiles[time] = f 
-    return timesToFiles
-
-def timeStringToDateTime(timestring):
-    return datetime.datetime.strptime(timestring, '%Y_%m_%d_%H_%M_%S')
-
-def timeStringsToDateTimes(timeStrings):
-    return [timeStringToDateTime(timeString) for timeString in timeStrings]
-
-def formatTime(dateTime, withDate=False):
-    if type(dateTime) is not datetime.datetime:
-        return str(datetime)
-    if withDate:
-        return dateTime.strftime('%b %d|%H:%M:%S')
-    return dateTime.strftime('%H:%M:%S')
-
-def formatTimeDelta(timeDelta):
-    totalSeconds = timeDelta.total_seconds()
-    return formatTotalSeconds(totalSeconds)
-
-def formatTotalSeconds(totalSeconds):
-    hours = totalSeconds // 3600
-    minutes = (totalSeconds % 3600) // 60
-    seconds = totalSeconds % 60
-    return str(hours) + 'h:' + str(minutes) + 'm:' + str(seconds) + 's' 
-
-def formatTimeInterval(timeInterval, withDate=False):
-    if withDate:
-        return '(' + formatTime(timeInterval[0], withDate=True) + '--' + formatTime(timeInterval[1], withDate=True) + ')'
-    else:
-        return '(' + formatTime(timeInterval[0]) + '--' + formatTime(timeInterval[1]) + ')' 
-
-def formatTimeValue(timeValue):
-    if type(timeValue) is str or type(timeValue) is int:
-        return str(timeValue) 
-    if type(timeValue) is datetime.datetime:
-        return formatTime(timeValue)
-    elif type(timeValue) is datetime.timedelta:
-        return formatTimeDelta(timeValue)
-    else:
-        # must be an interval
-        return formatTimeInterval(timeValue)
-
-
-def getTimeFromFile(filename, userID, instrument):
-    query = DIRECTORY + 'AppMon' + '_' + userID + '.*_' + instrument + '_' + \
-        '(?P<time>.*)' + '_.csv'
-    match = re.match(query, filename)
-    return match.group('time')
-
-def getTimeFromFile(filename):
-    query = DIRECTORY + 'AppMon' + '_*_' + '*_' + \
-        '(?P<time>.*)' + '_.csv'
-    match = re.match(query, filename)
-    time = match.group('time')[-19:]
-    
-    return time
-
-def getFileExtension(isDecrypted):
-    if isDecrypted:
-        return '_.csv'
-    else:
-        return '_.zip.encrypted'
-
-def removePath(filename):
-    i = -1
-    while i >= -1 * len(filename) and filename[i] != '/':
-        i -= 1
-
-    return filename[i + 1:]
-
-def removeFilesFromDir(directory):
-    if os.path.exists(directory):
-        shutil.rmtree(directory)
-    os.makedirs(directory)
-
-def replaceCommasWithSemicolons(string):
-    return string.replace(",", ";")
-
-def intervalsToString(intervals):
-    resultsString = ""
-    for interval in intervals:
-        intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
-        resultsString += intervalString
-    return resultsString 
- 
-def convertToDateTime(timestring, bootTime):
-    epochTimeString = float(timestring) / 1000.0
-    timeAsEpochTime = datetime.date.fromtimestamp(epochTimeString)
-    isAbsoluteTimeStamp = timeAsEpochTime > YEAR_2000
-    if isAbsoluteTimeStamp:
-        return timeAsEpochTime
-    else:
-        return bootTime + datetime.timedelta(milliseconds=int(timestring))
-
 def getWindowStartTime(windowOfDataRows):
     return windowOfDataRows[0][0] #time of first data row in window
 
@@ -1395,14 +535,7 @@ def compileRelevantSensors():
     for c in classifiers.CLASSIFIERS:
         classifier = classifiers.CLASSIFIERS[c]
         for sensor in classifier.getRelevantSensors():
-            RELEVANT_SENSORS.add(sensor)
-
-def calculateBootTime(userFiles):
-    return 
-
-
-def getUserFileTimes(userFiles):
-    return [timeStringToDateTime(getTimeFromFile(filename)) in filename in userFiles]
+            sensors.RELEVANT_SENSORS.add(sensor)
 
 def continousIntervalsBleConnected(userData):
     startTime = -1
@@ -1446,7 +579,7 @@ def main():
     for c in classifiers.CLASSIFIERS:
         # print c
         if c != classifiers.THEFT_CLASSIFIER:
-            columnHeaders += getIntervalStatHeaders(c)
+            columnHeaders += Intervals.getIntervalStatHeaders(c)
 
     columnHeaders += ["Periods when multiple (non-theft) classifiers were both positive", "Periods when multiple classifiers were both positive"]
 
@@ -1535,9 +668,9 @@ if __name__ == '__main__':
                         watchResults.write("----" + str(state) + "-----" + "\n")
                         intervals = watchState[state]
                         # print("WTF!", state)
-                        stats = getIntervalStats(intervals)
+                        stats = Intervals.getIntervalStats(intervals)
                         for stat, val in stats.items():
-                            watchResults.write(str(stat) + "\t\t\t" + str(formatTimeValue(val)) + "\n")
+                            watchResults.write(str(stat) + "\t\t\t" + str(TimeFileUtils.formatTimeValue(val)) + "\n")
                             if stat == "totalTimeSpent":
                                 timeSpentByWatchState[state] = val.total_seconds()
 
@@ -1564,6 +697,10 @@ if __name__ == '__main__':
                 try: 
                     classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, file)
                     
+                    print("LOOK AT THE CLASSIFICATION INTERVALS")
+                    for interval, classification in classifications:
+                        print(TimeFileUtils.formatTimeInterval(interval), classification)
+
                     expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
                     ### Joanna Finish ###
                     checkClassifications(classifications, expectedIntervalsDiary)
@@ -1575,7 +712,7 @@ if __name__ == '__main__':
                     for c in intervalsByClass:
                         results.write("----" + str(c) + "-----\n")
                         intervals = intervalsByClass[c]
-                        stats = getIntervalStats(intervals)
+                        stats = Intervals.getIntervalStats(intervals)
                         for stat, value in stats.items():
                             results.write(str(stat) + "\t\t\t" + str(value) + "\n")
                             if stat == "totalTimeSpent":
@@ -1590,14 +727,14 @@ if __name__ == '__main__':
                         percentage = time / totalTime
                         results.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
                         # resultsSummary.write(str(c) + "\t\t\t\t" + str(percentage * 100) + "%\n")
-                        resultsSummaryWriter.writerow([DATA_DAY, USER_ID, str(c), str(percentage * 100), formatTotalSeconds(time), formatTotalSeconds(totalTime)])
+                        resultsSummaryWriter.writerow([DATA_DAY, USER_ID, str(c), str(percentage * 100), TimeFileUtils.formatTotalSeconds(time), TimeFileUtils.formatTotalSeconds(totalTime)])
 
                     results.write("-----Classifications over Time-------\n")
                     for c in classifications:
                         interval = c[0]
-                        duration = formatTimeValue(interval[1] - interval[0])
+                        duration = TimeFileUtils.formatTimeValue(interval[1] - interval[0])
                         classification = c[1]
-                        intervalString = "(" + formatTime(interval[0]) + "--" + formatTime(interval[1]) + "); "
+                        intervalString = "(" + TimeFileUtils.formatTime(interval[0]) + "--" + TimeFileUtils.formatTime(interval[1]) + "); "
                         results.write(intervalString + ' ' + duration + '; ' + str(classification) + "\n")
                 except:
                     tb = traceback.format_exc()
@@ -1606,7 +743,7 @@ if __name__ == '__main__':
                     results.write(tb)
                     results.write("\n")
 
-            if activatedIntervalsPhone != None:
+            if activatedIntervalsPhone != None and CALCULATE_ACTIVATIONS:
                 try:
                     unlockData = possessionState.unlockData
                     userData = possessionState.allData
@@ -1639,12 +776,12 @@ if __name__ == '__main__':
                     smartUnlockFile.write("######## SAVED UNLOCK TIMES #######\n")
 
                     for time in unlockTimes:
-                        smartUnlockFile.write(formatTimeValue(time) + "\n")
+                        smartUnlockFile.write(TimeFileUtils.formatTimeValue(time) + "\n")
 
                     smartUnlockFile.write("######## SAVED UNLOCK TIMES (BLE) #######\n")
 
                     for time in unlockTimesBle:
-                        smartUnlockFile.write(formatTimeValue(time) + "\n")
+                        smartUnlockFile.write(TimeFileUtils.formatTimeValue(time) + "\n")
 
                 except:
                     tb = traceback.format_exc()
@@ -1661,13 +798,13 @@ if __name__ == '__main__':
 
                 else:
                     # print("********Finding both activated**********")
-                    # bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+                    # bothActivated = Intervals.findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
                     # print("********Finding both deactivated**********")
-                    # bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+                    # bothDeactivated = Intervals.findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
                     # print("********Finding phone activated**********")
-                    # onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+                    # onlyPhoneActivated = Intervals.findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
                     # print("********Finding watch activated**********")
-                    # onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
+                    # onlyWatchActivated = Intervals.findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
                     
                     # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
                     ### CALCULATE UNLOCKS ###
@@ -1694,19 +831,19 @@ if __name__ == '__main__':
                             if stateP == "activated" and stateW == "deactivated":
                                 print("WTF PHONE ACTIVATED")
                                 for interval in activatedIntervalsPhone[stateP]:
-                                    print(formatTimeInterval(interval))
+                                    print(TimeFileUtils.formatTimeInterval(interval))
                                 print("WTF WATCH DEACTIVATED")
                                 for interval in activatedIntervalsPhone[stateW]:
-                                    print(formatTimeInterval(interval))
+                                    print(TimeFileUtils.formatTimeInterval(interval))
 
                             state = "Phone: " + stateP + " Watch: " + stateW
                             print(state)
                             # activatedFile.write(str(state) + '\n')
                             # print("Phone Intervals:", activatedIntervalsPhone[stateP])
                             # print("Watch Intervals:", activatedIntervalsWatch[stateW])
-                            commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
+                            commonIntervals = Intervals.findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
                             # print("COMMON INTERVALS:", commonIntervals)
-                            stats = getIntervalStats(commonIntervals)
+                            stats = Intervals.getIntervalStats(commonIntervals)
                             # print(stats["totalTimeSpent"])
                             # activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
 
@@ -1756,19 +893,19 @@ if __name__ == '__main__':
                     activatedFile.write("######## SAVED UNLOCK TIMES #######\n")
 
                     for time in unlockTimes:
-                        activatedFile.write(formatTimeValue(time) + "\n")
+                        activatedFile.write(TimeFileUtils.formatTimeValue(time) + "\n")
 
                     activatedFile.write("######## PHONE INTERVALS #######\n")
                     for state, intervals in activatedIntervalsPhone.items():
                         activatedFile.write("#########" + str(state).upper() + "########" + "\n")
                         for interval in intervals:
-                            activatedFile.write(formatTimeInterval(interval) + "\n")
+                            activatedFile.write(TimeFileUtils.formatTimeInterval(interval) + "\n")
 
                     activatedFile.write("######## WATCH INTERVALS #######\n")
                     for state, intervals in activatedIntervalsWatch.items():
                         activatedFile.write("#########" + str(state).upper() + "########" + "\n")
                         for interval in intervals:
-                            activatedFile.write(formatTimeInterval(interval) + "\n")
+                            activatedFile.write(TimeFileUtils.formatTimeInterval(interval) + "\n")
             except:
                 tb = traceback.format_exc()
                 print(tb)
