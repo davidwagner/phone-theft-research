@@ -1,0 +1,764 @@
+% This is "sig-alternate.tex" V1.8 June 2007 Modified for SOUPS 2014
+% This file should be compiled with V2.3 of "sig-alternate.cls" June 2007
+%
+% This example file demonstrates the use of the 'sig-alternate.cls'
+% V2.3 LaTeX2e document class file. It is for those submitting
+% articles to ACM Conference Proceedings WHO DO NOT WISH TO
+% STRICTLY ADHERE TO THE SIGS (PUBS-BOARD-ENDORSED) STYLE.
+% The 'sig-alternate.cls' file will produce a similar-looking,
+% albeit, 'tighter' paper resulting in, invariably, fewer pages.
+%
+% ----------------------------------------------------------------------------------------------------------------
+% This .tex file (and associated .cls V2.3) produces:
+%       1) The Permission Statement
+%       2) The Conference (location) Info information
+%       3) The Copyright Line with ACM data
+%       4) NO page numbers
+%
+% as against the acm_proc_article-sp.cls file which
+% DOES NOT produce 1) thru' 3) above.
+%
+% Using 'sig-alternate.cls' you have control, however, from within
+% the source .tex file, over both the CopyrightYear
+% (defaulted to 200X) and the ACM Copyright Data
+% (defaulted to X-XXXXX-XX-X/XX/XX).
+% e.g.
+% \CopyrightYear{2007} will cause 2007 to appear in the copyright line.
+% \crdata{0-12345-67-8/90/12} will cause 0-12345-67-8/90/12 to appear in the copyright line.
+%
+% ---------------------------------------------------------------------------------------------------------------
+% This .tex source is an example which *does* use
+% the .bib file (from which the .bbl file % is produced).
+% REMEMBER HOWEVER: After having produced the .bbl file,
+% and prior to final submission, you *NEED* to 'insert'
+% your .bbl file into your source .tex file so as to provide
+% ONE 'self-contained' source file.
+%
+% ================= IF YOU HAVE QUESTIONS =======================
+% Questions regarding the SIGS styles, SIGS policies and
+% procedures, Conferences etc. should be sent to
+% Adrienne Griscti (griscti@acm.org)
+%
+% Technical questions _only_ to
+% Gerald Murray (murray@acm.org)
+% ===============================================================
+%
+% For tracking purposes - this is V1.8 - June 2007
+
+% --- Start page size ---
+%Please use the following format  
+\documentclass{soups} 
+\pdfpagewidth=8.5truein 
+\pdfpageheight=11truein 
+% --- End page size ---
+
+
+\usepackage{graphicx}
+\usepackage{times}
+\usepackage{url}
+\usepackage{color}
+\usepackage{multirow}
+
+\renewcommand{\topfraction}{0.99} % be more aggressive about text around floats
+\renewcommand{\floatpagefraction}{0.99}
+\pagestyle{plain} % page numbers
+
+
+
+\begin{document}
+%
+% --- Author Metadata here ---
+\conferenceinfo{Conference}{year, month dates, city, state.}
+\CopyrightYear{2017} % Allows default copyright year (200X) to be over-ridden - IF NEED BE.
+%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
+% --- End of Author Metadata ---
+
+\title{Detecting Phone Theft Using Machine Learning}
+% \titlenote{(Produces the permission block, and copyright information). For use with SIG-ALTERNATE.CLS. Supported by ACM.}}
+% \subtitle{Subtitle (optional)%
+% \titlenote{A full version of this paper is available as
+% \textit{Author's Guide to Preparing ACM SIG Proceedings Using
+% \LaTeX$2_\epsilon$\ and BibTeX} at
+% \texttt{www.acm.org/sigs/publications/sigguide-v2.2sp}}}
+%
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
+
+\numberofauthors{3} %  in this sample file, there are a *total*
+% of EIGHT authors. SIX appear on the 'first-page' (for formatting
+% reasons) and the remaining two appear in the \additionalauthors section.
+%
+\author{
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor
+Xinyu Liu \\
+       \affaddr{UC Berkeley} \\
+       \email{xinyuliu@berkeley.edu}
+% 2nd. author
+\alignauthor
+David Wagner \\
+       \affaddr{UC Berkeley} \\
+       \email{daw@cs.berkeley.edu}
+% 3rd. author
+\alignauthor 
+Serge Egelman \\
+       \affaddr{UC Berkeley, ICSI} \\
+       \email{egelman@cs.berkeley.edu}
+% \and  % use '\and' if you need 'another row' of author names
+% % 4th. author
+% \alignauthor Lawrence P. Leipuner\\
+%        \affaddr{Brookhaven Laboratories}\\
+%        \affaddr{Brookhaven National Lab}\\
+%        \affaddr{P.O. Box 5000}\\
+%        \email{lleipuner@researchlabs.org}
+% % 5th. author
+% \alignauthor Sean Fogarty\\
+%        \affaddr{NASA Ames Research Center}\\
+%        \affaddr{Moffett Field}\\
+%        \affaddr{California 94035}\\
+%        \email{fogartys@amesres.org}
+% % 6th. author
+% \alignauthor Charles Palmer\\
+%        \affaddr{Palmer Research Laboratories}\\
+%        \affaddr{8600 Datapoint Drive}\\
+%        \affaddr{San Antonio, Texas 78229}\\
+%        \email{cpalmer@prl.com}
+}
+% There's nothing stopping you putting the seventh, eighth, etc.
+% author on the opening page (as the 'third row') but we ask,
+% for aesthetic reasons that you place these 'additional authors'
+% in the \additional authors block, viz.
+% \additionalauthors{Additional authors: John Smith (The Th{\o}rv{\"a}ld Group,
+% email: {\texttt{jsmith@affiliation.org}}) and Julius P.~Kumquat
+% (The Kumquat Consortium, email: {\texttt{jpkumquat@consortium.net}}).}
+% \date{30 July 1999}
+% Just remember to make sure that the TOTAL number of authors
+% is the number that will appear on the first page PLUS the
+% number that will appear in the \additionalauthors section.
+
+\maketitle
+\begin{abstract}
+
+Millions of smartphones are stolen in the United States every year, exposing victims' personal information at risk since many users often do not lock their phones. To protect individuals' smartphones and the private data stored on them, we develop a system that automatically detects pickpocket, and grab-and-run theft, where a thief grabs the phone from a victim's hand then runs away. We collect a dataset which consists of samples from simulated theft experiments and a user study about smartphone usage in subjects' everyday lives. We then build three binary classifiers to classify a data point as theft or normal usage based on features extracted from smartphones' accelerometer data. Among the three models, logistic regression detects 100\% of theft instances at a cost of 1 false alarm per week. The phone theft detecting technology presented in this paper also has broad applications. For example, we can use the detector as a protection for an authentication scheme that uses a smartphone, and it triggers an alarm and an automatic screen lock after the phone is stolen.
+
+\end{abstract}
+
+
+
+\section{Introduction}
+According to the Consumer Reports, 2.1 million smartphones were stolen in the United States in 2014 \cite{deitrick:consumer}. The Pew Research Center's Internet \& American Life Project reported in 2012 that nearly one third of mobile phone users have experienced a lost or stolen of their devices \cite{boyles:pew}. \textcolor{red}{[more stats here if found]} Checking email and using payment services on their smartphones are in many users' daily routine. Those services require user to store private data, such as credit card information on their devices. The private information stored on the smart devices often worth more than the hardware, and it is endangered by smartphone theft. However, many smartphones only offer owners PIN authentication, and consumers often turn this feature off to avoid the complication of having to type in PIN every time they want to unlock the screen. Egelman et al. indicates that $42\%$ of users do not lock their smartphones, which allows thieves to easily gain access to the victims' personal information \cite{egelman:lock}. To protect individuals' smartphones and the private data stored on them, we use a machine learning technique called supervised learning to develop a system that automatically detects pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to distiguish between theft and normal usage of smartphones. When deployed, the detector will run in the background. When theft is detected, it can signal the device to lock the screen and send alarm email to the victim. Therefore our theft detector offers another layer of unobtrusive protection against smartphone theft.
+
+In order to generate a labeled dataset for training and validation, we carefully design experiments that simulate three types of phone theft, grab-and-run when the user stands still, grab-and-run while the user is walking at a constant speed and pick-pocket. We conduct 20 trials for each type of theft in two sessions. We also conduct a user study, where we track 53 participants for 3 weeks and collect sensor data, such as accelerometer data, from their smartphones. We then extract 12 features from the acceleromter sensor data to constitute the training and validation sets. Our detector is triggered when the magnitude of the acceleration exceeds $40m/s^2$. Using this dataset, we train and evaluate three standard machine learning models: linear SVM, logistic regression and random forest. We show that for our purpose of smartphone theft detection, logistic regression produces 1 false alarm per week while detecting 100\% simulated theft.
+
+Our contributions are:
+\begin{enumerate}
+  \item conducting a user study to collect a large dataset of smartphone sensor data while devices are being used in real world.
+  \item designing experiments to simulate theft and collecting data representing common smartphone theft scenarios.
+  \item developing a smartphone theft detecting system that detects 100\% simulated theft at a cost of 1 false alarm per week.
+\end{enumerate}
+
+
+
+\section{Related Work}
+
+\textcolor{red}{add more paper summaries if found. I did not include gait recognition using accelerometers attached on subjects.}
+
+The use of intrinsic sensor data to improve the security of smart devices and offer a way of continuous user authentication has drawn more and more attention recently. The embedded sensors on a smartphone have been used to develop biometric identification and authentication techniques. The major benefit of using smartphone-based biometric is to allow authentication to happen unobtrusively, i.e. not requiring any users action. We are particularly interested in research done to study gait recognition by mining the embedded accelerometer data on smartphones. For the purpose of our research, we emphasize on the feature extraction methods used in the previous work.
+
+The unobtrusive biometric gait recognition technique introduced by Derawi et al. uses accelerometer data collected on smartphones from 51 subjects in the context of a laboratory setup for continuous authentication and results in a high equal error rate of 20\% \cite{derawi:gait}. They applied time interpolation and weighted moving average filter to clean the raw accelerometer data before extracting accelerometer measurements in average cycles as features.
+
+Primo et al. further investigate and show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment \cite{primo:context}. They preprocessed the raw measurements of X, Y, Z and magnitude (M) of the accelerometer data by a moving average of a 3 point window to mitigate sensor noise. They broke the resulting time series into windows, each containing 100 points and having an overlap of 50 points with the next window. They extracted and selected a set of top ranking features from X, Y, Z and M in each window to first determine phone position, then another set of highest ranked features to identify users. Their system was trained and achieved 80\% accuracy in user identification on data from 30 subjects.
+
+Juefei-Xu et al. researched ways to identify human walking patterns at normal and fast pace using accelerometer on a smartphone \cite{xu:pace}. The acceleration is collected from 36 subjects walking at two different paces in a laboratory environment. They extracted feature vectors by concatenating x, y, z accelerations in two different intervals. One is a 3-second window centered around every spike in z acceleration. They also concatenated x, y, z accelerations from intervals between adjacent spikes after normalizing data in each interval to 500 samples. In addition, they applied signal processing methods to extracted and selected discriminative features. Their system achieved over 95\% accuracy when it was both trained and tested on two same-pace datasets. The system identified subjects walking at fast pace with 61\% accuracy when it was trained on data from the same subjects walking at normal pace.
+
+Kwapisz et al collected a dataset of 36 subjects instructed by the researchers to perform 4 specific daily activities, walking, jogging, ascending and descending stairs \cite{kwapisz:biometrics}. They extracted features, mean, standard deviation, mean absolute difference, mean of magnitude, time between peaks, and binned distribution from 10-second intervals and use decision tree and neural network identify individual users. They achieve 90\% accuracy using 10 second worth of data from one of the activities, walking. They also built a binary classifier for each subject to match a query to a particular user for the purpose of user authentication and achieved over 80\% accuracy on positive authentication and over 90\% accuracy on negative authentication.
+
+\cite{feng:pickup}
+
+While the applications of accelerometer-based gait recognition include theft prevention through user authentication, we are more interested in theft detection. To the best of our knowledge, not much work has been done in sensor-based phone theft detection, where a rapid change of acceleration is captured by accelerometer. We do not have a set of subjects which we intend to identify individually. In addition, all the negative samples used in this work is collected in the real world, where sensor data is recorded on the smartphones while subjects are performing everyday activities, instead of a laboratory environment. We use the data recorded by the embedded accelerometer and apply machine learning techniques to detect smartphone theft.
+
+
+
+\section{Methodology}
+
+\subsection{Data Collection}
+
+\subsubsection{Simulated Thefts}
+We use a commerically available smartphone, i.e. Nexus 5X with Android version 7.1.1. \textcolor{red}{[I need to find out the embedded accelerometer model. Do I need to include specific configuration of this accelerometer?]} to collect data in our simulated theft experiments. We carefully design the experiments to simulate three types of smartphone theft scenarios with one researcher acting as a smartphone user, and another one playing the role of a thief. In the first scenario, the user stands still and holds the phone with one hand as if it is being usd, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. In the second scenario, the user again holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. The third scenario simulates pick-pocket theft. The user places the phone in a back pocket and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
+
+We collect 20 instances of each theft scenario and a total of 60 trials. Between two consective trials, researchers put the phone down on the ground for 30-50 seconds which creats a gap to help seperate trials in the dataset generation. We conduct two experiments of those three scenarios at two different times, each of which consists of 10 trials per scenario and lasts approximately one hour. We choose to run the experiments on a flat ground at an open space, so the experiments are not be interrupted. We also make sure that the thief can run at least 40 feet after gaining possession of the victim's phone.
+
+\textcolor{red}{accelerometer sampling rate}
+
+
+
+\subsubsection{User Study}
+We obtained approval from the University of California, Berkeley IRB (Institutional Review Board). We conducted a user study in the Bay Area in the United States from September to December 2016 to collect smartphone sensor data, including accelerometer, step count, ambient light, etc, from participants' daily usage. The accelerometer data collected from this user study was then used to generate negative samples for the machine learning algorithms.
+
+We first posted a recruitment advertisement on the Craigslist under the SF Bay Area `et cetera jobs' category in September 2016. All subjects were required to take an online screening survey, in which they provided information about their age, gender, smartphone maker and model, the way to carry a phone, e.g. in a pocket or a purse, and whether they were comfortable with wearing a smartwatch. We only recruited participants who used an Android phone with version 5.0 and above, and were willing to wear a smartwatch during the study.
+
+All qualified participants were scheduled a 30-minute meeting with a researcher. During the meeting, they were instructed to install an application on their smartphones, which collected and transmitted sensor data from their smartphones to a private account on a cloud server. All log files that contained sensor data were encrypted using AES/CCM with an 11 byte Nonce and a 16 byte MAC upon hourly upload to a cloud server. Researchers also provided each participant with a Basis Peak smartwatch and explained to them that they might experience overheat while wearing it, and if it did, they should take it off and contact us immediately. The watch was paired with participant's smartphone via bluetooth, and the installed app collected data that could be used to determine if the smartphone was in the range and connected to the watch. We used it as the ground truth of the smartphone being in user's possession. We asked participants to wear a smartwatch for as long as possible during the study except while sleeping. At the end of the meeting, they signed a consent form, which explained the purpose, requirements, risks, confidentiality and compensation of the study. Participants then received \$25 Visa gift card.
+
+During the user study, researchers contacted participants weekly to make sure that their phones and watches functioned correctly.
+
+After completing the study, participants returned the watch, filled out a short exit survey and received compensation of \$125 Visa gift card.
+
+We had a total of 3 rounds; each round lasted 3 consecutive weeks. A total of 55 participants were recruited. 53 out of the 55 subjects completed the study. In the first round, 16 out of 18 participants finished the study. All 18 subjects who participated in the second round completed the study. So are all 19 participants in the third round.
+
+\textcolor{red}{add participants' demographic information, gender and age distributions, in a table}
+
+
+
+\subsection{Feature Extraction}
+We first select and evaluate 40 candidate features used on the raw accelerometer data, i.e. x, y and z acceleration, retrieved from the smartphones, i.e. minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute of the x, y, z and magnitude of accelerometer data. Eventaully, we select maximum, mean, standard deviation, root mean square, arc length and product of arc length and standard deviation of the magnitude of accelerometer data. We choose to use the magnitude because compared to the x, y, z components of accelerometer data, the magnitude is non-directional thus more robust to changes in orientation. We remove minimum and mean absolute from the feature list because it does not affect the performance of the classifiers. We decide to use the magnitude of accelerometer exceeding \textit{40 $m/s^2$} as a trigger condition for our detector. When the magnitude exceeds this threshold, we compute a 12 dimenstional feature vector by extracting features from one-second window before and \textit{n}-second window after the time when the magnitude exceeds the \textit{40 $m/s^2$} threshold. The classifiers can capture the motion change before and after the moment when the smartphone was stolen by selecting windows before and after the threshold. The number of seconds, \textit{n}, is also a parameter as the threshold \textit{40 $m/s^2$}. We choose \textit{40 $m/s^2$} since it is the vaule of magnitude when the phone is grabbed in our simulated theft experiments. We vary \textit{n} from 1 to 7 to find the dataset where each classifier has the best performance.
+
+As a result, we generated 60 positive data points from the data collected in the simulated theft experiments, and approximately 248000 negative data points from the data collected in the user study. Each data point is a 12 dimentsional feature vector.
+
+\textcolor{red}{further explain the features}
+\textcolor{red}{4 plot of x, y, z, magnitude of raw accelerometer data}
+
+
+
+\subsection{Machine Learning Algorithms}
+We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest, provide by the Python scikit-learn library, on their efficacy of distinguishing between theft and normal usage. In order to mitigate the fact that we have many more negative samples than positive ones, we tweak the class weight, a class attribute built in the scikit-learn library, to produce different ratios of negative and positive class weights used in training, for example 1 : 1, 1 : 8000, and `balanced,' which adjusts the class weights to be inversely proportional to class frequencies in the input data.
+
+
+
+\section{Results}
+We ran a 10-fold cross validation on the entire dataset describled in the Feature Selection section, which consists of 60 positive samples and approximately 248,000 negative samples. Among the three classifiers, logistic regression performs the best in terms of producing the lowest false negative rate and the highest true positive rate. Besides class weights, another parameter we finetune in training is the window size \textit{n}. Confusion matrices of logistic regression with class weight = {0: 1.0, 1: 200.0}, random forest with class weight = {0: 1.0, 1: 5000.0} and linear SVM with class weight = {0: 1.0, 1: 1000.0} when the window size \textit{n} = 2 second are shown below,
+
+\textcolor{red}{need to find a better way to draw confusion matrics and their captions: plot confusion matrics in matplotlib and import figure.}
+
+\begin{tabular}{l|l|c|c|}
+\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
+\cline{3-4}
+\multicolumn{2}{c|}{}&Negative&Positive \\
+\cline{2-4}
+\multirow{2}{*}{True Labels}& Negative  & $248223$ & $170$ \\
+\cline{2-4}
+& Positive & $0$ & $60$ \\
+\cline{2-4}
+\multicolumn{4}{c}{Confusion Matrix of Logistic Regression} 
+\end{tabular}
+
+\begin{tabular}{l|l|c|c|}
+\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
+\cline{3-4}
+\multicolumn{2}{c|}{}&Negative&Positive \\
+\cline{2-4}
+\multirow{2}{*}{True Labels}& Negative  & $248360$ & $33$ \\
+\cline{2-4}
+& Positive & $32$ & $28$ \\
+\cline{2-4}
+\multicolumn{4}{c}{Confusion Matrix of Random Forest} 
+\end{tabular}
+
+\begin{tabular}{l|l|c|c|}
+\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
+\cline{3-4}
+\multicolumn{2}{c|}{}&Negative&Positive \\
+\cline{2-4}
+\multirow{2}{*}{True Labels}& Negative  & $246522$ & $1871$ \\
+\cline{2-4}
+& Positive & $42$ & $18$ \\
+\cline{2-4}
+\multicolumn{4}{c}{Confusion Matrix of Linear SVM} 
+\end{tabular}
+
+
+The logistic regression classifier has a false negative rate of 0.6844\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%. For our purpose of theft detection, linear SVM's false negative rate is too hight.
+
+We also compute feature rankings to find the most predictive features for each classifier. For logistic regression, to calculate feature scores that are invariant to scaling feature values, we adjust the coefficient of each feature in the decision function by multipling it by the standard deviation of the values of this feature across all instances in the training set. Then we get the adjusted coefficients as the feature importances of logistic regression as -2.73319487, 0.0129842047, 0.477534932, -0.0143829911, -1.18427357, -0.0470492037, 0.0580951517, 0.880738694, 0.666823228, \\ -0.937781183, 0.273227115, -2.69540663, from which we can tell the most representative features are maximum, and arc length in the before-window and product of arc length and standard deviation in the after-window. For random forest, we use the built-in attribute feature importances in the scikit-learn library, which estimate the relative importance of the features by computing the expected fraction of the samples they contribute to. Thus the higher in the tree, the more important the feature is \cite{sklearn:rfdoc}. We get the feature importances of random forest as 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
+
+Another way to find the feature importance is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
+
+To analyze the trade-off between random forest and logistic regression, we finetune the class weight of logistic regrssion to lower its true positive rate until it is approximately the same as random forest Then we compare their numbers of false postive instances. As a result, at a 41.7\% true positive rate (25 true positive instances), logistic regression with class weigth = {0: 1.0, 1: 2.0} has 34 false positive instances. At a 46.7\% true positive rate (28 true positive instances), random forest with class weight = {0: 1.0, 1: 5000.0} has 33 false positive instances. Thus the performance of logistic regression is at least as good as random forest.
+
+
+\textcolor{red}{adjust the size of histogram so axis and legend are readable}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=1.0\columnwidth]{hist_features_before_win_size_1_2.png}
+\end{center}
+\caption{histogram of features in 1-second windows before \textit{40 $m/s^2$} thresholds.}
+\end{figure}
+\begin{figure}
+\begin{center}
+\includegraphics[width=1.0\columnwidth]{hist_features_after_win_size_1_2.png}
+\end{center}
+\caption{histogram of features in 2-second windows after \textit{40 $m/s^2$} thresholds.}
+\end{figure}
+
+
+
+\textcolor{red}{add ROC, when random forest and logistic regression have approximately the same TP rate, compare FN rate}
+
+
+
+\section{Discussion}
+In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect common smartphone theft without sacrificing user experience. In the future, in addition to accelerometer, we propose to utilize other intrinsic-sensor data available on a smartphone, such as step count and try using techiques, such as time interpolation and filtering to preprocess raw sensor data for better performance. We would also like to collect more positive samples to have a more diverse theft dataset that covers more theft instances and test our models on a hold-out test set. 
+
+\textcolor{red}{application potential deployment of the detector}
+
+
+
+\section{Acknowledgments}
+This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley. The work is supported by \textcolor{red}{What Grants and Funds}. The authors would like to thank Jennider Chen from the Good Research for her assistance on conducting the user study and Irwin Reyes \textcolor{red}{Who else gives feedback to draft} for the feedback.
+
+
+
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
+%
+% ACM needs 'a single self-contained file'!
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \section{The {\secit Body} of The Paper}
+% Typically, the body of a paper is organized
+% into a hierarchical structure, with numbered or unnumbered
+% headings for sections, subsections, sub-subsections, and so on. 
+% The command \texttt{{\char'134}section} that
+% precedes this paragraph is part of such a
+% hierarchy.\footnote{This is the second footnote.  It
+% starts a series of three footnotes that add nothing
+% informational, but just give an idea of how footnotes work
+% and look. It is a wordy one, just so you see
+% how a longish one plays out.} \LaTeX\ handles the numbering
+% and placement of these headings for you, when you use
+% the appropriate heading commands around the titles
+% of the headings.  If you want a sub-subsection or
+% smaller part to be unnumbered in your output, simply append an
+% asterisk to the command name.  Examples of both
+% numbered and unnumbered headings will appear throughout the
+% balance of this sample document.
+
+% Because the entire article is contained in
+% the \textbf{document} environment, you can indicate the
+% start of a new paragraph with a blank line in your
+% input file; that is why this sentence forms a separate paragraph.
+
+% \subsection{Type Changes and {\subsecit Special} Characters}
+% We have already seen several typeface changes in this sample.  You
+% can indicate italicized words or phrases in your text with
+% the command \texttt{{\char'134}textit}; emboldening with the
+% command \texttt{{\char'134}textbf}
+% and typewriter-style (for instance, for computer code) with
+% \texttt{{\char'134}texttt}.  But remember, you do not
+% have to indicate typestyle changes when such changes are
+% part of the \textit{structural} elements of your
+% article; for instance, the heading of this subsection will
+% be in a sans serif\footnote{A third footnote, here.
+% Let's make this a rather short one to
+% see how it looks.} typeface, but that is handled by the
+% document class file. Take care with the use
+% of\footnote{A fourth, and last, footnote.}
+% the curly braces in typeface changes; they mark
+% the beginning and end of
+% the text that is to be in the different typeface.
+
+% You can use whatever symbols, accented characters, or
+% non-English characters you need anywhere in your document;
+% you can find a complete list of what is
+% available in the \textit{\LaTeX\
+% User's Guide} \cite{Lamport:LaTeX}.
+
+% \subsection{Math Equations}
+% You may want to display math equations in three distinct styles:
+% inline, numbered, or non-numbered display.  Each of
+% the three are discussed in the next sections.
+
+% \subsubsection{Inline (In-text) Equations}
+% A formula that appears in the running text is called an
+% inline or in-text formula.  It is produced by the
+% \textbf{math} environment, which can be
+% invoked with the usual \texttt{{\char'134}begin. . .{\char'134}end}
+% construction or with the short form \texttt{\$. . .\$}. You
+% can use any of the symbols and structures,
+% from $\alpha$ to $\omega$, available in
+% \LaTeX\cite{Lamport:LaTeX}; this section will simply show a
+% few examples of in-text equations in context. Notice how
+% this equation: \begin{math}\lim_{n\rightarrow \infty}x=0\end{math},
+% set here in in-line math style, looks slightly different when
+% set in display style.  (See next section).
+
+% \subsubsection{Display Equations}
+% A numbered display equation -- one set off by vertical space
+% from the text and centered horizontally -- is produced
+% by the \textbf{equation} environment. An unnumbered display
+% equation is produced by the \textbf{displaymath} environment.
+
+% Again, in either environment, you can use any of the symbols
+% and structures available in \LaTeX; this section will just
+% give a couple of examples of display equations in context.
+% First, consider the equation, shown as an inline equation above:
+% \begin{equation}\lim_{n\rightarrow \infty}x=0\end{equation}
+% Notice how it is formatted somewhat differently in
+% the \textbf{displaymath}
+% environment.  Now, we'll enter an unnumbered equation:
+% \begin{displaymath}\sum_{i=0}^{\infty} x + 1\end{displaymath}
+% and follow it with another numbered equation:
+% \begin{equation}\sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f\end{equation}
+% just to demonstrate \LaTeX's able handling of numbering.
+
+% \subsection{Citations}
+% Citations to articles \cite{bowman:reasoning,
+% braams:babel, clark:pct, herlihy:methodology},
+% conference proceedings \cite{clark:pct} or
+% books \cite{Lamport:LaTeX, salas:calculus} listed
+% in the Bibliography (or ``References'') section of your
+% article will occur throughout the text of your article.
+% You should use BibTeX to automatically produce this bibliography;
+% you simply need to insert one of several citation commands with
+% a key of the item cited in the proper location in
+% the \texttt{.tex} file \cite{Lamport:LaTeX}.
+% The key is a short reference you invent to uniquely
+% identify each work; in this sample document, the key is
+% the first author's surname and a
+% word from the title.  This identifying key is included
+% with each item in the \texttt{.bib} file for your article.
+
+% The details of the construction of the \texttt{.bib} file
+% are beyond the scope of this sample document, but more
+% information can be found in the \textit{Author's Guide},
+% and exhaustive details in the \textit{\LaTeX\ User's
+% Guide}\cite{Lamport:LaTeX}.
+
+% This article shows only the plainest form
+% of the citation command, using \texttt{{\char'134}cite}.
+% This is what is stipulated in the SIGS style specifications.
+% No other citation format is endorsed or supported.
+
+% Your reference list should be ordered alphabetically. When
+% citing more than one reference in the same set of brackets,
+% list the papers in ascending numerical order e.g., [1,2,3].
+
+% \subsection{Tables}
+% Because tables cannot be split across pages, the best
+% placement for them is typically the top of the page
+% nearest their initial cite.  To
+% ensure this proper ``floating'' placement of tables, use the
+% environment \textbf{table} to enclose the table's contents and
+% the table caption.  The contents of the table itself must go
+% in the \textbf{tabular} environment, to
+% be aligned properly in rows and columns, with the desired
+% horizontal and vertical rules.  Again, detailed instructions
+% on \textbf{tabular} material
+% is found in the \textit{\LaTeX\ User's Guide}.
+
+% Immediately following this sentence is the point at which
+% Table 1 is included in the input file; compare the
+% placement of the table here with the table in the printed
+% dvi output of this document.
+
+% \begin{table}
+% \centering
+% \caption{Frequency of Special Characters.}
+% \begin{tabular}{|c|c|l|} \hline
+% Non-English or Math&Frequency&Comments\\ \hline
+% \O & 1 in 1,000& For Swedish names\\ \hline
+% $\pi$ & 1 in 5& Common in math\\ \hline
+% \$ & 4 in 5 & Used in business\\ \hline
+% $\Psi^2_1$ & 1 in 40,000& Unexplained usage\\
+% \hline\end{tabular}
+% \end{table}
+
+% To set a wider table, which takes up the whole width of
+% the page's live area, use the environment
+% \textbf{table*} to enclose the table's contents and
+% the table caption.  As with a single-column table, this wide
+% table will ``float" to a location deemed more desirable.
+% Immediately following this sentence is the point at which
+% Table 2 is included in the input file; again, it is
+% instructive to compare the placement of the
+% table here with the table in the printed dvi
+% output of this document.
+
+
+% \begin{table*}
+% \centering
+% \caption{Some Typical Commands}
+% \begin{tabular}{|c|c|l|} \hline
+% Command&A Number&Comments\\ \hline
+% \texttt{{\char'134}alignauthor} & 100& Author alignment\\ \hline
+% \texttt{{\char'134}numberofauthors}& 200& Author enumeration\\ \hline
+% \texttt{{\char'134}table}& 300 & For tables\\ \hline
+% \texttt{{\char'134}table*}& 400& For wider tables\\ \hline\end{tabular}
+% \end{table*}
+% % end the environment with {table*}, NOTE not {table}!
+
+% \subsection{Figures}
+% Like tables, figures cannot be split across pages; the
+% best placement for them
+% is typically the top or the bottom of the page nearest
+% their initial cite.  To ensure this proper ``floating'' placement
+% of figures, use the environment
+% \textbf{figure} to enclose the figure and its caption.
+
+% This sample document contains examples of \textbf{.pdf}
+% files to be displayable with \LaTeX.  More
+% details on each of these is found in the \textit{Author's Guide}.
+
+% \begin{figure}
+% \centering
+% \includegraphics{fly}
+% \caption{A sample black and white graphic (.pdf format).}
+% \end{figure}
+
+% \begin{figure}
+% \centering
+% \includegraphics[height=1in,width=1in]{fly}
+% \caption{A sample black and white graphic (.pdf format)
+% that has been resized with the \texttt{includegraphics} command.}
+% \end{figure}
+
+
+% As was the case with tables, you may want a figure
+% that spans two columns.  To do this, and still to
+% ensure proper ``floating'' placement of tables, use the environment
+% \textbf{figure*} to enclose the figure and its caption.
+% \begin{figure*}
+% \centering
+% \includegraphics{flies}
+% \caption{A sample black and white graphic (.pdf format)
+% that spans two columns of text.}
+% \end{figure*}
+% and don't forget to end the environment with
+% {figure*}, not {figure}!
+
+% Note that either {\textbf{.pdf}} or {\textbf{.jpeg}} formats can be
+% included with the \verb+\includegraphics+ command.
+
+% \begin{figure}
+% \centering
+% \includegraphics[height=1in,width=1in]{rosette}
+% \caption{A sample black and white graphic (.pdf format) that has
+% been resized with the \texttt{includegraphics} command.}
+% \vskip -6pt
+% \end{figure}
+
+% \subsection{Theorem-like Constructs}
+% Other common constructs that may occur in your article are
+% the forms for logical constructs like theorems, axioms,
+% corollaries, and proofs.  There are
+% two forms, one produced by the
+% command \texttt{{\char'134}newtheorem} and the
+% other by the command \texttt{{\char'134}newdef}; perhaps
+% the clearest and easiest way to distinguish them is
+% to compare the two in the output of this sample document:
+
+% This uses the \textbf{theorem} environment, created by
+% the\linebreak\texttt{{\char'134}newtheorem} command:
+% \newtheorem{theorem}{Theorem}
+% \begin{theorem}
+% Let $f$ be continuous on $[a,b]$.  If $G$ is
+% an antiderivative for $f$ on $[a,b]$, then
+% \begin{displaymath}\int^b_af(t)dt = G(b) - G(a).\end{displaymath}
+% \end{theorem}
+
+% The other uses the \textbf{definition} environment, created
+% by the \texttt{{\char'134}newdef} command:
+% \newdef{definition}{Definition}
+% \begin{definition}
+% If $z$ is irrational, then by $e^z$ we mean the
+% unique number which has
+% logarithm $z$: \begin{displaymath}{\log e^z = z}\end{displaymath}
+% \end{definition}
+
+% Two lists of constructs that use one of these
+% forms is given in the
+% \textit{Author's  Guide}.
+ 
+% There is one other similar construct environment, which is
+% already set up
+% for you; i.e., you must \textit{not} use
+% a \texttt{{\char'134}newdef} command to
+% create it: the \textbf{proof} environment.  Here
+% is an example of its use:
+% \begin{proof}
+% Suppose on the contrary there exists a real number $L$ such that
+% \begin{displaymath}
+% \lim_{x\rightarrow\infty} \frac{f(x)}{g(x)} = L.
+% \end{displaymath}
+% Then
+% \begin{displaymath}
+% l=\lim_{x\rightarrow c} f(x)
+% = \lim_{x\rightarrow c}
+% \left[ g{x} \cdot \frac{f(x)}{g(x)} \right ]
+% = \lim_{x\rightarrow c} g(x) \cdot \lim_{x\rightarrow c}
+% \frac{f(x)}{g(x)} = 0\cdot L = 0,
+% \end{displaymath}
+% which contradicts our assumption that $l\neq 0$.
+% \end{proof}
+
+% Complete rules about using these environments and using the
+% two different creation commands are in the
+% \textit{Author's Guide}; please consult it for more
+% detailed instructions.  If you need to use another construct,
+% not listed therein, which you want to have the same
+% formatting as the Theorem
+% or the Definition \cite{salas:calculus} shown above,
+% use the \texttt{{\char'134}newtheorem} or the
+% \texttt{{\char'134}newdef} command,
+% respectively, to create it.
+
+% \subsection*{A {\secit Caveat} for the \TeX\ Expert}
+% Because you have just been given permission to
+% use the \texttt{{\char'134}newdef} command to create a
+% new form, you might think you can
+% use \TeX's \texttt{{\char'134}def} to create a
+% new command: \textit{Please refrain from doing this!}
+% Remember that your \LaTeX\ source code is primarily intended
+% to create camera-ready copy, but may be converted
+% to other forms -- e.g., HTML. If you inadvertently omit
+% some or all of the \texttt{{\char'134}def}s, recompilation will
+% be, to say the least, problematic.
+
+% \begin{figure}
+% \begin{center}
+% \includegraphics[width=.9\columnwidth]{300px-Eniac.jpg}
+% \end{center}
+% \caption{Photograph of Glen Beck (background) and Betty Snyder
+%   (foreground) programming the ENIAC in BRL building 328. (U.S. Army
+%   photo), downloaded from wikipedia. This photo was automatically
+%   resized to ${\frac{9}{10}}$ of the text column using
+%   the \textbf{includegraphics} command.}
+% \end{figure}
+
+% \section{Conclusions}
+% This paragraph will end the body of this sample document.
+% Remember that you might still have Acknowledgments or
+% Appendices; brief samples of these
+% follow.  There is still the Bibliography to deal with; and
+% we will make a disclaimer about that here: with the exception
+% of the reference to the \LaTeX\ book, the citations in
+% this paper are to articles which have nothing to
+% do with the present subject and are used as
+% examples only.
+% %\end{document}  % This is where a 'short' article might terminate
+
+% %ACKNOWLEDGMENTS are optional
+% \section{Acknowledgments}
+% This section is optional; it is a location for you
+% to acknowledge grants, funding, editing assistance and
+% what have you.  In the present case, for example, the
+% authors would like to thank Gerald Murray of ACM for
+% his help in codifying this \textit{Author's Guide}
+% and the \textbf{.cls} and \textbf{.tex} files that it describes.
+
+% %
+% % The following two commands are all you need in the
+% % initial runs of your .tex file to
+% % produce the bibliography for the citations in your paper.
+% \bibliographystyle{abbrv}
+% \bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
+% % You must have a proper ".bib" file
+% %  and remember to run:
+% % latex bibtex latex latex
+% % to resolve all references
+% %
+% % ACM needs 'a single self-contained file'!
+% %
+% %APPENDICES are optional
+% %\balancecolumns
+% \appendix
+% %Appendix A
+% \section{Headings in Appendices}
+% The rules about hierarchical headings discussed above for
+% the body of the article are different in the appendices.
+% In the \textbf{appendix} environment, the command
+% \textbf{section} is used to
+% indicate the start of each Appendix, with alphabetic order
+% designation (i.e., the first is A, the second B, etc.) and
+% a title (if you include one).  So, if you need
+% hierarchical structure
+% \textit{within} an Appendix, start with \textbf{subsection} as the
+% highest level. Here is an outline of the body of this
+% document in Appendix-appropriate form:
+% \subsection{Introduction}
+% \subsection{The Body of the Paper}
+% \subsubsection{Type Changes and  Special Characters}
+% \subsubsection{Math Equations}
+% \paragraph{Inline (In-text) Equations}
+% \paragraph{Display Equations}
+% \subsubsection{Citations}
+% \subsubsection{Tables}
+% \subsubsection{Figures}
+% \subsubsection{Theorem-like Constructs}
+% \subsubsection*{A Caveat for the \TeX\ Expert}
+% \subsection{Conclusions}
+% \subsection{Acknowledgments}
+% \subsection{Additional Authors}
+% This section is inserted by \LaTeX; you do not insert it.
+% You just add the names and information in the
+% \texttt{{\char'134}additionalauthors} command at the start
+% of the document.
+% \subsection{References}
+% Generated by bibtex from your .bib file. Run latex,
+% then bibtex, then latex twice (to resolve references)
+% to create the .bbl file. Insert that .bbl file into
+% the .tex source file and comment out
+% the command \texttt{{\char'134}thebibliography}.
+% % This next section command marks the start of
+% % Appendix B, and does not continue the present hierarchy
+% \section{More Help for the Hardy}
+% The sig-alternate.cls file itself is chock-full of succinct
+% and helpful comments. If you consider yourself a moderately
+% experienced to expert user of \LaTeX, you may find reading
+% it useful but please remember not to change it.
+% %\balancecolumns % GM June 2007
+% % That's all folks!
+
+
+
+
+\end{document}

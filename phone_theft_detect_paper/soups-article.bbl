@@ -1,0 +1,59 @@
+\begin{thebibliography}{1}
+
+\bibitem{boyles:pew}
+J.~L. Boyles, A.~Smith, and M.~Madden.
+\newblock Privacy and data management on mobile devices.
+\newblock
+  \url{http://www.pewinternet.org/2012/09/05/privacy-and-data-management-on-mobile-devices/},
+  September 5 2012.
+
+\bibitem{deitrick:consumer}
+C.~Deitrick.
+\newblock Smartphone thefts drop as kill switch usage grows.
+\newblock
+  \url{http://www.consumerreports.org/cro/news/2015/06/smartphone-thefts-on-the-decline/index.htm},
+  June 11 2015.
+
+\bibitem{derawi:gait}
+M.~O. Derawi, C.~Nickel, P.~Bours, and C.~Busch.
+\newblock Unobtrusive user-authentication on mobile phones using biometric gait
+  recognition.
+\newblock In {\em Intelligent Information Hiding and Multimedia Signal
+  (IIH-MSP) Sixth International Conference Processing}, pages 306--311. IEEE,
+  October 2010.
+
+\bibitem{egelman:lock}
+S.~Egelman, S.~Jain, R.~S. Portnoff, K.~Liao, S.~Consolvo, and D.~Wagner.
+\newblock Are you ready to lock? understanding user motivations for smartphone
+  locking behaviors.
+\newblock In {\em 2014 ACM SIGSAC Conference on Computer and Communications
+  Security Proceedings}, pages 750--761. ACM SIGSAC, November 2014.
+
+\bibitem{feng:pickup}
+T.~Feng, X.~Zhao, and W.~Shi.
+\newblock Investigating mobile device picking-up motion as a novel biometric
+  modality.
+\newblock In {\em Biometrics: Theory, Applications and Systems (BTAS), 2013
+  IEEE Sixth International Conference on}. IEEE, 2013.
+
+\bibitem{kwapisz:biometrics}
+J.~R. Kwapisz, G.~M. Weiss, and S.~A. Moore.
+\newblock Cell phone-based biometric identification.
+\newblock In {\em Biometrics: Theory Applications and Systems (BTAS), 2010
+  Fourth IEEE International Conference on}. IEEE, 2010.
+
+\bibitem{primo:context}
+A.~Primo, V.~V. Phoha, R.~Kumar, and A.~Serwadda.
+\newblock Context-aware active authentication using smartphone accelerometer
+  measurements.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition Workshops}, pages 98--105. IEEE, June 2014.
+
+\bibitem{sklearn:rfdoc}
+scikit learn.
+\newblock 3.2.4.3.1. sklearn.ensemble.randomforestclassifier.
+\newblock
+  \url{http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html},
+  2016.
+
+\end{thebibliography}
