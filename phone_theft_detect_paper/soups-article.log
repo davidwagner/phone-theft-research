@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  23 JUL 2017 17:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  27 JUL 2017 08:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -200,38 +200,72 @@ File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 144.
 )
-(/usr/local/texlive/2016/texmf-dist/tex/latex/multirow/multirow.sty
-\bigstrutjot=\dimen123
+(/usr/local/texlive/2016/texmf-dist/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2016/04/27 v1.618033 publication quality tables
+\heavyrulewidth=\dimen123
+\lightrulewidth=\dimen124
+\cmidrulewidth=\dimen125
+\belowrulesep=\dimen126
+\belowbottomsep=\dimen127
+\aboverulesep=\dimen128
+\abovetopsep=\dimen129
+\cmidrulesep=\dimen130
+\cmidrulekern=\dimen131
+\defaultaddspace=\dimen132
+\@cmidla=\count109
+\@cmidlb=\count110
+\@aboverulesep=\dimen133
+\@belowrulesep=\dimen134
+\@thisruleclass=\count111
+\@lastruleclass=\count112
+\@thisrulewidth=\dimen135
 )
-(./soups-article.aux)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count113
+\float@exts=\toks36
+\float@box=\box30
+\@float@everytoks=\toks37
+\@floatcapt=\box31
+)
+(./soups-article.aux
+
+LaTeX Warning: Label `my-label' multiply defined.
+
+
+LaTeX Warning: Label `my-label' multiply defined.
+
+
+LaTeX Warning: Label `my-label' multiply defined.
+
+)
 \openout1 = `soups-article.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 68.
-LaTeX Font Info:    ... okay on input line 68.
-
-(/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
+LaTeX Font Info:    ... okay on input line 69.
+ (/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count109
-\scratchdimen=\dimen124
-\scratchbox=\box30
-\nofMPsegments=\count110
-\nofMParguments=\count111
-\everyMPshowfont=\toks36
-\MPscratchCnt=\count112
-\MPscratchDim=\dimen125
-\MPnumerator=\count113
-\makeMPintoPDFobject=\count114
-\everyMPtoPDFconversion=\toks37
+\scratchcounter=\count114
+\scratchdimen=\dimen136
+\scratchbox=\box32
+\nofMPsegments=\count115
+\nofMParguments=\count116
+\everyMPshowfont=\toks38
+\MPscratchCnt=\count117
+\MPscratchDim=\dimen137
+\MPnumerator=\count118
+\makeMPintoPDFobject=\count119
+\everyMPtoPDFconversion=\toks39
 ) (/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2016/05/10 v0.21 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -279,24 +313,23 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Try loading font information for U+msa on input line 170.
+LaTeX Font Info:    Try loading font information for U+msa on input line 171.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 170.
+LaTeX Font Info:    Try loading font information for U+msb on input line 171.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Try loading font information for U+lasy on input line 170.
+LaTeX Font Info:    Try loading font information for U+lasy on input line 171.
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-Overfull \hbox (4.55458pt too wide) in paragraph at lines 170--170
- []\eaddfnt egelman@cs.berkeley.edu| 
- []
+
+LaTeX Warning: No \author given.
 
 
 Overfull \hbox (1.8416pt too wide) in paragraph at lines 180--181
@@ -307,89 +340,110 @@ Overfull \hbox (1.8416pt too wide) in paragraph at lines 180--181
 
 
 ]
-Overfull \hbox (1.00627pt too wide) in paragraph at lines 201--202
+Overfull \hbox (1.00627pt too wide) in paragraph at lines 200--201
 []\T1/aer/m/n/9 Primo et al. fur-ther in-ves-ti-gate and show that acceleromete
 r-
  []
 
 
-LaTeX Warning: Citation `xu:pace' on page 2 undefined on input line 203.
-
-
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [2]
-Overfull \hbox (2.4261pt too wide) in paragraph at lines 234--235
-\T1/aer/m/n/9 structed to in-stall an ap-pli-ca-tion on their smart-phones, whi
-ch
+Overfull \hbox (5.00179pt too wide) in paragraph at lines 236--237
+\T1/aer/m/n/9 structed to in-stall the mon-i-tor-ing ap-pli-ca-tion de-scribled
+ above
  []
 
 
-Overfull \hbox (2.87813pt too wide) in paragraph at lines 234--235
-\T1/aer/m/n/9 col-lected and trans-mit-ted sen-sor data from their smart-phones
-
+Overfull \hbox (6.84964pt too wide) in paragraph at lines 262--263
+\T1/aer/m/n/9 mum, max-i-mum, mean, stan-dard de-vi-a-tion, root mean square,
  []
 
 
-Underfull \vbox (badness 4279) has occurred while \output is active []
+Underfull \vbox (badness 2103) has occurred while \output is active []
 
  [3]
-Overfull \hbox (2.43971pt too wide) in paragraph at lines 305--306
+<pos_acc_separated.png, id=21, 2052.66875pt x 1291.82625pt>
+File: pos_acc_separated.png Graphic file (type png)
+
+<use pos_acc_separated.png>
+Package pdftex.def Info: pos_acc_separated.png used on input line 277.
+(pdftex.def)             Requested size: 240.0pt x 151.0307pt.
+
+<neg_acc_separated.png, id=23, 2039.62pt x 1288.815pt>
+File: neg_acc_separated.png Graphic file (type png)
+
+<use neg_acc_separated.png>
+Package pdftex.def Info: neg_acc_separated.png used on input line 282.
+(pdftex.def)             Requested size: 240.0pt x 151.64227pt.
+
+Overfull \hbox (2.43971pt too wide) in paragraph at lines 335--336
 \T1/aer/m/n/9 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036,
  []
 
-<hist_features_before_win_size_1_2.png, id=22, 2311.1946pt x 1371.6846pt>
+[4 <./pos_acc_separated.png> <./neg_acc_separated.png>]
+<hist_features_before_win_size_1_2.png, id=29, 2311.1946pt x 1371.6846pt>
 File: hist_features_before_win_size_1_2.png Graphic file (type png)
 
 <use hist_features_before_win_size_1_2.png>
 Package pdftex.def Info: hist_features_before_win_size_1_2.png used on input li
-ne 316.
+ne 343.
 (pdftex.def)             Requested size: 240.0pt x 142.42996pt.
 
-<hist_features_after_win_size_1_2.png, id=24, 2310.4719pt x 1371.6846pt>
+<hist_features_after_win_size_1_2.png, id=30, 2310.4719pt x 1371.6846pt>
 File: hist_features_after_win_size_1_2.png Graphic file (type png)
 
 <use hist_features_after_win_size_1_2.png>
 Package pdftex.def Info: hist_features_after_win_size_1_2.png used on input lin
-e 322.
+e 350.
 (pdftex.def)             Requested size: 240.0pt x 142.47183pt.
- [4 <./hist_features_before_win_size_1_2.png> <./hist_features_after_win_size_1
-_2.png>]
-Overfull \hbox (30.97559pt too wide) in paragraph at lines 341--342
-\T1/aer/m/n/9 nol-ogy Cen-ter for Se-cure Com-put-ing (http://scrub.cs.berkeley
-.edu/)
+
+Overfull \hbox (2.50009pt too wide) in paragraph at lines 371--372
+\T1/aer/m/n/9 Cen-ter for Se-cure Com-put-ing (http://scrub.cs.berkeley.edu/)
  []
 
 (./soups-article.bbl
 LaTeX Font Info:    Try loading font information for T1+aett on input line 7.
  (/usr/local/texlive/2016/texmf-dist/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
-)) [5] (./soups-article.aux) ) 
+)
+Overfull \hbox (1.36128pt too wide) in paragraph at lines 4--9
+\T1/aett/m/n/9 privacy-[]and-[]data-[]management-[]on-[]mobile-[]devices/$\T1/a
+er/m/n/9 , 
+ []
+
+[5 <./hist_features_before_win_size_1_2.png> <./hist_features_after_win_size_1_
+2.png>]) [6
+
+] (./soups-article.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
- 2954 strings out of 493014
- 38372 string characters out of 6133351
- 108824 words of memory out of 5000000
- 6401 multiletter control sequences out of 15000+600000
- 53666 words of font info for 72 fonts, out of 8000000 for 9000
+ 3074 strings out of 493014
+ 39962 string characters out of 6133351
+ 107802 words of memory out of 5000000
+ 6517 multiletter control sequences out of 15000+600000
+ 51358 words of font info for 70 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,11n,28p,1704b,273s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvi
-ps/base/8r.enc}</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmbx9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm
-/cmbxti10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/c
-m/cmmi9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmr6.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.
-pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pf
-b></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr
-/local/texlive/2016/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/local/
-texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/20
-16/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-d
-ist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on soups-article.pdf (5 pages, 416790 bytes).
+ 41i,9n,28p,1704b,272s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
+exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/tex
+live/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/local/te
+xlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/texl
+ive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive
+/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/20
+16/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2016
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2016/t
+exmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2016/texmf-di
+st/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/t
+ype1/urw/times/utmr8a.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/urw/t
+imes/utmri8a.pfb>
+Output written on soups-article.pdf (6 pages, 573396 bytes).
 PDF statistics:
- 74 PDF objects out of 1000 (max. 8388607)
- 50 compressed objects within 1 object stream
+ 77 PDF objects out of 1000 (max. 8388607)
+ 49 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 11 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 

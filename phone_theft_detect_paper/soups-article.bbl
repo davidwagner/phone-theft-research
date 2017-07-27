@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{boyles:pew}
 J.~L. Boyles, A.~Smith, and M.~Madden.
@@ -30,6 +30,13 @@ M.~O. Derawi, C.~Nickel, P.~Bours, and C.~Busch.
   (IIH-MSP) Sixth International Conference Processing}, pages 306--311. IEEE,
   October 2010.
 
+\bibitem{android:doc}
+A.~Developers.
+\newblock Sensor manager.
+\newblock
+  \url{http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html},
+  2017.
+
 \bibitem{egelman:lock}
 S.~Egelman, S.~Jain, R.~S. Portnoff, K.~Liao, S.~Consolvo, and D.~Wagner.
 \newblock Are you ready to lock? understanding user motivations for smartphone
@@ -43,6 +50,13 @@ T.~Feng, X.~Zhao, and W.~Shi.
   modality.
 \newblock In {\em Biometrics: Theory, Applications and Systems (BTAS), 2013
   IEEE Sixth International Conference on}. IEEE, 2013.
+
+\bibitem{xu:pace}
+F.~Juefei-Xu, C.~Bhagavatula, A.~Jaech, U.~Prasad, and M.~Savvides.
+\newblock Gait-id on the move: Pace independent human identification using cell
+  phone accelerometer dynamics.
+\newblock In {\em Biometrics: Theory, Applications and Systems (BTAS), 2012
+  IEEE Fifth International Conference on}. IEEE, 2012.
 
 \bibitem{kwapisz:biometrics}
 J.~R. Kwapisz, G.~M. Weiss, and S.~A. Moore.
@@ -61,7 +75,7 @@ A.~Primo, V.~V. Phoha, R.~Kumar, and A.~Serwadda.
 scikit learn.
 \newblock 3.2.4.3.1. sklearn.ensemble.randomforestclassifier.
 \newblock
-  \url{http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html},
+  \url{https://developer.android.com/reference/android/hardware/SensorManager.html},
   2016.
 
 \end{thebibliography}

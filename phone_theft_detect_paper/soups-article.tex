@@ -57,7 +57,8 @@
 \usepackage{times}
 \usepackage{url}
 \usepackage{color}
-\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{float}
 
 \renewcommand{\topfraction}{0.99} % be more aggressive about text around floats
 \renewcommand{\floatpagefraction}{0.99}
@@ -105,11 +106,11 @@
 % without further effort on your part as the last section in
 % the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{3} %  in this sample file, there are a *total*
+% \numberofauthors{3} %  in this sample file, there are a *total*
 % of EIGHT authors. SIX appear on the 'first-page' (for formatting
 % reasons) and the remaining two appear in the \additionalauthors section.
 %
-\author{
+% \author{
 % You can go ahead and credit any number of authors here,
 % e.g. one 'row of three' or two rows (consisting of one row of three
 % and a second row of one, two or three).
@@ -121,20 +122,20 @@
 % e-mail address with \email.
 %
 % 1st. author
-\alignauthor
-Xinyu Liu \\
-       \affaddr{UC Berkeley} \\
-       \email{xinyuliu@berkeley.edu}
-% 2nd. author
-\alignauthor
-David Wagner \\
-       \affaddr{UC Berkeley} \\
-       \email{daw@cs.berkeley.edu}
-% 3rd. author
-\alignauthor 
-Serge Egelman \\
-       \affaddr{UC Berkeley, ICSI} \\
-       \email{egelman@cs.berkeley.edu}
+% \alignauthor
+% Xinyu Liu \\
+%        \affaddr{UC Berkeley} \\
+%        \email{xinyuliu@berkeley.edu}
+% % 2nd. author
+% \alignauthor
+% David Wagner \\
+%        \affaddr{UC Berkeley} \\
+%        \email{daw@cs.berkeley.edu}
+% % 3rd. author
+% \alignauthor 
+% Serge Egelman \\
+%        \affaddr{UC Berkeley, ICSI} \\
+%        \email{egelman@cs.berkeley.edu}
 % \and  % use '\and' if you need 'another row' of author names
 % % 4th. author
 % \alignauthor Lawrence P. Leipuner\\
@@ -154,7 +155,7 @@ Serge Egelman \\
 %        \affaddr{8600 Datapoint Drive}\\
 %        \affaddr{San Antonio, Texas 78229}\\
 %        \email{cpalmer@prl.com}
-}
+% }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
 % for aesthetic reasons that you place these 'additional authors'
@@ -169,10 +170,9 @@ Serge Egelman \\
 
 \maketitle
 \begin{abstract}
-
 Millions of smartphones are stolen in the United States every year, exposing victims' personal information at risk since many users often do not lock their phones. To protect individuals' smartphones and the private data stored on them, we develop a system that automatically detects pickpocket, and grab-and-run theft, where a thief grabs the phone from a victim's hand then runs away. We collect a dataset which consists of samples from simulated theft experiments and a user study about smartphone usage in subjects' everyday lives. We then build three binary classifiers to classify a data point as theft or normal usage based on features extracted from smartphones' accelerometer data. Among the three models, logistic regression detects 100\% of theft instances at a cost of 1 false alarm per week. The phone theft detecting technology presented in this paper also has broad applications. For example, we can use the detector as a protection for an authentication scheme that uses a smartphone, and it triggers an alarm and an automatic screen lock after the phone is stolen.
-
 \end{abstract}
+
 
 
 
@@ -190,9 +190,8 @@ Our contributions are:
 
 
 
-\section{Related Work}
 
-\textcolor{red}{add more paper summaries if found. I did not include gait recognition using accelerometers attached on subjects.}
+\section{Related Work}
 
 The use of intrinsic sensor data to improve the security of smart devices and offer a way of continuous user authentication has drawn more and more attention recently. The embedded sensors on a smartphone have been used to develop biometric identification and authentication techniques. The major benefit of using smartphone-based biometric is to allow authentication to happen unobtrusively, i.e. not requiring any users action. We are particularly interested in research done to study gait recognition by mining the embedded accelerometer data on smartphones. For the purpose of our research, we emphasize on the feature extraction methods used in the previous work.
 
@@ -206,9 +205,9 @@ Kwapisz et al collected a dataset of 36 subjects instructed by the researchers t
 
 In addition to gait, Feng et al investigated using pickup motion as a biometic modality for user authentication \cite{feng:pickup}. They explored two methods to extract features from accelerometer, gyroscope and magnetometer data. In the statistical method, they used a move average filter to smooth raw data, then extracted temporal and numerical features, i.e. duration time, mean, variance, and standard derivation after normalization and segmentation. They used SVM to classify if given data is from a specific user. They also used data from multiple sessions to reconstruct pickup motion trajectories and a distance metric to distinguishes trajectories of different users. They tested their proposed method on a dataset of 31 subejcts performing pickup motion while standing and walking achieved equal error rate of 6.13\% and 7.09\% respectively.
 
-The most relevant work is done by Chang et al in using pickup motion from pockets or single-shoulder bags as a biometric modality, uniquely associated to the owner, to detect smartphone theft in real-time \cite{cheng:theft}. They preprocessed raw accelerometer and gyroscope data by removing high freqency noise. They integrated six weak classifier trained by data from each of six dimenstions of accelerometer and gyroscope into one strong classifier then use the strong classifier to determine the legitimacy of picking up motions of a user. The system achieved 10.2\% false positive rate and 5.5\% false negative rate on average.
+The most relevant work is done by Chang et al in using pickup motion from pockets or single-shoulder bags as a biometric modality, uniquely associated to the owner, to detect smartphone theft in real-time \cite{cheng:theft}. Their authentication system prevents pickpocket smartphone thefts by analyzing accelerometer and gyroscope data to detect illegal pickup of a smartphone. Our acceleration-based approach detects pickpocket as well as grab-and-run thefts when the phone is in the possesion of the owner. They preprocessed raw accelerometer and gyroscope data by removing high freqency noise. They integrated six weak classifier trained by data from each of six dimenstions of accelerometer and gyroscope into one strong classifier then use the strong classifier to determine the legitimacy of picking up motions of a user. Their system achieved 10.2\% false positive rate and 5.5\% false negative rate on average. \textcolor{red}{ [need to covert these rates to comparable results to our work, but the author did not provide the number of negative samples used in test.]} 
 
-All the acceleration-based approaches have a common procedure. They first preprocess the noisy raw sensor data usig a filter, then segment and extract feature vectors from windows to be used for some classification algorithm. While the applications of an accelerometer-based biometric modality include theft prevention through user authentication, we are more interested in theft detection. To the best of our knowledge, not much work has been done in sensor-based phone theft detection, where a rapid change of acceleration is captured by accelerometer. We do not have a set of subjects which we intend to identify individually. In addition, instead of a laboratory environment, all the negative samples used in this work is collected in the real world, where sensor data is recorded on the smartphones while subjects are performing everyday activities. We use the data recorded by the embedded accelerometer and apply machine learning techniques to detect smartphone theft.
+The aforementioned acceleration-based approaches for gait recognistion have a common procedure. They first preprocess the noisy raw sensor data usig a filter, then segment and extract feature vectors from windows to be used for a classification algorithm. While an accelerometer-based biometric modality enables theft prevention through user authentication, we are more interested in theft detection. To the best of our knowledge, not much work has been done in detecting pickpocket and grab-and-run smartphone theft, where a rapid change of acceleration occurs. We also do not have a set of subjects whom we intend to identify individually. In addition, instead of a laboratory environment, all the negative samples used in this work is collected in the real world, where sensor data is recorded on the smartphones carried by the subjects who are are performing everyday activities. We use the data recorded by the embedded accelerometer and apply machine learning techniques to detect smartphone theft.
 
 
 
@@ -217,39 +216,72 @@ All the acceleration-based approaches have a common procedure. They first prepro
 
 \subsection{Data Collection}
 
-\subsubsection{Simulated Thefts}
-We use a commerically available smartphone, i.e. Nexus 5X with Android version 7.1.1. \textcolor{red}{[I need to find out the embedded accelerometer model. Do I need to include specific configuration of this accelerometer?]} to collect data in our simulated theft experiments. We carefully design the experiments to simulate three types of smartphone theft scenarios with one researcher acting as a smartphone user, and another one playing the role of a thief. In the first scenario, the user stands still and holds the phone with one hand as if it is being usd, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. In the second scenario, the user again holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. The third scenario simulates pick-pocket theft. The user places the phone in a back pocket and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
+\subsubsection{Software and Hardware}
+We use an Android application to record smartphone sensor data, including 3 axial acceleration, step count, ambient light, bluetooth connection etc, on a smartphone with Android version at least 5.0. It collects and transmits sensor data from a smartphone to a private account we set up on a cloud server. All log files that contain sensor data are encrypted using AES/CCM with an 11 byte Nonce and a 16 byte MAC upon an hourly upload to a cloud server. The application uses SENSOR\_DELAY\_FASTEST to acquire sensor data as fast as possible \cite{android:doc}. On most devices including the one we use for the simulated theft experiment, the sampling rate is 100 Hz. 
 
-We collect 20 instances of each theft scenario and a total of 60 trials. Between two consective trials, researchers put the phone down on the ground for 30-50 seconds which creats a gap to help seperate trials in the dataset generation. We conduct two experiments of those three scenarios at two different times, each of which consists of 10 trials per scenario and lasts approximately one hour. We choose to run the experiments on a flat ground at an open space, so the experiments are not be interrupted. We also make sure that the thief can run at least 40 feet after gaining possession of the victim's phone.
+We use a commerically available smartphone, Nexus 5X, with Android version 7.1.1 in our simulated theft experiment. The embeded accelerometer is InvenSense MPU6515. For the user study, we require subjects to use an Android smartphone with Android version at least 5.0. Researchers also provide each participant with a Basis Peak smartwatch and explain to them that they may experience overheat while wearing it, and if it does, they should take it off and contact us immediately. The watch is paired with participant's smartphone via bluetooth. The bluetooth connectivity data collected by the appliction can be used to determine if the smartphone is in the range and connected to the watch. We use this heuristic as the ground truth of the smartphone being in user's possession.
 
-\textcolor{red}{accelerometer sampling rate}
+\subsubsection{Simulated Theft Experiment}
+We carefully design the experiment to simulate three types of smartphone theft scenarios with one researcher acting as a smartphone user, and another one playing the role of a thief. In the first scenario, the user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. In the second scenario, the user again holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. The third scenario simulates pick-pocket thefts. The user places the phone in a back pant pocket and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
+
+We collect 20 instances of each scenario and a total of 60 trials. Between two consective trials, researchers put the phone down on the ground for 30-50 seconds, which creats a gap in the time series to help seperate trials in the feature extraction step. We conduct all three scenarios at two different times, each of which consists of 10 trials per scenario and lasts approximately one hour. Different researchers act as the victim and thief in these two sessions. We choose to run the experiment on a flat ground at an open space, so the experiment is not be interrupted. We also make sure that the thief can run at least 40 feet after gaining possession of the victim's phone.
 
 
 
 \subsubsection{User Study}
-We obtained approval from the University of California, Berkeley IRB (Institutional Review Board). We conducted a user study in the Bay Area in the United States from September to December 2016 to collect smartphone sensor data, including accelerometer, step count, ambient light, etc, from participants' daily usage. The accelerometer data collected from this user study was then used to generate negative samples for the machine learning algorithms.
+We obtained approval from the University of California, Berkeley IRB (Institutional Review Board). We conducted a user study in the Bay Area in the United States from September to December 2016 to collect smartphone sensor data while participants are performing their daily activities. The accelerometer data collected from this user study was then used to generate negative samples for the machine learning algorithms.
 
-We first posted a recruitment advertisement on the Craigslist under the SF Bay Area `et cetera jobs' category in September 2016. All subjects were required to take an online screening survey, in which they provided information about their age, gender, smartphone maker and model, the way to carry a phone, e.g. in a pocket or a purse, and whether they were comfortable with wearing a smartwatch. We only recruited participants who used an Android phone with version 5.0 and above, and were willing to wear a smartwatch during the study.
+We first posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. All subjects were required to take an online screening survey, in which they provided information about their age, gender, smartphone maker and model, the way to carry a phone, e.g. in a pocket or a purse, and whether they were comfortable with wearing a smartwatch. We only recruited participants who used an Android phone with version 5.0 and above, and were willing to wear a smartwatch during the study.
 
-All qualified participants were scheduled a 30-minute meeting with a researcher. During the meeting, they were instructed to install an application on their smartphones, which collected and transmitted sensor data from their smartphones to a private account on a cloud server. All log files that contained sensor data were encrypted using AES/CCM with an 11 byte Nonce and a 16 byte MAC upon hourly upload to a cloud server. Researchers also provided each participant with a Basis Peak smartwatch and explained to them that they might experience overheat while wearing it, and if it did, they should take it off and contact us immediately. The watch was paired with participant's smartphone via bluetooth, and the installed app collected data that could be used to determine if the smartphone was in the range and connected to the watch. We used it as the ground truth of the smartphone being in user's possession. We asked participants to wear a smartwatch for as long as possible during the study except while sleeping. At the end of the meeting, they signed a consent form, which explained the purpose, requirements, risks, confidentiality and compensation of the study. Participants then received \$25 Visa gift card.
+All qualified participants were scheduled a 30-minute meeting with a researcher. During the meeting, they were instructed to install the monitoring application describled above on their smartphones. We asked participants to wear a smartwatch we provided for as long as possible during the study except while sleeping. At the end of the meeting, they signed a consent form, which explained the purpose, requirements, risks, confidentiality and compensation of the study. Participants then received \$25 Visa gift card. During the user study, researchers contacted participants weekly to make sure that their phones and watches were functioning correctly. After completing the study, participants returned the watch, filled out a short exit survey and received compensation of \$125 Visa gift card.
 
-During the user study, researchers contacted participants weekly to make sure that their phones and watches functioned correctly.
+We had a total of 3 rounds; each round lasted 3 consecutive weeks. A total of 55 participants were recruited. 53 out of the 55 subjects completed the study. In the first round, 16 out of 18 participants finished the study. All 18 subjects who participated in the second round completed the study. So are all 19 participants in the third round. The detailed
+demographic information about the particpants of this user study, incluing gender and age distributions are listed in the table below.
 
-After completing the study, participants returned the watch, filled out a short exit survey and received compensation of \$125 Visa gift card.
+\begin{table}[H]
+\centering
+\begin{tabular}{llllll}
+\hline
+      & Male & Female & Age 20-29 & 30-39 & 40+ \\ \hline
+R1    & 5    & 11     & 8         & 6     & 2   \\
+R2    & 10   & 8      & 7         & 7     & 4   \\
+R3    & 11   & 8      & 9         & 4     & 6   \\
+Total & 26   & 27     & 24        & 17    & 12  \\ \hline
+\end{tabular}
+\caption{Demographic Info of the User Study}
+\label{my-label}
+\end{table}
 
-We had a total of 3 rounds; each round lasted 3 consecutive weeks. A total of 55 participants were recruited. 53 out of the 55 subjects completed the study. In the first round, 16 out of 18 participants finished the study. All 18 subjects who participated in the second round completed the study. So are all 19 participants in the third round.
-
-\textcolor{red}{add participants' demographic information, gender and age distributions, in a table}
 
 
 
 \subsection{Feature Extraction}
-We first select and evaluate 40 candidate features used on the raw accelerometer data, i.e. x, y and z acceleration, retrieved from the smartphones, i.e. minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute of the x, y, z and magnitude of accelerometer data. Eventaully, we select maximum, mean, standard deviation, root mean square, arc length and product of arc length and standard deviation of the magnitude of accelerometer data. We choose to use the magnitude because compared to the x, y, z components of accelerometer data, the magnitude is non-directional thus more robust to changes in orientation. We remove minimum and mean absolute from the feature list because it does not affect the performance of the classifiers. We decide to use the magnitude of accelerometer exceeding \textit{40 $m/s^2$} as a trigger condition for our detector. When the magnitude exceeds this threshold, we compute a 12 dimenstional feature vector by extracting features from one-second window before and \textit{n}-second window after the time when the magnitude exceeds the \textit{40 $m/s^2$} threshold. The classifiers can capture the motion change before and after the moment when the smartphone was stolen by selecting windows before and after the threshold. The number of seconds, \textit{n}, is also a parameter as the threshold \textit{40 $m/s^2$}. We choose \textit{40 $m/s^2$} since it is the vaule of magnitude when the phone is grabbed in our simulated theft experiments. We vary \textit{n} from 1 to 7 to find the dataset where each classifier has the best performance.
+
+We decide to use the magnitude of acceleration exceeding \textit{40 $m/s^2$} as an activation condition for our detector. We extract features from one-second window before and \textit{n}-second window after the time when the magnitude exceeds the threshold. By selecting a window both before and after the thresholdhe, the classifiers can capture the rapid change in acceleration before and after the moment when the smartphone was stolen. We choose \textit{40 $m/s^2$} since it is approximately the vaule of magnitude when the phone is grabbed in our simulated theft experiment. We vary \textit{n} from 1 to 7 to find the dataset where each classifier has the best performance.
+
+We first select and evaluate 40 candidate features, i.e. minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute of the x, y, z and magnitude of acceleration, in each window. We choose to only use the magnitude because compared to the x, y, z components of acceleration, the magnitude is non-directional thus more robust to various orientation of the phone. We remove minimum and mean absolute from the feature list because it does not affect the performance of the classifiers. As a result, we extract a 12-dimensional feature vector, 6 from before-window and 6 from after-window, every time the detector is triggered.
+
+The detailed description of the selected features are listed below.
+\textit{Maximum}: the maximum value of magnitude in a window. \\
+\textit{Mean}: the average value of magnitude in a window. \\
+\textit{Standard deviation}: the standard deviation of magnitude values in a window. \\
+\textit{Root mean square}: the rms of magnitude values in a window. \\
+\textit{Arc length}: the average of the differences between all adjecent magnitude values in a window. \\
+\textit{Product of arc length and standard deviation}: the product of the two feature values.
 
 As a result, we generated 60 positive data points from the data collected in the simulated theft experiments, and approximately 248000 negative data points from the data collected in the user study. Each data point is a 12 dimentsional feature vector.
 
-\textcolor{red}{further explain the features. }
-\textcolor{red}{add 4 plots of x, y, z, magnitude of raw accelerometer data. }
+
+
+\begin{figure}[H]
+\includegraphics[width=1.0\columnwidth]{pos_acc_separated.png}
+\caption{The above plots are x, y, z and magnitude of acceleration, respectively, of one theft instance.}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
+\caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
+\end{figure}
 
 
 
@@ -259,45 +291,43 @@ We evaluate three standard machine learning algorithms: linear SVM, logistic reg
 
 
 \section{Results}
-We ran a 10-fold cross validation on the entire dataset describled in the Feature Selection section, which consists of 60 positive samples and approximately 248,000 negative samples. Among the three classifiers, logistic regression performs the best in terms of producing the lowest false negative rate and the highest true positive rate. Besides class weights, another parameter we finetune in training is the window size \textit{n}. Confusion matrices of logistic regression with class weight = {0: 1.0, 1: 200.0}, random forest with class weight = {0: 1.0, 1: 5000.0} and linear SVM with class weight = {0: 1.0, 1: 1000.0} when the window size \textit{n} = 2 second are shown below,
+We ran a 10-fold cross validation on the entire dataset describled in the Feature Selection section, which consists of 60 positive samples and approximately 248,000 negative samples. Among the three classifiers, logistic regression performs the best in terms of producing the lowest false negative rate and the highest true positive rate. Besides class weights, another parameter we finetune in training is the window size \textit{n}. Confusion matrices of logistic regression with class weight = {0: 1.0, 1: 200.0}, random forest with class weight = {0: 1.0, 1: 5000.0} and linear SVM with class weight = {0: 1.0, 1: 1000.0} when the window size \textit{n} = 2 second are shown below.
 
-\textcolor{red}{need to find a better way to draw confusion matrics and their captions: plot confusion matrics in matplotlib and import figure.}
-
-\begin{tabular}{l|l|c|c|}
-\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
-\cline{3-4}
-\multicolumn{2}{c|}{}&Negative&Positive \\
-\cline{2-4}
-\multirow{2}{*}{True Labels}& Negative  & $248223$ & $170$ \\
-\cline{2-4}
-& Positive & $0$ & $60$ \\
-\cline{2-4}
-\multicolumn{4}{c}{Confusion Matrix of Logistic Regression} 
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+              & False Negative & True Positive \\ \midrule
+True Negative & 248223         & 170           \\
+True Positive & 0              & 60            \\ \bottomrule
 \end{tabular}
+\caption{Confusion Matrix of Logistic Regression}
+\label{my-label}
+\end{table}
 
-\begin{tabular}{l|l|c|c|}
-\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
-\cline{3-4}
-\multicolumn{2}{c|}{}&Negative&Positive \\
-\cline{2-4}
-\multirow{2}{*}{True Labels}& Negative  & $248360$ & $33$ \\
-\cline{2-4}
-& Positive & $32$ & $28$ \\
-\cline{2-4}
-\multicolumn{4}{c}{Confusion Matrix of Random Forest} 
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+              & False Negative & True Positive \\ \midrule
+True Negative & 248360          & 33           \\
+True Positive & 32              & 28           \\ \bottomrule
 \end{tabular}
+\caption{Confusion Matrix of Random Forest}
+\label{my-label}
+\end{table}
 
-\begin{tabular}{l|l|c|c|}
-\multicolumn{2}{c}{} &\multicolumn{2}{c}{Predicted Labels}\\
-\cline{3-4}
-\multicolumn{2}{c|}{}&Negative&Positive \\
-\cline{2-4}
-\multirow{2}{*}{True Labels}& Negative  & $246522$ & $1871$ \\
-\cline{2-4}
-& Positive & $42$ & $18$ \\
-\cline{2-4}
-\multicolumn{4}{c}{Confusion Matrix of Linear SVM} 
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+              & False Negative & True Positive \\ \midrule
+True Negative & 246522         & 1871          \\
+True Positive & 42             & 18            \\ \bottomrule
 \end{tabular}
+\caption{Confusion Matrix of Linear SVM}
+\label{my-label}
+\end{table}
 
 
 The logistic regression classifier has a false negative rate of 0.6844\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%. For our purpose of theft detection, linear SVM's false negative rate is too hight.
@@ -308,16 +338,14 @@ Another way to find the feature importance is to plot a histogram of dataset and
 
 To analyze the trade-off between random forest and logistic regression, we finetune the class weight of logistic regrssion to lower its true positive rate until it is approximately the same as random forest Then we compare their numbers of false postive instances. As a result, at a 41.7\% true positive rate (25 true positive instances), logistic regression with class weigth = {0: 1.0, 1: 2.0} has 34 false positive instances. At a 46.7\% true positive rate (28 true positive instances), random forest with class weight = {0: 1.0, 1: 5000.0} has 33 false positive instances. Thus the performance of logistic regression is at least as good as random forest.
 
-
-\textcolor{red}{adjust the size of histogram so axis and legend are readable}
-
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_before_win_size_1_2.png}
 \end{center}
 \caption{histogram of features in 1-second windows before \textit{40 $m/s^2$} thresholds.}
 \end{figure}
-\begin{figure}
+
+\begin{figure}[H]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_after_win_size_1_2.png}
 \end{center}
@@ -326,19 +354,21 @@ To analyze the trade-off between random forest and logistic regression, we finet
 
 
 
-\textcolor{red}{add ROC, when random forest and logistic regression have approximately the same TP rate, compare FN rate}
+\textcolor{red}{add ROC of random forest and logistic regression }
+
 
 
 
 \section{Discussion}
-In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect common smartphone theft without sacrificing user experience. In the future, in addition to accelerometer, we propose to utilize other intrinsic-sensor data available on a smartphone, such as step count and try using techiques, such as time interpolation and filtering to preprocess raw sensor data for better performance. We would also like to collect more positive samples to have a more diverse theft dataset that covers more theft instances and test our models on a hold-out test set. 
+In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect common smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. In the future, in addition to accelerometer, we propose to utilize other intrinsic-sensor available on a smartphone, such as step count and try using techiques, such as time interpolation and filtering to preprocess raw sensor data for better performance. We would also like to collect more positive samples to have a more diverse theft dataset that covers more theft scenarios and test our models on a hold-out test set. We are interested in deploying theft detector on a smartphone and test it real time performance.
 
-\textcolor{red}{application potential deployment of the detector}
 
 
 
 \section{Acknowledgments}
-This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley. The work is supported by \textcolor{red}{What Grants and Funds}. The authors would like to thank Jennider Chen from the Good Research for her assistance on conducting the user study and Irwin Reyes \textcolor{red}{Who else gives feedback to draft} for giving feedback.
+\textcolor{red}{Comment out for double blind review}. 
+
+The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding with the Android sensor monitoring software, Jennider Chen from the Good Research for her assistance on conducting the user study, and Irwin Reyes \textcolor{red}{Who else gives feedback to draft} for giving feedback. This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley. The work is supported by \textcolor{red}{What Grants and Funds}. 
 
 
 
