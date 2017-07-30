@@ -191,13 +191,18 @@ This creates an abrupt and unusual movement pattern, which we show can be detect
 We do not attempt to detect other forms of theft, such as where the phone is left unattended and the thief walks off with it, or where the phone is lost or left behind somewhere.
 Consequently, our scheme cannot offer comprehensive protection against all forms of theft, but we hope that it will be useful nonetheless.
 
-In order to generate a labeled dataset for training and validation, we carefully design experiments that simulate three types of phone theft, grab-and-run when the user stands still, grab-and-run while the user is walking at a constant speed and pick-pocket. We conduct 20 trials for each type of theft in two sessions. We also conduct a user study, where we track 53 participants for 3 weeks and collect sensor data, such as accelerometer data, from their smartphones. We then extract 12 features from the acceleromter sensor data to constitute the training and validation sets. Our detector is triggered when the magnitude of the acceleration exceeds $40m/s^2$. Using this dataset, we train and evaluate three standard machine learning models: linear SVM, logistic regression and random forest. We show that for our purpose of smartphone theft detection, logistic regression produces 1 false alarm per week while detecting 100\% simulated theft.
+We measure the effectiveness of our scheme by gathering two datasets.
+First, we simulated three types of phone theft: grab-and-run while the victim is standing still, grab-and-run while the victim is walking at a constant speed, and pick-pocket theft.
+We collect accelerometer sensor readings during the simulated thefts; these serve as known positives.
+Second, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday life.
+No phone was stolen during the field study, so these serve as known negatives.
+We use this to train a classifier and then evaluate its detection rate and false positive rate.
+Our best classifier produces 1 false alarm per week while detecting 100\% of simulated thefts.
 
 Our contributions are:
 \begin{enumerate}
-  \item conducting a user study to collect a large dataset of smartphone sensor data while devices are being used in real world.
-  \item designing experiments to simulate theft and collecting data representing common smartphone theft scenarios.
-  \item developing a smartphone theft detecting system that detects 100\% simulated theft at a cost of 1 false alarm per week.
+  \item We conduct a user study and collect a large dataset of smartphone sensor data while devices are being used in real world.
+  \item We devise features and methods to detect theft, and we show that it can detect thefts with few false positives.
 \end{enumerate}
 
 
