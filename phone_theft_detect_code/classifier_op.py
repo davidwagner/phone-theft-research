@@ -28,8 +28,12 @@ classifiers = {
 feature_file = 'data/features_win_size_1_2.csv'
 print('dataset: ', feature_file)
 
-class_weight = {0: 1.0, 1: 200.0} # 'balanced' {0: 1.0, 1: 1.0} {0: 1.0, 1: 2000.0}
-print('class_weight: ', class_weight)
+class_weight_lr = {0: 1.0, 1: 200.0} # 'balanced' {0: 1.0, 1: 1.0} {0: 1.0, 1: 2000.0}
+class_weight_rf = {0: 1.0, 1: 5000.0}
+class_weight_lsvm = {0: 1.0, 1: 200.0}
+print('class_weight for logistic_regression: ', class_weight_lr)
+print('class_weight for random_forest: ', class_weight_rf)
+print('class_weight for linear_svm: ', class_weight_lsvm)
 
 # 1. read dataset.
 
@@ -110,11 +114,11 @@ for classifier_name in classifiers:
         train_data, test_data = data[train_index], data[test_index]
 
         if classifier_name == 'random_forest':
-            classifier_instance = classifier(n_estimators=1000, class_weight={0: 1.0, 1: 5000.0})
+            classifier_instance = classifier(n_estimators=1000, class_weight_rf)
         elif classifier_name == 'logistic_regression':
-            classifier_instance = classifier(class_weight=class_weight)
+            classifier_instance = classifier(class_weight=class_weight_lr)
         elif classifier_name == 'linear_svm':
-            classifier_instance = classifier(class_weight=class_weight)
+            classifier_instance = classifier(class_weight=class_weight_lsvm)
 
         # 2.1 train classifiers on training set.
         clf = classifier_instance.fit(train_data, train_labels)
@@ -180,18 +184,18 @@ IPython.embed()
 print('feature standard deviations:\n{}\n'.format(feature_stds))
 
 # random forest weights
-random_forest_classifier = RandomForestClassifier(n_estimators=1000, class_weight=class_weight)
+random_forest_classifier = RandomForestClassifier(n_estimators=1000, class_weight=class_weight_rf)
 random_forest_classifier.fit(data, labels)
 print('random forest feature importances:\n{}\n'.format(random_forest_classifier.feature_importances_))
 
 # logistic regression weights
-logistic_regression_classifier = LogisticRegression(class_weight=class_weight)
+logistic_regression_classifier = LogisticRegression(class_weight=class_weight_lr)
 logistic_regression_classifier.fit(data, labels)
 logistic_regression_adjusted_coef = [coef*std for coef, std in zip(logistic_regression_classifier.coef_, feature_stds)]
 print('logistic regression feature importances:\n{}\n'.format(logistic_regression_adjusted_coef))
 
 # linear SVM weights
-linear_svm_classifier = LinearSVC(class_weight=class_weight)
+linear_svm_classifier = LinearSVC(class_weight=class_weight_lsvm)
 linear_svm_classifier.fit(data, labels)
 linear_SVM_adjusted_coef = [coef*std for coef, std in zip(linear_svm_classifier.coef_, feature_stds)]
 print('linear SVM feature weights:\n{}\n'.format(linear_SVM_adjusted_coef))
