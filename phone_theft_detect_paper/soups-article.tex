@@ -275,69 +275,64 @@ training data from each user; we use the same classifier for all users.
 \subsection{Data Collection}
 
 \subsubsection{Software and Hardware}
-We use an Android application to record smartphone sensor data, including 3 axial acceleration, step count, ambient light, bluetooth connection etc, on a smartphone with Android version at least 5.0. 
-It collects and transmits sensor data from a smartphone to a private account we set up on a cloud server. 
-All log files that contain sensor data are encrypted using AES/CCM with an 11 byte Nonce and a 16 byte MAC upon an hourly upload to a cloud server. 
-The application uses SENSOR\_DELAY\_FASTEST to acquire sensor data as fast as possible \cite{android:doc}. 
+We use an Android application to record data from the smartphone's 3-axis accelerometer.
+It collects sensor data, encrypts it, and stores in the cloud.
+We acquire sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_FASTEST \cite{android:doc}. 
 On most devices including the one we use for the simulated theft experiment, the sampling rate is 100 Hz. 
 
-We use a commerically available smartphone, Nexus 5X, with Android version 7.1.1 in our simulated theft experiment. 
-The embeded accelerometer is InvenSense MPU6515. 
-For the user study, we require subjects to use an Android smartphone with Android version at least 5.0. 
-Researchers also provide each participant with a Basis Peak smartwatch and explain to them that they may experience overheat while wearing it, and if it does, they should take it off and contact us immediately. 
-The watch is paired with participant's smartphone via bluetooth. 
-The bluetooth connectivity data collected by the appliction can be used to determine if the smartphone is in the range and connected to the watch. We use this heuristic as the ground truth of the smartphone being in user's possession.
-
 \subsubsection{Simulated Theft Experiment}
-We carefully design the experiment to simulate three types of smartphone theft scenarios with one researcher acting as a smartphone user, and another one playing the role of a thief. 
-In the first scenario, the user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
-In the second scenario, the user again holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
-The third scenario simulates pick-pocket thefts. The user places the phone in a back pant pocket and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
+We simulated three types of smartphone theft scenarios with one researcher acting as a smartphone user and another one playing the role of a thief. 
+The three theft scenarios are as follows:
+\begin{enumerate}
+\item The user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
+\item The user holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
+\item The third scenario simulates pick-pocket thefts. The user places the phone in the back pocket of their pants and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
+\end{enumerate}
+We collect 20 instances of each scenario, for a total of 60 trials. 
+Data collection was split across two sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these two sessions. 
+We ran the experiment on flat ground at an open space, so the experiment is not interrupted. 
+We also made sure that the thief runs at least 40 feet after gaining possession of the victim's phone.
+We used a Nexus 5X smartphone with Android version 7.1.1 for data collection in our simulated theft experiment. 
+It uses a InvenSense MPU6515 embedded accelerometer.
 
-We collect 20 instances of each scenario and a total of 60 trials. 
-Between two consective trials, researchers put the phone down on the ground for 30-50 seconds, which creats a gap in the time series to help seperate trials in the feature extraction step. 
-We conduct all three scenarios at two different times, each of which consists of 10 trials per scenario and lasts approximately one hour. Different researchers act as the victim and thief in these two sessions. 
-We choose to run the experiment on a flat ground at an open space, so the experiment is not be interrupted. 
-We also make sure that the thief can run at least 40 feet after gaining possession of the victim's phone.
 
 
-
-\subsubsection{User Study}
-We obtained approval from the University of California, Berkeley IRB (Institutional Review Board). 
-We conducted a user study in the Bay Area in the United States from September to December 2016 to collect smartphone sensor data while participants are performing their daily activities. 
-The accelerometer data collected from this user study was then used to generate negative samples for the machine learning algorithms.
+\subsubsection{Field Study}
+We performed a field study to gather data from ordinary smartphone users
+during their everyday life.
+% We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
+We obtained approval from our university IRB (Institutional Review Board) for this study. 
+The study was conducted in the Bay Area of the United States from September to December 2016.
+None of the participant experienced a phone theft during the study interval,
+so we were able to use the accelerometer data collected from user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
 We first posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
-All subjects were required to take an online screening survey, in which they provided information about their age, gender, smartphone maker and model, the way to carry a phone, e.g. in a pocket or a purse, and whether they were comfortable with wearing a smartwatch. 
-We only recruited participants who used an Android phone with version 5.0 and above, and were willing to wear a smartwatch during the study.
+We only recruited participants who used an Android smartphone with version 5.0 and above.
+After obtaining their consent, we installed our application on their phone and collected data for a three-week period.
+We contacted participants weekly to make sure their phones were functioning correctly and troubleshoot any data collection issues.
+Each participant was paid \$150 for their participation.
 
-All qualified participants were scheduled a 30-minute meeting with a researcher. 
-During the meeting, they were instructed to install the monitoring application describled above on their smartphones. 
-We asked participants to wear a smartwatch we provided for as long as possible during the study except while sleeping. 
-At the end of the meeting, they signed a consent form, which explained the purpose, requirements, risks, confidentiality and compensation of the study. Participants then received \$25 Visa gift card. 
-During the user study, researchers contacted participants weekly to make sure that their phones and watches were functioning correctly. 
-After completing the study, participants returned the watch, filled out a short exit survey and received compensation of \$125 Visa gift card.
-
-We had a total of 3 rounds; each round lasted 3 consecutive weeks. 
-A total of 55 participants were recruited. 
+The study was divided across 3 rounds; each round lasted 3 consecutive weeks. 
+A total of 55 participants were recruited, and
 53 out of the 55 subjects completed the study. 
-In the first round, 16 out of 18 participants finished the study. 
-All 18 subjects who participated in the second round completed the study. 
-So are all 19 participants in the third round. 
-The detailed demographic information about the particpants of this user study, incluing gender and age distributions are listed in the table below.
+In the first round, 2 of the 18 participants did not complete the study.
+Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
+In aggregate they used 21 different smartphone models from 6 different manufacturers.
+We asked them how they typically carried their phone, when it wasn't in their hand; 33 reported keeping it in their pocket, 9 in their purse, 12 in a multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
+Therefore, we believe we observed a wide variety of behaviors and devices in this study.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{llllll}
+\begin{tabular}{rrrrrr}
 \hline
-      & Male & Female & Age 20-29 & 30-39 & 40+ \\ \hline
+      & Male & Female & Age 20--29 & 30--39 & 40+ \\ \hline
 R1    & 5    & 11     & 8         & 6     & 2   \\
 R2    & 10   & 8      & 7         & 7     & 4   \\
 R3    & 11   & 8      & 9         & 4     & 6   \\
 Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 \end{tabular}
 \caption{Demographic Info of the User Study}
-\label{my-label}
+\label{tbl:demographics}
 \end{table}
 
 
