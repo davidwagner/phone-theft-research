@@ -454,8 +454,14 @@ To compare the performance of random forest and logistic regression, we finetune
 As a result, at a 41.7\% true positive rate (25 true positive instances), logistic regression with class weigth = {0: 1.0, 1: 2.0} has 34 false positive instances. 
 At a 46.7\% true positive rate (28 true positive instances), random forest with class weight = {0: 1.0, 1: 5000.0} has 33 false positive instances. 
 Thus the performance of logistic regression is at least as good as random forest.
-We also include the Receiver Operating Characteristic (ROC) curves of the two classifiers. \textcolor{red}{ add ROC of random forest and logistic regression }
+We also include the Receiver Operating Characteristic (ROC) curves of the logistic regression with class weight = {0: 1.0, 1: 200.0} and random forest with class weight = {0: 1.0, 1: 5000.0}. 
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=1.0\columnwidth]{roc_curves.png}
+\end{center}
+\caption{ROC curves of logistic regression and random forest.}
+\end{figure}
 
 
 
