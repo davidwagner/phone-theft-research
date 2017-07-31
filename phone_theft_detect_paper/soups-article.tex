@@ -217,28 +217,29 @@ Many researchers have studied using smartphone sensors for continuous user authe
 The benefit of continuous user authentication is that it happens unobtrusively, without requiring any action from users.
 Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone.
 
-The unobtrusive biometric gait recognition technique introduced by Derawi et al. uses accelerometer data collected on smartphones from 51 subjects in the context of a laboratory setup for continuous authentication and results in a high equal error rate of 20\% \cite{derawi:gait}. 
-They applied time interpolation and weighted moving average filter to clean the raw accelerometer data before extracting accelerometer measurements in average cycles as features.
+One approach is to use smartphone accelerometer data for gait recognition.
+These systems often extract some features from the sensor data and then apply machine learning.
+Derawi et al.  achieved an equal error rate of 20\% \cite{derawi:gait}.
+``Equal error rate'' is a measure of accuracy where the system is tuned so the false accept rate and false reject rates are equal, and then that error rate is reported.
+Primo et al. show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment \cite{primo:context}. 
+They showed how to infer the position of the phone (in the person's hand vs in their pocket) with 85\% accuracy, and they showed how to use this information to increase the accuracy of user authentication to 70--80\%.
+They do not report performance as equal error rate.
+Juefei-Xu et al. show that the pace at which people walk also affects the sensor readings, and it is possible to improve accuracy by first identifying the pace at which the user is walking, then using a model tailored towards that pace \cite{xu:pace}.
+Their system achieved an equal error rate of 4--8\% (depending on the pace); or a false reject rate of 0.5--5\% at a false accept rate of 0.1\%.
+Kwapisz et al. generalized gait authentication to cover not just walking but also jogging and ascending and descending stairs \cite{kwapisz:biometrics} and
+achieved false reject rates of 10-15\% at a false accept rate of about 5\%.
 
-Primo et al. further investigate and show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment \cite{primo:context}. 
-They preprocessed the raw measurements of X, Y, Z and magnitude (M) of the accelerometer data by a moving average of a 3 point window to mitigate sensor noise. 
-They broke the resulting time series into windows, each containing 100 points and having an overlap of 50 points with the next window. 
-They extracted and selected a set of top ranking features from X, Y, Z and M in each window to first determine phone position, then another set of highest ranked features to identify users. 
-Their system was trained and achieved 80\% accuracy in user identification on data from 30 subjects.
+It is not clear whether gait recognition is sufficient on its own for deployable user authentication.
+One limitation is that it can only attempt to authenticate the user while the user is walking; when the user is still, it cannot infer user identity.
+Another limitation is that the error rate is still fairly high: if the classifier is run continuously, once per second, even a false reject rate as low as 0.5\% will cause hundreds or thousands of false rejections per week.
+Thus, gait recognition might need to be combined with other methods to yield a deployable defense against theft.
 
-Juefei-Xu et al. researched ways to identify human walking patterns at normal and fast pace using accelerometer on a smartphone \cite{xu:pace}. 
-The acceleration is collected from 36 subjects walking at two different paces in a laboratory environment. 
-They extracted feature vectors by concatenating x, y, z accelerations in two different intervals. 
-One is a 3-second window centered around every spike in z acceleration. 
-They also concatenated x, y, z accelerations from intervals between adjacent spikes after normalizing data in each interval to 500 samples. 
-In addition, they applied signal processing methods to extracted and selected discriminative features. 
-Their system achieved over 95\% accuracy when it was both trained and tested on two same-pace datasets. 
-The system identified subjects walking at fast pace with 61\% accuracy when it was trained on data from the same subjects walking at normal pace.
-
-Kwapisz et al collected a dataset of 36 subjects instructed by the researchers to perform 4 specific daily activities, walking, jogging, ascending and descending stairs \cite{kwapisz:biometrics}. 
-They extracted features, mean, standard deviation, mean absolute difference, mean of magnitude, time between peaks, and binned distribution from 10-second intervals and use decision tree and neural network identify individual users. 
-They achieve 90\% accuracy using 10 second worth of data from one of the activities, walking. 
-They also built a binary classifier for each subject to match a query to a particular user for the purpose of user authentication and achieved over 80\% accuracy on positive authentication and over 90\% accuracy on negative authentication.
+We learned from the methods they used to process sensor data and extract features.
+The accelerometer sensor provides raw data in the form of $X,Y,Z$ accelerations; it is useful to also compute the magnitude $M=\sqrt{X^2+Y^2+Z^2}$ of the acceleration, as that is independent of the direction of the acceleration.
+Prior papers use several methods for cleaning the raw accelerometer data, including interpolation and re-sampling to deal with irregularly sampled data and a weighted moving average filter to mitigate sensor noise.
+These schemes typically divide the resulting time series into windows, each window containing about a second of sensor data.
+For instance, Primo et al. use overlapping windows, with each window containing 100 samples and having an overlap of 50 samples with the next window; Derawi et a. and Juefei-Xu et al. use non-overlapping windows about 1 second in width.
+Derawi. et al. and Juefei-Xu et al. use the sensor readings as the features, while Primo et al. and Kwapisz et al. compute hand-crafted features from the readings, where each feature records a summary statistic on the sensor readings in the window (e.g., mean, minimum, maximum, standard deviation, number of zero crossings, etc.).
 
 In addition to gait, Feng et al investigated using pickup motion as a biometic modality for user authentication \cite{feng:pickup}. 
 They explored two methods to extract features from accelerometer, gyroscope and magnetometer data. 
