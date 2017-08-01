@@ -294,6 +294,15 @@ We ran the experiment on flat ground at an open space, so the experiment is not 
 We also made sure that the thief runs at least 40 feet after gaining possession of the victim's phone.
 We used a Nexus 5X smartphone with Android version 7.1.1 for data collection in our simulated theft experiment. 
 It uses a InvenSense MPU6515 embedded accelerometer.
+Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a single simulated theft.
+
+
+\begin{figure}[t]
+\includegraphics[width=1.0\columnwidth]{pos_acc_separated.png}
+\caption{The X, Y, Z and magnitude of acceleration, respectively, from one simulated theft instance.}
+\label{fig:simtheft}
+\end{figure}
+
 
 
 
@@ -358,10 +367,10 @@ Let $M_1,\dots,M_k$ denote the time series of acceleration magnitudes within the
 The features are computed as follows:
 \begin{itemize}
 \item \emph{Maximum}: the maximum value of the magnitude within the window, i.e., $\max(M_1,\dots,M_k)$.
-\item \emph{Mean}: the average value of magnitude in a window.
+\item \emph{Mean}: the average value of magnitude in a window, i.e., $(M_1+\dots + M_k)/k$.
 \item \emph{Standard deviation}: the standard deviation of magnitude values in a window.
-\item \emph{Root mean square}: the rms of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}$.
-\item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|$.
+\item \emph{Root mean square}: the rms of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}/k^{1/2}$.
+\item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $(|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|)/(k-1)$.
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
 
@@ -369,12 +378,6 @@ We obtain 60 positive instances from the 60 simulated thefts.
 After applying the 40 $m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
 We then apply boolean classification techniques to this data set.
 
-
-
-\begin{figure}[t]
-\includegraphics[width=1.0\columnwidth]{pos_acc_separated.png}
-\caption{The above plots are x, y, z and magnitude of acceleration, respectively, of one theft instance.}
-\end{figure}
 
 \begin{figure}[t]
 \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
