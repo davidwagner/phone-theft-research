@@ -391,7 +391,8 @@ We then apply boolean classification techniques to this data set.
 We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest.
 Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
 We also evaluated different window sizes for the after-window.
-We discovered that feature vectors extracted from 2 second after-window are more represetative than from other after-window sizes.
+We found that a 2-second after-window yielded better accuracy than a 1-second after-window, and larger window sizes did not offer much improvement.
+Therefore, all of our experiments use a 1-second before-window and a 2-second after-window.
 We evaluated the classifiers using 10-fold cross validation on the entire dataset, which consists of 60 positive samples and approximately 248,000 negative samples. 
 
 
