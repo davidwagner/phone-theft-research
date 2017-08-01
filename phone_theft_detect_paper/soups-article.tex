@@ -403,7 +403,7 @@ Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown above.
 The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
-The random forests classifier has an even lower false positive rate,
+The random forests classifier has an even lower false positive rate (less than once false alarm per month),
 but it only detects half of thefts.
 The linear SVM's false positive rate is too high for our purposes.
 
@@ -527,8 +527,8 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 \end{figure*}
 
 To compare the performance of random forest and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false positive instances of the two classifiers.
-We find that logistic regression has 34 false positive instances at a 41.7\% true positive rate (25 true positive instances),
-while random forests has 33 false positive instances at a 46.7\% true positive rate (28 true positive instances).
+We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
+while random forests has 33 false positive instances at a 47\% true positive rate (28 true positive instances).
 Thus the performance of the two classifiers seems comparable in this regime.
 The advantage of logistic regression is that we found it easier to finetune the false-positive/false-negative tradeoff by adjusting the class weights.
 The Receiver Operating Characteristic (ROC) curves for the logistic regression and random forests classifiers are shown in Figure~\ref{fig:roc}.
@@ -544,20 +544,38 @@ The Receiver Operating Characteristic (ROC) curves for the logistic regression a
 
 
 \section{Discussion}
-In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. 
-In the future, in addition to accelerometer, we propose to utilize other intrinsic-sensor available on a smartphone, such as step count and try using techiques, such as time interpolation and filtering to preprocess raw sensor data for better performance. 
-We would also like to collect more positive samples to have a more diverse theft dataset that covers more theft scenarios and test our models on a hold-out test set. 
-We are interested in deploying theft detector on a smartphone and test it real time performance.
+In this work, we demonstrate that accelerometer data is enough to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. 
+It is remarkable that machine learning is so effective and can detect 100\% of thefts.
+We suspect that this is because the kinds of theft we consider here involve a rapid jerking motion followed by the thief running away, which induces a unique pattern in the accelerometer sensor readings.
+
+We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a suspected theft event is detected.
+We expect that the inconvenience of unlocking your phone one extra time per week would be tolerable, and might not even be noticed by users.
+If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well when a theft is detected.
+
+We expect that our solution would have negligible impact on battery life and phone performance.
+Modern phones support batched accelerometer sensing, where the accelerometer hardware buffers sensor readings so the application CPU only has to wake up to read sensor data when the buffer is full.
+As a result, it is possible to record accelerometer sensor values at high sampling rates with negligible power draw.
+Moreover, thanks to the pre-filtering (the 40 $m/s^2$ threshold),
+we only need to apply the classifier on a tiny fraction of time windows (only about 10 times per hour),
+so the impact on battery life should be negligible.
+
+The primary limitation of our work is that we work with simulated thefts.
+It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data.
+
+It may be possible to improve our results further by using other sensors on the smartphone, such as the step counter.
+The biggest open question is whether our methods can be extended to a more diverse set of theft scenarios; we hope that our work will inspire others to investigate the direction further.
 
 
 
 
 \section{Acknowledgments}
+\begin{comment}
 \textcolor{red}{Comment out for double blind review}. 
 
 The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding with the Android sensor monitoring software, Jennider Chen from the Good Research for her assistance on conducting the user study, and Irwin Reyes \textcolor{red}{Who else gives feedback to draft} for giving feedback. 
 This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley. 
 The work is supported by \textcolor{red}{What Grants and Funds}. 
+\end{comment}
 
 
 
