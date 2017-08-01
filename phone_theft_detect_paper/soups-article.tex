@@ -371,6 +371,7 @@ The features are computed as follows:
 \item \emph{Standard deviation}: the standard deviation of magnitude values in a window.
 \item \emph{Root mean square}: the rms of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}/k^{1/2}$.
 \item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $(|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|)/(k-1)$.
+Intuitively, this captures the average of the first derivative of the acceleration.
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
 
@@ -443,27 +444,36 @@ class weights set to 1:1000.}
 \end{table}
 
 
-We also compute feature rankings to find the most predictive features for each classifier. 
-For logistic regression, to calculate feature scores that are invariant to scaling feature values, we adjust the coefficient of each feature in the decision function by multipling it by the standard deviation of the values of this feature across all instances in the training set. 
-Then we get the adjusted coefficients as the feature importances of logistic regression as -2.73319487, 0.0129842047, 0.477534932, -0.0143829911, -1.18427357, -0.0470492037, 0.0580951517, 0.880738694, 0.666823228, \\-0.937781183, 0.273227115, -2.69540663, from which we can tell the most representative features are maximum, and arc length in the before-window and product of arc length and standard deviation in the after-window. 
-For random forest, we use the built-in attribute feature importances in the scikit-learn library, which estimate the relative importance of the features by computing the expected fraction of the samples they contribute to. 
+To get a better understanding of why our classifier is successful,
+we computed feature rankings to find the most predictive features.
+For logistic regression, we use standardized coefficients as the feature importance score:
+the score for feature $i$ is $|\alpha_i| \times \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
+Then we get the adjusted coefficients as the feature importances of logistic regression as 2.73319487, 0.0129842047, 0.477534932, 0.0143829911, 1.18427357, 0.0470492037, 0.0580951517, 0.880738694, 0.666823228, \\0.937781183, 0.273227115, 2.69540663, from which we can tell the most important features are
+the maximum of the before-window,
+the product of arc length and standard deviation of the after-window,
+and the arc length of the before-window.
+Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \ref{fig:afterhist}), we can see that those features do appear to provide good discrimination.
+
+We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to. 
 Thus the higher in the tree, the more important the feature is \cite{sklearn:rfdoc}. 
 We get the feature importances of random forest as 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
 
-Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
+% Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
 
-\begin{figure}[H]
+\begin{figure}[t]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_before_win_size_1_2.png}
 \end{center}
 \caption{histogram of features in 1-second windows before \textit{40 $m/s^2$} thresholds.}
+\label{fig:beforehist}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[t]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_after_win_size_1_2.png}
 \end{center}
 \caption{histogram of features in 2-second windows after \textit{40 $m/s^2$} thresholds.}
+\label{fig:afterhist}
 \end{figure}
 
 To compare the performance of random forest and logistic regression, we finetune the class weight of logistic regrssion classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false postive instances of the two classiifier. 
