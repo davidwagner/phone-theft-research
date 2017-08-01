@@ -390,6 +390,7 @@ We then apply boolean classification techniques to this data set.
 We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest.
 Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
 We also evaluated different window sizes for the after-window.
+We discovered that feature vectors extracted from 2 second after-window are more represetative than from other after-window sizes.
 We evaluated the classifiers using 10-fold cross validation on the entire dataset, which consists of 60 positive samples and approximately 248,000 negative samples. 
 
 
@@ -502,19 +503,19 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 
 Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 3 and 4.
 
-\begin{figure}[H]
+\begin{figure*}[t]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_before_win_size_1_2.png}
 \end{center}
 \caption{histogram of features in 1-second windows before \textit{40 $m/s^2$} thresholds.}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[H]
+\begin{figure*}[t]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{hist_features_after_win_size_1_2.png}
 \end{center}
 \caption{histogram of features in 2-second windows after \textit{40 $m/s^2$} thresholds.}
-\end{figure}
+\end{figure*}
 
 To compare the performance of random forest and logistic regression, we finetune the class weight of logistic regrssion classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false postive instances of the two classiifier. 
 As a result, at a 41.7\% true positive rate (25 true positive instances), logistic regression with class weigth = {0: 1.0, 1: 2.0} has 34 false positive instances. 
