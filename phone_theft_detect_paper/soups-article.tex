@@ -340,36 +340,43 @@ Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 
 \subsection{Feature Extraction}
 
-We decide to use the magnitude of acceleration exceeding \textit{40 $m/s^2$} as an activation condition for our detector. 
-We extract features from one-second window before and \textit{n}-second window after the time when the magnitude exceeds the threshold. 
-By selecting a window both before and after the thresholdhe, the classifiers can capture the rapid change in acceleration before and after the moment when the smartphone was stolen. 
-We choose \textit{40 $m/s^2$} since it is approximately the vaule of magnitude when the phone is grabbed in our simulated theft experiment. 
-We vary \textit{n} from 1 to 7 to find the dataset where each classifier has the best performance.
+Our theft scenarios all involve a sudden movement of the phone, which causes a large acceleration.
+Therefore, as a first filtering step, we filter the data to focus on times after a large motion occurs.
+In particular, our classifier is activated when the magnitude of acceleration $M$ exceeds 40 $m/s^2$.
+We extract a one-second window before the activation time and a $n$-second window after the activation time, compute features on each of these windows, and use them for classification.
+We vary \textit{n} from 1 to 7 to obtain the best classification parameter.
+We chose a threshold of 40 $m/s^2$ as all of our simulated thefts experienced accelerations exceeding that threshold.
 
-We first select and evaluate 40 candidate features, i.e. minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute of the x, y, z and magnitude of acceleration, in each window. 
-We choose to only use the magnitude because compared to the x, y, z components of acceleration, the magnitude is non-directional thus more robust to various orientation of the phone. 
-We remove minimum and mean absolute from the feature list because it does not affect the performance of the classifiers. 
-As a result, we extract a 12-dimensional feature vector, 6 from before-window and 6 from after-window, every time the detector is triggered.
+We first identified 16 candidate features, 8 features for each of the two windows.
+In particular, we computed the minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute value, each computed on the magnitude values ($M$) within the window.
+We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional thus more robust to various orientation of the phone. 
+We then visualized the distribution of these features for the two classes and applied feature selection techniques to choose a subset of features that yield good performance.
+We removed the minimum and mean absolute value from the feature list because removing them did not affect the performance of the classifiers. 
+As a result, we extract a 12-dimensional feature vector, 6 features from the before-window and 6 from the after-window, every time the detector is triggered.
 
-The detailed description of the selected features are listed below.
-\textit{Maximum}: the maximum value of magnitude in a window. \\
-\textit{Mean}: the average value of magnitude in a window. \\
-\textit{Standard deviation}: the standard deviation of magnitude values in a window. \\
-\textit{Root mean square}: the rms of magnitude values in a window. \\
-\textit{Arc length}: the average of the differences between all adjecent magnitude values in a window. \\
-\textit{Product of arc length and standard deviation}: the product of the two feature values.
+Let $M_1,\dots,M_k$ denote the time series of acceleration magnitudes within the window.
+The features are computed as follows:
+\begin{itemize}
+\item \emph{Maximum}: the maximum value of the magnitude within the window, i.e., $\max(M_1,\dots,M_k)$.
+\item \emph{Mean}: the average value of magnitude in a window.
+\item \emph{Standard deviation}: the standard deviation of magnitude values in a window.
+\item \emph{Root mean square}: the rms of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}$.
+\item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|$.
+\item \emph{Product of arc length and standard deviation}: the product of the two feature values.
+\end{itemize}
 
-As a result, we generated 60 positive data points from the data collected in the simulated theft experiments, and approximately 248000 negative data points from the data collected in the user study. 
-Each data point is a 12 dimentsional feature vector.
+We obtain 60 positive instances from the 60 simulated thefts.
+After applying the 40 $m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
+We then apply boolean classification techniques to this data set.
 
 
 
-\begin{figure}[H]
+\begin{figure}[t]
 \includegraphics[width=1.0\columnwidth]{pos_acc_separated.png}
 \caption{The above plots are x, y, z and magnitude of acceleration, respectively, of one theft instance.}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[t]
 \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
 \caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
 \end{figure}
