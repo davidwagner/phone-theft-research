@@ -484,7 +484,7 @@ Mean (b)               & 0.0129842047     \\ \bottomrule
 We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to. 
 Thus the higher in the tree, the more important the feature is \cite{sklearn:rfdoc}. 
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
-The features and the corresponding feature importance of the random forest classifier are listed in Table~\ref{tbl:importance-rf} and ordered by the absolute values of the feature scores. 
+The resulting feature importance scores for the random forest classifier are listed in Table~\ref{tbl:importance-rf}.
 
 % Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
 
@@ -526,23 +526,25 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 \label{fig:afterhist}
 \end{figure*}
 
-To compare the performance of random forest and logistic regression, we finetune the class weight of logistic regrssion classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false postive instances of the two classiifier. 
-As a result, at a 41.7\% true positive rate (25 true positive instances), logistic regression with class weigth = {0: 1.0, 1: 2.0} has 34 false positive instances. 
-At a 46.7\% true positive rate (28 true positive instances), random forest with class weight = {0: 1.0, 1: 5000.0} has 33 false positive instances. 
-Thus the performance of logistic regression is at least as good as random forest.
-We also include the Receiver Operating Characteristic (ROC) curves of the logistic regression with class weight = {0: 1.0, 1: 200.0} and random forest with class weight = {0: 1.0, 1: 5000.0}. 
+To compare the performance of random forest and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false positive instances of the two classifiers.
+We find that logistic regression has 34 false positive instances at a 41.7\% true positive rate (25 true positive instances),
+while random forests has 33 false positive instances at a 46.7\% true positive rate (28 true positive instances).
+Thus the performance of the two classifiers seems comparable in this regime.
+The advantage of logistic regression is that we found it easier to finetune the false-positive/false-negative tradeoff by adjusting the class weights.
+The Receiver Operating Characteristic (ROC) curves for the logistic regression and random forests classifiers are shown in Figure~\ref{fig:roc}.
 
-\begin{figure}[H]
+\begin{figure}[t]
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{roc_curves.png}
 \end{center}
 \caption{ROC curves of logistic regression and random forest.}
+\label{fig:roc}
 \end{figure}
 
 
 
 \section{Discussion}
-In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect common smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. 
+In this work, we demonstrate that with proper feature extraction we can use accelerometer data alone to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. 
 In the future, in addition to accelerometer, we propose to utilize other intrinsic-sensor available on a smartphone, such as step count and try using techiques, such as time interpolation and filtering to preprocess raw sensor data for better performance. 
 We would also like to collect more positive samples to have a more diverse theft dataset that covers more theft scenarios and test our models on a hold-out test set. 
 We are interested in deploying theft detector on a smartphone and test it real time performance.
