@@ -387,18 +387,23 @@ We then apply boolean classification techniques to this data set.
 
 
 \subsection{Machine Learning Algorithms}
-We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest, provide by the Python scikit-learn library, on their efficacy of distinguishing between theft and normal usage. 
-In order to mitigate the fact that we have many more negative samples than positive ones, we tweak the class weight, a class attribute built in the scikit-learn library, to produce different ratios of negative and positive class weights used in training, for example 1 : 1, 1 : 8000, and `balanced,' which adjusts the class weights to be inversely proportional to class frequencies in the input data.
+We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest.
+Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
+We also evaluated different window sizes for the after-window.
+We evaluated the classifiers using 10-fold cross validation on the entire dataset, which consists of 60 positive samples and approximately 248,000 negative samples. 
 
 
 
 \section{Results}
-We ran a 10-fold cross validation on the entire dataset describled in the Feature Selection section, which consists of 60 positive samples and approximately 248,000 negative samples. 
-Among the three classifiers, logistic regression performs the best in terms of producing the lowest false negative rate and the highest true positive rate. 
-Besides class weights, another parameter we finetune in training is the window size \textit{n}. 
-Confusion matrices of logistic regression with class weight = {0: 1.0, 1: 200.0}, random forest with class weight = {0: 1.0, 1: 5000.0} and linear SVM with class weight = {0: 1.0, 1: 1000.0} when the window size \textit{n} = 2 second are shown below.
+Among the three classifiers, logistic regression performs the best.
+Confusion matrices for logistic regression, random forests, and a linear SVM
+are shown above.
+The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
+The random forests classifier has an even lower false positive rate,
+but it only detects half of thefts.
+The linear SVM's false positive rate is too high for our purposes.
 
-\begin{table}[H]
+\begin{table}[t]
 \centering
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -406,11 +411,12 @@ Confusion matrices of logistic regression with class weight = {0: 1.0, 1: 200.0}
 True Negative & 248223             & 170                \\
 True Positive & 0                  & 60                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion Matrix of Logistic Regression}
-\label{my-label}
+\caption{Confusion matrix for a logistic regression classifier trained
+with class weights set to 1:200.}
+\label{fig:logistic}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[t]
 \centering
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -418,11 +424,12 @@ True Positive & 0                  & 60                 \\ \bottomrule
 True Negative & 248360             & 33                 \\
 True Positive & 32                 & 28                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion Matrix of Random Forest}
-\label{my-label}
+\caption{Confusion matrix for a random forests classifier trained with
+class weights set to 1:5000.}
+\label{fig:rf}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[t]
 \centering
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -430,12 +437,11 @@ True Positive & 32                 & 28                 \\ \bottomrule
 True Negative & 246522             & 1871               \\
 True Positive & 42                 & 18                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion Matrix of Linear SVM}
-\label{my-label}
+\caption{Confusion matrix for a linear SVM classifier trained with
+class weights set to 1:1000.}
+\label{fig:svm}
 \end{table}
 
-
-The logistic regression classifier has a false negative rate of 0.6844\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%. For our purpose of smartphone theft detection, linear SVM's false negative rate is too hight.
 
 We also compute feature rankings to find the most predictive features for each classifier. 
 For logistic regression, to calculate feature scores that are invariant to scaling feature values, we adjust the coefficient of each feature in the decision function by multipling it by the standard deviation of the values of this feature across all instances in the training set. 
