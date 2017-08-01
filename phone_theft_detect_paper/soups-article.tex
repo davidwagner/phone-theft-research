@@ -313,12 +313,13 @@ during their everyday life.
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
 We obtained approval from our university IRB (Institutional Review Board) for this study. 
 The study was conducted in the Bay Area of the United States from September to December 2016.
-None of the participant experienced a phone theft during the study interval,
-so we were able to use the accelerometer data collected from user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
+None of the participants experienced a phone theft during the study interval,
+so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
-We first posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
+We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
 We only recruited participants who used an Android smartphone with version 5.0 and above.
-After obtaining their consent, we installed our application on their phone and collected data for a three-week period.
+After obtaining their consent, we installed our data collection application on their phone and collected data for a three-week period.
+The application ran in the background and collected accelerometer sensor readings continuously, 24 hours a day.
 We contacted participants weekly to make sure their phones were functioning correctly and troubleshoot any data collection issues.
 Each participant was paid \$150 for their participation.
 
@@ -328,7 +329,7 @@ A total of 55 participants were recruited, and
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
 In aggregate they used 21 different smartphone models from 6 different manufacturers.
-We asked them how they typically carried their phone, when it wasn't in their hand; 33 reported keeping it in their pocket, 9 in their purse, 12 in a multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
+We asked them how they typically carried their phone, when it wasn't in their hand; 33 reported keeping it in their pocket, 9 in their purse, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
 Therefore, we believe we observed a wide variety of behaviors and devices in this study.
 
 \begin{table}[H]
@@ -352,15 +353,15 @@ Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 \label{s:features}
 
 Our theft scenarios all involve a sudden movement of the phone, which causes a large acceleration.
-Therefore, as a first filtering step, we filter the data to focus on times after a large motion occurs.
+Therefore, as a first filtering step, we filter the data to focus on times near when a large motion occurs.
 In particular, our classifier is activated when the magnitude of acceleration $M$ exceeds 40 $m/s^2$.
 We extract a one-second window before the activation time and a $n$-second window after the activation time, compute features on each of these windows, and use them for classification.
-We vary \textit{n} from 1 to 7 to obtain the best classification parameter.
-We chose a threshold of 40 $m/s^2$ as all of our simulated thefts experienced accelerations exceeding that threshold.
+We vary $n$ from 1 to 7 to obtain the best classification accuracy.
+We chose a threshold of 40 $m/s^2$ as all of our simulated thefts experienced accelerations exceeding that threshold when the phone was initially grabbed by the thief.
 
 We first identified 16 candidate features, 8 features for each of the two windows.
 In particular, we computed the minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute value, each computed on the magnitude values ($M$) within the window.
-We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional thus more robust to various orientation of the phone. 
+We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional thus more robust to changes in the orientation of the phone. 
 We then visualized the distribution of these features for the two classes and applied feature selection techniques to choose a subset of features that yield good performance.
 We removed the minimum and mean absolute value from the feature list because removing them did not affect the performance of the classifiers. 
 As a result, we extract a 12-dimensional feature vector, 6 features from the before-window and 6 from the after-window, every time the detector is triggered.
@@ -531,7 +532,7 @@ To compare the performance of random forest and logistic regression, we finetune
 We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
 while random forests has 33 false positive instances at a 47\% true positive rate (28 true positive instances).
 Thus the performance of the two classifiers seems comparable in this regime.
-The advantage of logistic regression is that we found it easier to finetune the false-positive/false-negative tradeoff by adjusting the class weights.
+The advantage of logistic regression is that we found adjusting class weights was more effective at controlling the false-positive/false-negative tradeoff for the logistic regression classifier.
 The Receiver Operating Characteristic (ROC) curves for the logistic regression and random forests classifiers are shown in Figure~\ref{fig:roc}.
 
 \begin{figure}[t]
