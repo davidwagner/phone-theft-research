@@ -59,6 +59,7 @@
 \usepackage{color}
 \usepackage{booktabs}
 \usepackage{float}
+\usepackage{comment}
 
 \renewcommand{\topfraction}{0.99} % be more aggressive about text around floats
 \renewcommand{\floatpagefraction}{0.99}
@@ -180,11 +181,11 @@ Our system applies machine learning to smartphone accelerometer data. Based on a
 
 \section{Introduction}
 According to Consumer Reports, 2.1 million smartphones were stolen in the United States in 2014 \cite{deitrick:consumer}, and the Pew Research Center's Internet \& American Life Project reported in 2012 that nearly one third of mobile phone users have experienced a lost or stolen devices \cite{boyles:pew}.
-People can lock their phones to mitigate the risks of phone theft, but this is less convenient as it requires unlocking their phone every time they want to use their phone.
-Consequently, about 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information \cite{egelman:lock}.
+People can lock their phones to mitigate the risks of phone theft, but some find this less convenient as it requires unlocking their phone every time they want to use their phone.
+About 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information \cite{egelman:lock}.
 
 In this paper, we develop a method to automatically detect detect pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to recognize the movements that are specific to theft and use it monitor accelerometer data in the background.
-When theft is detected, it can signal the device to lock the phone and notify the owner. Thus, our theft detector offers another layer of protection against smartphone theft.
+When theft is detected, it can signal the device to lock the phone and optionally notify the owner. Thus, our theft detector offers another layer of protection against smartphone theft.
 Because our detector is completely automatic, it is convenient for users.
 
 There are multiple ways that a phone might be stolen.
