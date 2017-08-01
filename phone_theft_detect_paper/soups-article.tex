@@ -348,6 +348,7 @@ Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 
 
 \subsection{Feature Extraction}
+\label{s:features}
 
 Our theft scenarios all involve a sudden movement of the phone, which causes a large acceleration.
 Therefore, as a first filtering step, we filter the data to focus on times after a large motion occurs.
@@ -449,8 +450,9 @@ class weights set to 1:1000.}
 To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
 For logistic regression, we use standardized coefficients as the feature importance score:
-the score for feature $i$ is $|\alpha_i| \times \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
-The features and the corresponding feature importance of the logistic regression classifier are listed in Table~\ref{tbl:importance-lr} and ordered by the absolute values of the feature scores. 
+the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ in the logistic regression model and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
+The feature importance scores are listed in Table~\ref{tbl:importance-lr}.
+The most discriminative features are
 the maximum of the before-window,
 the product of arc length and standard deviation of the after-window,
 and the arc length of the before-window.
@@ -462,20 +464,20 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Maximum (b)            & -2.73319487        \\
-Arc length * SD (a)    & -2.69540663        \\
-Arc length (b)         & -1.18427357        \\
-Root mean square (a)   & -0.937781183       \\
-Mean (a)               & \ 0.880738694      \\
-Standard deviation (a) & \ 0.666823228      \\
-Standard deviation (b) & \ 0.477534932      \\
-Arc length (a)         & \ 0.273227115      \\
-Maximum (a)            & \ 0.0580951517     \\
-Arc length * SD (b)    & -0.0470492037      \\
-Root mean square (b)   & -0.0143829911      \\
-Mean (b)               & \ 0.0129842047     \\ \bottomrule
+Maximum (b)            & 2.73319487        \\
+Arc length * SD (a)    & 2.69540663        \\
+Arc length (b)         & 1.18427357        \\
+Root mean square (a)   & 0.937781183       \\
+Mean (a)               & 0.880738694      \\
+Standard deviation (a) & 0.666823228      \\
+Standard deviation (b) & 0.477534932      \\
+Arc length (a)         & 0.273227115      \\
+Maximum (a)            & 0.0580951517     \\
+Arc length * SD (b)    & 0.0470492037      \\
+Root mean square (b)   & 0.0143829911      \\
+Mean (b)               & 0.0129842047     \\ \bottomrule
 \end{tabular}
-\caption{Feature importance of logistic regression. (b) denotes the features extracted from 1s windows before the 40-spike; (a) denotes the features extracted from 2s windows after the 40-spike.}
+\caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
 \end{table}
 
@@ -504,23 +506,23 @@ Arc length (b)         & 0.02245781         \\
 Root mean square (b)   & 0.01533719         \\
 Mean (b)               & 0.0080411          \\ \bottomrule
 \end{tabular}
-\caption{Feature importance of random forest. (b) denotes the features extracted from 1s windows before the 40-spike; (a) denotes the features extracted from 2s windows after the 40-spike.}
+\caption{Feature importances for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-rf}
 \end{table}
 
 \begin{figure*}[t]
 \begin{center}
-\includegraphics[width=1.0\columnwidth]{hist_features_before_win_size_1_2.png}
+\includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
 \end{center}
-\caption{histogram of features in 1-second windows before \textit{40 $m/s^2$} thresholds.}
+\caption{Histogram for each of the 6 features for the 1-second window before the 40 $m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
 \label{fig:beforehist}
 \end{figure*}
 
 \begin{figure*}[t]
 \begin{center}
-\includegraphics[width=1.0\columnwidth]{hist_features_after_win_size_1_2.png}
+\includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
 \end{center}
-\caption{histogram of features in 2-second windows after \textit{40 $m/s^2$} thresholds.}
+\caption{Histogram of feature values in the 2-second window after the 40 $m/s^2$ spike.}
 \label{fig:afterhist}
 \end{figure*}
 
