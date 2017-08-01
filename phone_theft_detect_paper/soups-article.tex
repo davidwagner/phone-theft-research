@@ -449,7 +449,7 @@ For logistic regression, to calculate feature scores that are invariant to scali
 Then we get the adjusted coefficients as the feature importances of logistic regression.
 A positive value means the feature pushes the training samples to be in the positive class, and a negative value means the features influences the training samples to be in the negative class.
 % -2.73319487, 0.0129842047, 0.477534932, -0.0143829911, -1.18427357, -0.0470492037, 0.0580951517, 0.880738694, 0.666823228, -0.937781183, 0.273227115, -2.69540663
-The features and the corresponding feature importance of the logistic regression classifier are listed in Table 5 and ordered by the absolute values of the feature scores. 
+The features and the corresponding feature importance of the logistic regression classifier are listed in Table~\ref{tbl:importance-lr} and ordered by the absolute values of the feature scores. 
 We can see that the most representative features are maximum, and arc length in the before-window and product of arc length and standard deviation in the after-window.
 
 \begin{table}[H]
@@ -471,13 +471,13 @@ Root mean square (b)   & -0.0143829911      \\
 Mean (b)               & \ 0.0129842047     \\ \bottomrule
 \end{tabular}
 \caption{Feature importance of logistic regression. (b) denotes the features extracted from 1s windows before the 40-spike; (a) denotes the features extracted from 2s windows after the 40-spike.}
-\label{my-label}
+\label{tbl:importance-lr}
 \end{table}
 
 For random forest, we use the built-in attribute feature importances in the scikit-learn library, which estimate the relative importance of the features by computing the expected fraction of the samples they contribute to at a tree node. 
 Thus the higher in the tree, the more important the feature is \cite{sklearn:rfdoc}. 
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
-The features and the corresponding feature importance of the random forest classifier are listed in Table 6 and ordered by the absolute values of the feature scores. 
+The features and the corresponding feature importance of the random forest classifier are listed in Table~\ref{tbl:importance-rf} and ordered by the absolute values of the feature scores. 
 
 \begin{table}[H]
 \centering
@@ -498,7 +498,7 @@ Root mean square (b)   & 0.01533719         \\
 Mean (b)               & 0.0080411          \\ \bottomrule
 \end{tabular}
 \caption{Feature importance of random forest. (b) denotes the features extracted from 1s windows before the 40-spike; (a) denotes the features extracted from 2s windows after the 40-spike.}
-\label{my-label}
+\label{tbl:importance-rf}
 \end{table}
 
 Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 3 and 4.
