@@ -171,10 +171,11 @@ for classifier_name in classifiers:
     fpr[classifier_name], tpr[classifier_name], _ = roc_curve(y_holdout, y_scores)
     roc_auc[classifier_name] = auc(fpr[classifier_name], tpr[classifier_name])
 
-print("fpr of logistic_regression: ", fpr['logistic_regression'])
-print("tpr of logistic_regression: ", tpr['logistic_regression'])
-print("fpr of random_forest: ", fpr['random_forest'])
-print("tpr of random_forest: ", tpr['random_forest'])
+# roc_pt_lr = [(x, y) for x, y in zip(fpr['logistic_regression'], tpr['logistic_regression'])] 
+# roc_pt_rf = [(x, y) for x, y in zip(fpr['random_forest'], tpr['random_forest'])] 
+# print("ROC curve points of logistic_regression: ", roc_pt_lr)
+# print("ROC curve points of random_forest: ", roc_pt_rf)
+
 
 plt.figure()
 lw = 2
@@ -189,7 +190,7 @@ plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title('ROC Curve of Two classifiers')
+plt.title('ROC Curves of Two classifiers')
 plt.legend(loc="lower right")
 plt.show()
 
