@@ -9,6 +9,7 @@ from sklearn.svm import LinearSVC
 from sklearn.model_selection import KFold
 from sklearn import tree
 from sklearn.metrics import *
+from sklearn.model_selection import train_test_split
 from numpy import std, array, concatenate
 from sklearn.externals import joblib
 
@@ -98,6 +99,8 @@ fpr = dict()
 tpr = dict()
 roc_auc = dict()
 
+data, X_holdout, labels, y_holdout = train_test_split(data, labels, test_size=.5, random_state=0)
+
 for classifier_name in classifiers:
     classifier = classifiers[classifier_name]
     print('classifier: {}'.format(classifier_name))
@@ -114,7 +117,7 @@ for classifier_name in classifiers:
         train_data, test_data = data[train_index], data[test_index]
 
         if classifier_name == 'random_forest':
-            classifier_instance = classifier(n_estimators=1000, class_weight_rf)
+            classifier_instance = classifier(n_estimators=1000, class_weight=class_weight_rf)
         elif classifier_name == 'logistic_regression':
             classifier_instance = classifier(class_weight=class_weight_lr)
         elif classifier_name == 'linear_svm':
@@ -160,15 +163,24 @@ for classifier_name in classifiers:
     # for fn_trial in fn_trials:
     #     print("FN trial: ", fn_trial)
 
-    fpr[classifier_name], tpr[classifier_name], _ = roc_curve(real_labels, predicted_labels)
+    if classifier_name == 'random_forest':
+            print("start predict_proba")
+            y_scores = classifier_instance.predict_proba(X_holdout)[:, 1]
+            print("end predict_proba")
+    elif classifier_name == 'logistic_regression':
+            y_scores = classifier_instance.decision_function(X_holdout)
+
+    print("before store")
+    fpr[classifier_name], tpr[classifier_name], _ = roc_curve(y_holdout, y_scores)
     roc_auc[classifier_name] = auc(fpr[classifier_name], tpr[classifier_name])
+    print("after store")
 
-
+print("before plot")
 plt.figure()
 lw = 2
-plt.plot(fpr['logistic_regression'], tpr['logistic_regression'], color='red',
+plt.plot(fpr['logistic_regression'], tpr['logistic_regression'], 'ro', #color='red',
          lw=lw, label='ROC Curve of Logistic Regression (area = %0.2f)' % roc_auc['logistic_regression'])
-plt.plot(fpr['random_forest'], tpr['random_forest'], color='blue',
+plt.plot(fpr['random_forest'], tpr['random_forest'], 'bo', #color='blue',
          lw=lw, label='ROC curve of Random Forest (area = %0.2f)' % roc_auc['random_forest'])
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 plt.xlim([0.0, 1.0])
@@ -178,8 +190,9 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Curve of Two classifiers')
 plt.legend(loc="lower right")
 plt.show()
+print("after plot")
 
-IPython.embed()
+# IPython.embed()
 
 print('feature standard deviations:\n{}\n'.format(feature_stds))
 
