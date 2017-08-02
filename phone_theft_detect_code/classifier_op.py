@@ -164,24 +164,26 @@ for classifier_name in classifiers:
     #     print("FN trial: ", fn_trial)
 
     if classifier_name == 'random_forest':
-            print("start predict_proba")
             y_scores = classifier_instance.predict_proba(X_holdout)[:, 1]
-            print("end predict_proba")
     elif classifier_name == 'logistic_regression':
             y_scores = classifier_instance.decision_function(X_holdout)
 
-    print("before store")
     fpr[classifier_name], tpr[classifier_name], _ = roc_curve(y_holdout, y_scores)
     roc_auc[classifier_name] = auc(fpr[classifier_name], tpr[classifier_name])
-    print("after store")
 
-print("before plot")
+print("fpr of logistic_regression: ", fpr['logistic_regression'])
+print("tpr of logistic_regression: ", tpr['logistic_regression'])
+print("fpr of random_forest: ", fpr['random_forest'])
+print("tpr of random_forest: ", tpr['random_forest'])
+
 plt.figure()
 lw = 2
-plt.plot(fpr['logistic_regression'], tpr['logistic_regression'], 'ro', #color='red',
+plt.plot(fpr['logistic_regression'], tpr['logistic_regression'], color='red', #'ro',
          lw=lw, label='ROC Curve of Logistic Regression (area = %0.2f)' % roc_auc['logistic_regression'])
-plt.plot(fpr['random_forest'], tpr['random_forest'], 'bo', #color='blue',
+plt.xscale('log')
+plt.plot(fpr['random_forest'], tpr['random_forest'], color='blue', #'bo',
          lw=lw, label='ROC curve of Random Forest (area = %0.2f)' % roc_auc['random_forest'])
+plt.xscale('log')
 plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
@@ -190,7 +192,6 @@ plt.ylabel('True Positive Rate')
 plt.title('ROC Curve of Two classifiers')
 plt.legend(loc="lower right")
 plt.show()
-print("after plot")
 
 # IPython.embed()
 
