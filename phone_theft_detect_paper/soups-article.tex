@@ -184,7 +184,7 @@ According to Consumer Reports, 2.1 million smartphones were stolen in the United
 People can lock their phones to mitigate the risks of phone theft, but some find this less convenient as it requires unlocking their phone every time they want to use their phone.
 About 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information \cite{egelman:lock}.
 
-In this paper, we develop a method to automatically detect detect pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to recognize the movements that are specific to theft and use it monitor accelerometer data in the background.
+In this paper, we develop a method to automatically detect pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to recognize the movements that are specific to theft and use it monitor accelerometer data in the background.
 When theft is detected, it can signal the device to lock the phone and optionally notify the owner. Thus, our theft detector offers another layer of protection against smartphone theft.
 Because our detector is completely automatic, it is convenient for users.
 
@@ -216,7 +216,8 @@ Our contributions are:
 
 Many researchers have studied using smartphone sensors for continuous user authentication.
 The benefit of continuous user authentication is that it happens unobtrusively, without requiring any action from users.
-Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone.
+Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone. 
+
 
 One approach is to use smartphone accelerometer data for gait recognition.
 These systems often extract some features from the sensor data and then apply machine learning.
@@ -318,7 +319,7 @@ so we were able to use the accelerometer data collected from the user study as n
 
 We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
 We only recruited participants who used an Android smartphone with version 5.0 and above.
-After obtaining their consent, we installed our data collection application on their phone and collected data for a three-week period.
+After obtaining their consent, we installed our data collection application on their phones and collected data for a three-week period.
 The application ran in the background and collected accelerometer sensor readings continuously, 24 hours a day.
 We contacted participants weekly to make sure their phones were functioning correctly and troubleshoot any data collection issues.
 Each participant was paid \$150 for their participation.
@@ -391,7 +392,7 @@ We then apply boolean classification techniques to this data set.
 
 
 \subsection{Machine Learning Algorithms}
-We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forest.
+We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forests.
 Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
 We also evaluated different window sizes for the after-window.
 We found that a 2-second after-window yielded better accuracy than a 1-second after-window, and larger window sizes did not offer much improvement.
@@ -486,7 +487,7 @@ Mean (b)               & 0.0129842047     \\ \bottomrule
 We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to. 
 Thus the higher in the tree, the more important the feature is \cite{sklearn:rfdoc}. 
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
-The resulting feature importance scores for the random forest classifier are listed in Table~\ref{tbl:importance-rf}.
+The resulting feature importance scores for the random forests classifier are listed in Table~\ref{tbl:importance-rf}.
 
 % Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
 
@@ -528,7 +529,7 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 \label{fig:afterhist}
 \end{figure*}
 
-To compare the performance of random forest and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forest classifier, then we compare the number of false positive instances of the two classifiers.
+To compare the performance of random forests and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forests classifier, then we compare the number of false positive instances of the two classifiers.
 We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
 while random forests has 33 false positive instances at a 47\% true positive rate (28 true positive instances).
 Thus the performance of the two classifiers seems comparable in this regime.
@@ -539,7 +540,7 @@ The Receiver Operating Characteristic (ROC) curves for the logistic regression a
 \begin{center}
 \includegraphics[width=1.0\columnwidth]{roc_curves_log_line.png}
 \end{center}
-\caption{ROC curves of logistic regression and random forest. The x-axix is in logarithmic scale.}
+\caption{ROC curves of logistic regression and random forests. The x-axix is in logarithmic scale.}
 \label{fig:roc}
 \end{figure}
 
