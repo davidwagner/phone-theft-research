@@ -101,11 +101,13 @@ We performed a field study to gather data from ordinary smartphone users
 during their everyday life.
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
 We obtained approval from our university IRB (Institutional Review Board) for this study. 
-The study was conducted in the Bay Area of the United States from September to December 2016.
+The study was conducted from September to December 2016.
+% The study was conducted in the Bay Area of the United States from September to December 2016.
 None of the participants experienced a phone theft during the study interval,
 so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
-We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
+We posted a recruitment advertisement on the Craigslist in September 2016. 
+% We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
 We only recruited participants who used an Android smartphone with version 5.0 and above.
 After obtaining their consent, we installed our data collection application on their phones and collected data for a three-week period.
 The application ran in the background and collected accelerometer sensor readings continuously, 24 hours a day.
@@ -192,11 +194,12 @@ We evaluated the classifiers using 10-fold cross validation on the entire datase
 \section{Results}
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
-are shown above.
+are shown~\ref{fig:cmat}.
 The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate (less than one false alarm per month),
 but it only detects half of thefts.
 The linear SVM's false positive rate is too high for our purposes.
+
 
 \begin{table}[t]
 \centering
@@ -206,10 +209,39 @@ The linear SVM's false positive rate is too high for our purposes.
 True Negative & 248223             & 170                \\
 True Positive & 0                  & 60                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion matrix for a logistic regression classifier trained
-with class weights set to 1:200.}
-\label{fig:logistic}
 
+\begin{tabular}{@{}lll@{}}
+\toprule
+              & Predicted Negative & Predicted Positive \\ \midrule
+True Negative & 248360             & 33                 \\
+True Positive & 32                 & 28                 \\ \bottomrule
+\end{tabular}
+
+\begin{tabular}{@{}lll@{}}
+\toprule
+              & Predicted Negative & Predicted Positive \\ \midrule
+True Negative & 246522             & 1871               \\
+True Positive & 42                 & 18                 \\ \bottomrule
+\end{tabular}
+\caption{Confusion matrices for algorithms and class weights, logistic regression, 1:200; random forest 1:5000; linear SVM, 1:1000, respectively}
+\label{fig:cmat}
+\end{table}
+
+% \begin{table}[t]
+% \centering
+% \begin{tabular}{@{}lll@{}}
+% \toprule
+%               & Predicted Negative & Predicted Positive \\ \midrule
+% True Negative & 248223             & 170                \\
+% True Positive & 0                  & 60                 \\ \bottomrule
+% \end{tabular}
+% \caption{Confusion matrix for a logistic regression classifier trained
+% with class weights set to 1:200.}
+% \label{fig:logistic}
+% \end{table}
+
+% \begin{table}[t]
+% \centering
 % \begin{tabular}{@{}lll@{}}
 % \toprule
 %               & Predicted Negative & Predicted Positive \\ \midrule
@@ -220,6 +252,10 @@ with class weights set to 1:200.}
 % class weights set to 1:5000.}
 % \label{fig:rf}
 
+% \end{table}
+
+% \begin{table}[t]
+% \centering
 % \begin{tabular}{@{}lll@{}}
 % \toprule
 %               & Predicted Negative & Predicted Positive \\ \midrule
@@ -229,34 +265,7 @@ with class weights set to 1:200.}
 % \caption{Confusion matrix for a linear SVM classifier trained with
 % class weights set to 1:1000.}
 % \label{fig:svm}
-\end{table}
-
-\begin{table}[t]
-\centering
-\begin{tabular}{@{}lll@{}}
-\toprule
-              & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 248360             & 33                 \\
-True Positive & 32                 & 28                 \\ \bottomrule
-\end{tabular}
-\caption{Confusion matrix for a random forests classifier trained with
-class weights set to 1:5000.}
-\label{fig:rf}
-
-\end{table}
-
-\begin{table}[t]
-\centering
-\begin{tabular}{@{}lll@{}}
-\toprule
-              & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 246522             & 1871               \\
-True Positive & 42                 & 18                 \\ \bottomrule
-\end{tabular}
-\caption{Confusion matrix for a linear SVM classifier trained with
-class weights set to 1:1000.}
-\label{fig:svm}
-\end{table}
+% \end{table}
 
 
 To get a better understanding of why our classifier is successful,
