@@ -32,6 +32,9 @@ Derawi et~al.\ and Juefei-Xu et~al.\ use the sensor readings as the features, wh
 Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}. 
 They achieve equal error rate of 6--7\%.
 They use the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer.
+Similarly, Mare et~al.\ developed a recurring authentication system that utilizes the user's hand movement to verify and grant computer terminal access~\cite{mare:zebra}. 
+Their continuous authentication scheme can correctly verify 90\% of users and identify all adversaries.
+One downside is that they require users to wear a bracelet while interacting with a computer.
 
 The most closely related work is by Chang et~al.\, who use the way
 that each person takes their phone out of their bag or pocket as a 
@@ -45,6 +48,8 @@ One limitation is that the 10\% false positive rate is fairly high;
 considering that users may pick up their phone dozens of times each day,
 this could lead to many false alarms.
 
+
+
 The prior work focuses on authenticating the user.
 In contrast, we take a different approach: we attempt to detect the
 specific motion pattern that occurs during a grab-and-run or pickpocket theft.
@@ -57,7 +62,6 @@ far lower false positive rates.
 Our classifier is also user-independent and does not require obtaining
 training data from each user; we use the same classifier for all users.
 
-~\cite{mare:zebra}
 
 
 \section{Methodology}
@@ -287,18 +291,18 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Maximum (b)            & 2.73319487        \\
-Arc length * SD (a)    & 2.69540663        \\
-Arc length (b)         & 1.18427357        \\
-Root mean square (a)   & 0.937781183       \\
-Mean (a)               & 0.880738694      \\
-Standard deviation (a) & 0.666823228      \\
-Standard deviation (b) & 0.477534932      \\
-Arc length (a)         & 0.273227115      \\
-Maximum (a)            & 0.0580951517     \\
-Arc length * SD (b)    & 0.0470492037      \\
-Root mean square (b)   & 0.0143829911      \\
-Mean (b)               & 0.0129842047     \\ \bottomrule
+Maximum (b)            & 2.73319487         \\
+Arc length * SD (a)    & 2.69540663         \\
+Arc length (b)         & 1.18427357         \\
+Root mean square (a)   & 0.937781183        \\
+Mean (a)               & 0.880738694        \\
+Standard deviation (a) & 0.666823228        \\
+Standard deviation (b) & 0.477534932        \\
+Arc length (a)         & 0.273227115        \\
+Maximum (a)            & 0.0580951517       \\
+Arc length * SD (b)    & 0.0470492037       \\
+Root mean square (b)   & 0.0143829911       \\
+Mean (b)               & 0.0129842047       \\ \bottomrule
 \end{tabular}
 \caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
@@ -355,18 +359,18 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 
 
 \begin{figure*}[t]
-  \centering
-  \begin{minipage}[t]{0.4\textwidth}
-    \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
-    \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
-    \label{fig:beforehist}
-  \end{minipage}
-  \hfill
-  \begin{minipage}[t]{0.4\textwidth}
-    \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
-    \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
-    \label{fig:afterhist}
-  \end{minipage}
+\centering
+\begin{minipage}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+\caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+\label{fig:beforehist}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+\caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+\label{fig:afterhist}
+\end{minipage}
 \end{figure*}
 
 % \begin{figure*}[t]
