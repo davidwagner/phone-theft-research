@@ -380,6 +380,7 @@ The features are computed as follows:
 Intuitively, this captures the average of the first derivative of the acceleration.
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
+Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used to capture the data.
 
 We obtain 60 positive instances from the 60 simulated thefts.
 After applying the~$40 m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
