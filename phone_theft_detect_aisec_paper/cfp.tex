@@ -57,6 +57,8 @@ far lower false positive rates.
 Our classifier is also user-independent and does not require obtaining
 training data from each user; we use the same classifier for all users.
 
+~\cite{mare:zebra}
+
 
 \section{Methodology}
 
@@ -90,7 +92,7 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 \caption{The X, Y, Z and magnitude of acceleration, respectively, from one simulated theft instance.}
 \label{fig:simtheft}
 \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
-\caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
+\caption{The X, Y, Z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
 \end{figure}
 
 
@@ -176,7 +178,7 @@ We then apply boolean classification techniques to this data set.
 
 % \begin{figure}[t]
 % \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
-% \caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
+% \caption{The X, Y, Z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
 % \end{figure}
 
 
@@ -331,21 +333,57 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 \label{tbl:importance-rf}
 \end{table}
 
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
-\end{center}
-\caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
-\label{fig:beforehist}
-\end{figure*}
+
+% \begin{figure*}[t]
+
+% \begin{center}
+% \begin{minipage}
+% \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+% \end{minipage}
+% \end{center}
+% \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+% \label{fig:beforehist}
+% \begin{center}
+% \begin{minipage}
+% \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+% \end{minipage}
+% \end{center}
+% \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+% \label{fig:afterhist}
+
+% \end{figure*}
+
 
 \begin{figure*}[t]
-\begin{center}
-\includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
-\end{center}
-\caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
-\label{fig:afterhist}
+  \centering
+  \begin{minipage}[t]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+    \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+    \label{fig:beforehist}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+    \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+    \label{fig:afterhist}
+  \end{minipage}
 \end{figure*}
+
+% \begin{figure*}[t]
+% \begin{center}
+% \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+% \end{center}
+% \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+% \label{fig:beforehist}
+% \end{figure*}
+
+% \begin{figure*}[t]
+% \begin{center}
+% \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+% \end{center}
+% \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+% \label{fig:afterhist}
+% \end{figure*}
 
 To compare the performance of random forests and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forests classifier, then we compare the number of false positive instances of the two classifiers.
 We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
