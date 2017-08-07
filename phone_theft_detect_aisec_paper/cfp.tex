@@ -32,6 +32,9 @@ Derawi et~al.\ and Juefei-Xu et~al.\ use the sensor readings as the features, wh
 Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}. 
 They achieve equal error rate of 6--7\%.
 They use the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer.
+Similarly, Mare et~al.\ developed a recurring authentication system that utilizes the user's hand movement to verify and grant computer terminal access~\cite{mare:zebra}. 
+Their continuous authentication scheme can correctly verify 90\% of users and identify all adversaries.
+One downside is that they require users to wear a bracelet while interacting with a computer.
 
 The most closely related work is by Chang et~al.\, who use the way
 that each person takes their phone out of their bag or pocket as a 
@@ -58,11 +61,13 @@ Our classifier is also user-independent and does not require obtaining
 training data from each user; we use the same classifier for all users.
 
 
+
+
 \section{Methodology}
 
 \subsection{Data Collection}
 
-\subsubsection{Software and Hardware}
+\subsubsection{Software}
 We use an Android application to record data from the smartphone's 3-axis accelerometer.
 It collects sensor data, encrypts it, and stores in the cloud.
 We acquire sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_FASTEST~\cite{android:doc}. 
@@ -90,7 +95,7 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 \caption{The X, Y, Z and magnitude of acceleration, respectively, from one simulated theft instance.}
 \label{fig:simtheft}
 \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
-\caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
+\caption{The X, Y, Z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
 \end{figure}
 
 
@@ -101,7 +106,7 @@ We performed a field study to gather data from ordinary smartphone users
 during their everyday life.
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
 We obtained approval from our university IRB (Institutional Review Board) for this study. 
-The study was conducted from September to December 2016.
+The study was conducted in a metropolitan area from September to December 2016.
 % The study was conducted in the Bay Area of the United States from September to December 2016.
 None of the participants experienced a phone theft during the study interval,
 so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
@@ -169,6 +174,8 @@ Intuitively, this captures the average of the first derivative of the accelerati
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
 
+Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used to capture the data.
+
 We obtain 60 positive instances from the 60 simulated thefts.
 After applying the~$40 m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
 We then apply boolean classification techniques to this data set.
@@ -176,7 +183,7 @@ We then apply boolean classification techniques to this data set.
 
 % \begin{figure}[t]
 % \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
-% \caption{The above plots are x, y, z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
+% \caption{The X, Y, Z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
 % \end{figure}
 
 
@@ -194,7 +201,7 @@ We evaluated the classifiers using 10-fold cross validation on the entire datase
 \section{Results}
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
-are shown~\ref{fig:cmat}.
+are shown in Table~\ref{fig:cmat}.
 The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate (less than one false alarm per month),
 but it only detects half of thefts.
@@ -272,7 +279,7 @@ To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
 For logistic regression, we use standardized coefficients as the feature importance score:
 the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ in the logistic regression model and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
-The feature importance scores are listed in Table~\ref{tbl:importance-lr}.
+The feature importance scores for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
 The most discriminative features are
 the maximum of the before-window,
 the product of arc length and standard deviation of the after-window,
@@ -285,18 +292,18 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Maximum (b)            & 2.73319487        \\
-Arc length * SD (a)    & 2.69540663        \\
-Arc length (b)         & 1.18427357        \\
-Root mean square (a)   & 0.937781183       \\
-Mean (a)               & 0.880738694      \\
-Standard deviation (a) & 0.666823228      \\
-Standard deviation (b) & 0.477534932      \\
-Arc length (a)         & 0.273227115      \\
-Maximum (a)            & 0.0580951517     \\
-Arc length * SD (b)    & 0.0470492037      \\
-Root mean square (b)   & 0.0143829911      \\
-Mean (b)               & 0.0129842047     \\ \bottomrule
+Maximum (b)            & 2.73319487         \\
+Arc length * SD (a)    & 2.69540663         \\
+Arc length (b)         & 1.18427357         \\
+Root mean square (a)   & 0.937781183        \\
+Mean (a)               & 0.880738694        \\
+Standard deviation (a) & 0.666823228        \\
+Standard deviation (b) & 0.477534932        \\
+Arc length (a)         & 0.273227115        \\
+Maximum (a)            & 0.0580951517       \\
+Arc length * SD (b)    & 0.0470492037       \\
+Root mean square (b)   & 0.0143829911       \\
+Mean (b)               & 0.0129842047       \\ \bottomrule
 \end{tabular}
 \caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
@@ -331,21 +338,57 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 \label{tbl:importance-rf}
 \end{table}
 
-\begin{figure*}[t]
-\begin{center}
-\includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
-\end{center}
-\caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
-\label{fig:beforehist}
-\end{figure*}
+
+% \begin{figure*}[t]
+
+% \begin{center}
+% \begin{minipage}
+% \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+% \end{minipage}
+% \end{center}
+% \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+% \label{fig:beforehist}
+% \begin{center}
+% \begin{minipage}
+% \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+% \end{minipage}
+% \end{center}
+% \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+% \label{fig:afterhist}
+
+% \end{figure*}
+
 
 \begin{figure*}[t]
-\begin{center}
+\centering
+\begin{minipage}[t]{0.4\textwidth}
+\includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+\caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+\label{fig:beforehist}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.4\textwidth}
 \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
-\end{center}
 \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
 \label{fig:afterhist}
+\end{minipage}
 \end{figure*}
+
+% \begin{figure*}[t]
+% \begin{center}
+% \includegraphics[width=\textwidth]{hist_features_before_win_size_1_2.png}
+% \end{center}
+% \caption{Histogram for each of the 6 features for the 1-second window before the~$40 m/s^2$ spike.  The features are listed in the order presented in Section~\ref{s:features}, e.g., the top histogram is for the maximum.  Red bars indicate thefts, and green bars indicate non-theft windows.}
+% \label{fig:beforehist}
+% \end{figure*}
+
+% \begin{figure*}[t]
+% \begin{center}
+% \includegraphics[width=\textwidth]{hist_features_after_win_size_1_2.png}
+% \end{center}
+% \caption{Histogram of feature values in the 2-second window after the~$40 m/s^2$ spike.}
+% \label{fig:afterhist}
+% \end{figure*}
 
 To compare the performance of random forests and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forests classifier, then we compare the number of false positive instances of the two classifiers.
 We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),

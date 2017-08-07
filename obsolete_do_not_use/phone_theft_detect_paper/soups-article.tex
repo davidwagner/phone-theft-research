@@ -185,7 +185,7 @@ People can lock their phones to mitigate the risks of phone theft, but some find
 About 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information~\cite{egelman:lock}.
 
 In this paper, we develop a method to automatically detect pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to recognize the movements that are specific to theft and use it monitor accelerometer data in the background.
-When theft is detected, it can signal the device to lock the phone and optionally notify the owner. Thus, our theft detector offers another layer of protection against smartphone theft.
+When theft is detected, it can signal the device to lock the phone or take other actions. Thus, our theft detector offers another layer of protection against smartphone theft.
 Because our detector is completely automatic, it is convenient for users.
 
 There are multiple ways that a phone might be stolen.
@@ -380,6 +380,7 @@ The features are computed as follows:
 Intuitively, this captures the average of the first derivative of the acceleration.
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
+Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used to capture the data.
 
 We obtain 60 positive instances from the 60 simulated thefts.
 After applying the~$40 m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
@@ -490,18 +491,18 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Maximum (b)            & 2.73319487        \\
-Arc length * SD (a)    & 2.69540663        \\
-Arc length (b)         & 1.18427357        \\
-Root mean square (a)   & 0.937781183       \\
-Mean (a)               & 0.880738694      \\
-Standard deviation (a) & 0.666823228      \\
-Standard deviation (b) & 0.477534932      \\
-Arc length (a)         & 0.273227115      \\
-Maximum (a)            & 0.0580951517     \\
-Arc length * SD (b)    & 0.0470492037      \\
-Root mean square (b)   & 0.0143829911      \\
-Mean (b)               & 0.0129842047     \\ \bottomrule
+Maximum (b)            & 2.73319487         \\
+Arc length * SD (a)    & 2.69540663         \\
+Arc length (b)         & 1.18427357         \\
+Root mean square (a)   & 0.937781183        \\
+Mean (a)               & 0.880738694        \\
+Standard deviation (a) & 0.666823228        \\
+Standard deviation (b) & 0.477534932        \\
+Arc length (a)         & 0.273227115        \\
+Maximum (a)            & 0.0580951517       \\
+Arc length * SD (b)    & 0.0470492037       \\
+Root mean square (b)   & 0.0143829911       \\
+Mean (b)               & 0.0129842047       \\ \bottomrule
 \end{tabular}
 \caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
@@ -577,6 +578,12 @@ We suspect that this is because the kinds of theft we consider here involve a ra
 We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a suspected theft event is detected.
 We expect that the inconvenience of unlocking your phone one extra time per week would be tolerable, and might not even be noticed by users.
 If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well when a theft is detected.
+
+As mentioned earlier, 40\% of smartphone users do not lock their phone with a PIN or passcode~\cite{egelman:lock}, so currently thieves have full access to their personal data.
+We envision our solution would help protect those users: if a suspected theft is detected, the phone could lock itself so it requires a PIN or passcode to unlock; this way, users would only need to enter a PIN or passcode about once a week, rather than every time they want to use the phone.
+For the 60\% of smartphone users who do have a PIN or passcode enabled, our scheme might have less benefit.
+Because the phone can immediately detect the theft and lock itself, it prevents thieves who grab the phone while it is unlocked from accessing the user's data, but it is unnecessary against thieves who steal the phone while it is locked (e.g., pickpocket theft).
+Our scheme might also be helpful for finding the stolen phone: if a suspected theft is detected, the phone could enable GPS, start tracking its location, upload its location to a cloud server in real-time, and continue until the phone is unlocked.
 
 We expect that our solution would have negligible impact on battery life and phone performance.
 Modern phones support batched accelerometer sensing, where the accelerometer hardware buffers sensor readings so the application CPU only has to wake up to read sensor data when the buffer is full.
