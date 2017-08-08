@@ -32,9 +32,9 @@ Derawi et~al.\ and Juefei-Xu et~al.\ use the sensor readings as the features, wh
 Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}. 
 They achieve equal error rate of 6--7\%.
 They use the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer.
-Similarly, Mare et~al.\ developed a recurring authentication system that utilizes the user's hand movement to verify and grant computer terminal access~\cite{mare:zebra}. 
-Their continuous authentication scheme can correctly verify 90\% of users and identify all adversaries.
-One downside is that they require users to wear a bracelet while interacting with a computer.
+
+Mare et~al.\ developed a continuous authentication system where the user wears a smartwatch or bracelet, which is used to authenticate the user to their computer~\cite{mare:zebra}. 
+Their continuous authentication scheme works well and could plausibly be used to authenticate to a smartphone, but it requires users to wear a bracelet; in contrast, we seek solutions that do not require the user to carry or wear any devices other than their smartphone.
 
 The most closely related work is by Chang et~al.\, who use the way
 that each person takes their phone out of their bag or pocket as a 
@@ -230,7 +230,7 @@ True Positive & 32                 & 28                 \\ \bottomrule
 True Negative & 246522             & 1871               \\
 True Positive & 42                 & 18                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion matrices for algorithms and class weights, logistic regression, 1:200; random forest 1:5000; linear SVM, 1:1000, respectively}
+\caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
 \label{fig:cmat}
 \end{table}
 
