@@ -4,13 +4,12 @@ Many researchers have studied using smartphone sensors for continuous user authe
 The benefit of continuous user authentication is that it happens unobtrusively, without requiring any action from users.
 Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone. 
 
-
 One approach is to use smartphone accelerometer data for gait recognition.
 These systems often extract some features from the sensor data and then apply machine learning.
 Derawi et~al.\ achieved an equal error rate of 20\%~\cite{derawi:gait}.
 ``Equal error rate'' is a measure of accuracy where the system is tuned so the false accept rate and false reject rates are equal, and then that error rate is reported.
 Primo et~al.\ show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment~\cite{primo:context}. 
-They showed how to infer the position of the phone (in the person's hand vs in their pocket) with 85\% accuracy, and they showed how to use this information to increase the accuracy of user authentication to 70--80\%.
+They showed how to infer the position of the phone (in the person's hand vs.\ in a pocket) with 85\% accuracy, and they showed how to use this information to increase the accuracy of user authentication to 70--80\%.
 They do not report performance as equal error rate.
 Juefei-Xu et~al.\ show that the pace at which people walk also affects the sensor readings, and it is possible to improve accuracy by first identifying the pace at which the user is walking, then using a model tailored towards that pace~\cite{xu:pace}.
 Their system achieved an equal error rate of 4--8\% (depending on the pace); or a false reject rate of 0.5--5\% at a false accept rate of 0.1\%.
@@ -22,31 +21,29 @@ One limitation is that it can only attempt to authenticate the user while the us
 Another limitation is that the error rate is still fairly high: if the classifier is run continuously, once per second, even a false reject rate as low as 0.5\% will cause hundreds or thousands of false rejections per week.
 Thus, gait recognition might need to be combined with other methods to yield a deployable defense against theft.
 
-We learned from the methods they used to process sensor data and extract features.
+Our work builds on the methods previous researchers have used to process sensor data and extract features.
 The accelerometer sensor provides raw data in the form of $X,Y,Z$ accelerations; it is useful to also compute the magnitude $M=\sqrt{X^2+Y^2+Z^2}$ of the acceleration, as that is independent of the direction of the acceleration.
-Prior papers use several methods for cleaning the raw accelerometer data, including interpolation and re-sampling to deal with irregularly sampled data and a weighted moving average filter to mitigate sensor noise.
+Prior papers have used several methods for cleaning the raw accelerometer data, including interpolation and re-sampling to deal with irregularly sampled data and a weighted moving average filter to mitigate sensor noise.
 These schemes typically divide the resulting time series into windows, each window containing about a second of sensor data.
-For instance, Primo et~al.\ use overlapping windows, with each window containing 100 samples and having an overlap of 50 samples with the next window; Derawi et~al.\ and Juefei-Xu et~al.\ use non-overlapping windows about 1 second in width.
-Derawi et~al.\ and Juefei-Xu et~al.\ use the sensor readings as the features, while Primo et~al.\ and Kwapisz et~al.\ compute hand-crafted features from the readings, where each feature records a summary statistic on the sensor readings in the window (e.g., mean, minimum, maximum, standard deviation, number of zero crossings, etc.).
+For instance, Primo et~al.\ used overlapping windows, with each window containing 100 samples and having an overlap of 50 samples with the next window; Derawi et~al.\ and Juefei-Xu et~al.\ used non-overlapping windows, which were about 1 second in width.
+Derawi et~al.\ and Juefei-Xu et~al.\ used the sensor readings as the features, while Primo et~al.\ and Kwapisz et~al.\ computed hand-crafted features from the readings, where each feature records a summary statistic on the sensor readings in the window (e.g., mean, minimum, maximum, standard deviation, number of zero crossings, etc.).
 
 Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}. 
-They achieve equal error rate of 6--7\%.
-They use the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer.
+They achieved an equal error rate of 6--7\%.
+They used the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer, and therefore is currently not a practical solution for continuous authentication.
 
 Mare et~al.\ developed a continuous authentication system where the user wears a smartwatch or bracelet, which is used to authenticate the user to their computer~\cite{mare:zebra}. 
-Their continuous authentication scheme works well and could plausibly be used to authenticate to a smartphone, but it requires users to wear a bracelet; in contrast, we seek solutions that do not require the user to carry or wear any devices other than their smartphone.
+Their continuous authentication scheme works well and could plausibly be used to authenticate to a smartphone, but it requires users to wear a bracelet; in contrast, we seek solutions that do not require the user to carry or wear any additional devices.
 
-The most closely related work is by Chang et~al.\, who use the way
+The most closely related work is by Chang et~al.\, who used the way
 that each person takes their phone out of their bag or pocket as a 
 form of biometric authentication~\cite{cheng:theft}.
 They use accelerometer and gyroscope data to detect when the user picks
 up their phone, and then they apply dynamic time warping and boosting to
 determine whether the pickup motion matches known templates from the
 owner of the phone.
-Their system achieves 10\% false positive rate and 5.5\% false negative rate.
-One limitation is that the 10\% false positive rate is fairly high;
-considering that users may pick up their phone dozens of times each day,
-this could lead to many false alarms.
+Their system achieves a 10\% false positive rate and a 5.5\% false negative rate, which are relatively high,
+considering that users may pick up their phones dozens of times each day.
 
 The prior work focuses on authenticating the user.
 In contrast, we take a different approach: we attempt to detect the
@@ -65,13 +62,14 @@ training data from each user; we use the same classifier for all users.
 
 \section{Methodology}
 
+In this section, we describe our data collection software, feature extraction, and other classifier design decisions.
+
 \subsection{Data Collection}
 
 \subsubsection{Software}
-We use an Android application to record data from the smartphone's 3-axis accelerometer.
-It collects sensor data, encrypts it, and stores in the cloud.
-We acquire sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_FASTEST~\cite{android:doc}. 
-On most devices including the one we use for the simulated theft experiment, the sampling rate is 100 Hz. 
+We used an Android application to record data from the smartphone's 3-axis accelerometer, which then encrypted it and stored it in the cloud.
+We acquired sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_\\FASTEST~\cite{android:doc}. 
+On most devices, including the one we used for the simulated theft experiment, the sampling rate is 100 Hz. 
 
 \subsubsection{Simulated Theft Experiment}
 We simulated three types of smartphone theft scenarios with one researcher acting as a smartphone user and another one playing the role of a thief. 
@@ -83,10 +81,9 @@ The three theft scenarios are as follows:
 \end{enumerate}
 We collect 20 instances of each scenario, for a total of 60 trials. 
 Data collection was split across two sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these two sessions. 
-We ran the experiment on flat ground at an open space, so the experiment is not interrupted. 
-We also made sure that the thief runs at least 40 feet after gaining possession of the victim's phone.
-We used a Nexus 5X smartphone with Android version 7.1.1 for data collection in our simulated theft experiment. 
-It uses a InvenSense MPU6515 embedded accelerometer.
+We ran the experiment on flat ground in an open space, so the experiment was not interrupted. 
+We also made sure that the thief ran at least 40 feet after gaining possession of the victim's phone.
+We used a Nexus 5X smartphone (InvenSense MPU6515 embedded accelerometer) with Android version 7.1.1 for data collection in our simulated theft experiment.
 Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a single simulated theft.
 
 
@@ -103,15 +100,15 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 
 \subsubsection{Field Study}
 We performed a field study to gather data from ordinary smartphone users
-during their everyday life.
+during their everyday lives.
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
-We obtained approval from our university IRB (Institutional Review Board) for this study. 
+We obtained approval from our university IRB for this study. 
 The study was conducted in a metropolitan area from September to December 2016.
 % The study was conducted in the Bay Area of the United States from September to December 2016.
 None of the participants experienced a phone theft during the study interval,
 so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
-We posted a recruitment advertisement on the Craigslist in September 2016. 
+We posted a recruitment advertisement on Craigslist in September 2016. 
 % We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
 We only recruited participants who used an Android smartphone with version 5.0 and above.
 After obtaining their consent, we installed our data collection application on their phones and collected data for a three-week period.
@@ -124,8 +121,8 @@ A total of 55 participants were recruited, and
 53 out of the 55 subjects completed the study. 
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
-In aggregate they used 21 different smartphone models from 6 different manufacturers, including 2 subjects using Nexus 5X and 3 using Nexus 5, 6, 6P phones.
-We asked them how they typically carried their phone, when it wasn't in their hand; 33 reported keeping it in their pocket, 9 in their purse, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
+In aggregate, they used 21 different smartphone models from 6 different manufacturers.
+We asked them how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
 Therefore, we believe we observed a wide variety of behaviors and devices in this study.
 
 \begin{table}[H]
@@ -138,7 +135,7 @@ R2    & 10   & 8      & 7         & 7     & 4   \\
 R3    & 11   & 8      & 9         & 4     & 6   \\
 Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 \end{tabular}
-\caption{Demographic Info of the User Study}
+\caption{Participants' demographic information.}
 \label{tbl:demographics}
 \end{table}
 
@@ -148,8 +145,8 @@ Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 \subsection{Feature Extraction}
 \label{s:features}
 
-Our theft scenarios all involve a sudden movement of the phone, which causes a large acceleration.
-Therefore, as a first filtering step, we filter the data to focus on times near when a large motion occurs.
+Our theft scenarios all involved a sudden movement of the phone, which causes a large acceleration.
+Therefore, as a first filtering step, we filtered the data to focus on times near when a large motion occurs.
 In particular, our classifier is activated when the magnitude of acceleration $M$ exceeds~$40 m/s^2$.
 We extract a one-second window before the activation time and a $n$-second window after the activation time, compute features on each of these windows, and use them for classification.
 We vary $n$ from 1 to 7 to obtain the best classification accuracy.
@@ -157,7 +154,7 @@ We chose a threshold of~$40 m/s^2$ as all of our simulated thefts experienced ac
 
 We first identified 16 candidate features, 8 features for each of the two windows.
 In particular, we computed the minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute value, each computed on the magnitude values ($M$) within the window.
-We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional thus more robust to changes in the orientation of the phone. 
+We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional and thus more robust to changes in the orientation of the phone. 
 We then visualized the distribution of these features for the two classes and applied feature selection techniques to choose a subset of features that yield good performance.
 We removed the minimum and mean absolute value from the feature list because removing them did not affect the performance of the classifiers. 
 As a result, we extract a 12-dimensional feature vector, 6 features from the before-window and 6 from the after-window, every time the detector is triggered.
@@ -168,17 +165,17 @@ The features are computed as follows:
 \item \emph{Maximum}: the maximum value of the magnitude within the window, i.e., $\max(M_1,\dots,M_k)$.
 \item \emph{Mean}: the average value of magnitude in a window, i.e., $(M_1+\dots + M_k)/k$.
 \item \emph{Standard deviation}: the standard deviation of magnitude values in a window.
-\item \emph{Root mean square}: the rms of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}/k^{1/2}$.
+\item \emph{Root mean square}: the RMS of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}/k^{1/2}$.
 \item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $(|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|)/(k-1)$.
 Intuitively, this captures the average of the first derivative of the acceleration.
 \item \emph{Product of arc length and standard deviation}: the product of the two feature values.
 \end{itemize}
 
-Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used to capture the data.
+Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used for data capture (e.g., in contrast to the hardware-based differences documented by Dey et al.~\cite{Dey2014}).
 
-We obtain 60 positive instances from the 60 simulated thefts.
-After applying the~$40 m/s^2$ threshold, we obtain approximately approximately 248000 negative samples from the data collected in the field study. 
-We then apply boolean classification techniques to this data set.
+We obtained 60 positive instances from the 60 simulated thefts.
+After applying the~$40 m/s^2$ threshold, we obtained approximately approximately 248,000 negative samples from the data collected in the field study. 
+We then applied boolean classification techniques to this data set.
 
 
 % \begin{figure}[t]
