@@ -33,19 +33,19 @@ Our contributions are:
 
 \section{Conclusions}
 
-In this work, we demonstrate that accelerometer data is enough to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing user experience. 
-It is remarkable that machine learning is so effective and can detect 100\% of thefts.
-We suspect that this is because the kinds of theft we consider here involve a rapid jerking motion followed by the thief running away, which induces a unique pattern in the accelerometer sensor readings.
+In this work, we demonstrate that accelerometer data is enough to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing usability by inundating the user with false alarms. 
+It is remarkable that machine learning is so effective and can detect 100\% of our simulated thefts.
+We suspect that this is because the kinds of thefts we consider here involve a rapid jerking motion followed by the thief running away, which induces a unique pattern in the accelerometer sensor readings.
 
 We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a suspected theft event is detected.
 We expect that the inconvenience of unlocking your phone one extra time per week would be tolerable, and might not even be noticed by users.
-If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well when a theft is detected.
+If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well, when a theft is detected.
 
-As mentioned earlier, 40\% of smartphone users do not lock their phone with a PIN or passcode~\cite{egelman:lock}, so currently thieves have full access to their personal data.
+As mentioned earlier, 40\% of smartphone users do not lock their phone with a PIN or passcode~\cite{egelman:lock,Harbach2016b}, so currently thieves have full access to the personal data of these users.
 We envision our solution would help protect those users: if a suspected theft is detected, the phone could lock itself so it requires a PIN or passcode to unlock; this way, users would only need to enter a PIN or passcode about once a week, rather than every time they want to use the phone.
 For the 60\% of smartphone users who do have a PIN or passcode enabled, our scheme might have less benefit.
 Because the phone can immediately detect the theft and lock itself, it prevents thieves who grab the phone while it is unlocked from accessing the user's data, but it is unnecessary against thieves who steal the phone while it is locked (e.g., pickpocket theft).
-Our scheme might also be helpful for finding the stolen phone: if a suspected theft is detected, the phone could enable GPS, start tracking its location, upload its location to a cloud server in real-time, and continue until the phone is unlocked.
+Our scheme might also be helpful for finding the stolen phone: if a suspected theft is detected, the phone could enable GPS, start tracking its location, upload its location to a cloud server in real-time, and continue until the phone is unlocked (if the user has not already enabled a ``find my phone'' feature).
 
 We expect that our solution would have negligible impact on battery life and phone performance.
 Modern phones support batched accelerometer sensing, where the accelerometer hardware buffers sensor readings, so the application CPU only has to wake up to read sensor data when the buffer is full.
@@ -55,10 +55,10 @@ we only need to apply the classifier on a tiny fraction of time windows (only ab
 so the impact on battery life should be negligible.
 
 The primary limitation of our work is that we work with simulated thefts.
-It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data.
+It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data, and then use it to further train the classifier.
 
 It may be possible to improve our results further by using other sensors on the smartphone, such as the step counter.
-The biggest open question is whether our methods can be extended to a more diverse set of theft scenarios; we hope that our work will inspire others to investigate the direction further.
+The biggest open question is whether our methods can be extended to a more diverse set of theft scenarios; we hope that our work will inspire others to investigate this direction further.
 
 
 % \appendix

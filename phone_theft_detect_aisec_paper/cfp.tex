@@ -201,7 +201,7 @@ Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
 The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate (less than one false alarm per month),
-but it only detects half of thefts.
+but it only detects half of the thefts.
 The linear SVM's false positive rate is too high for our purposes.
 
 
@@ -210,21 +210,21 @@ The linear SVM's false positive rate is too high for our purposes.
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 248223             & 170                \\
+True Negative & 248,223             & 170                \\
 True Positive & 0                  & 60                 \\ \bottomrule
 \end{tabular}
 
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 248360             & 33                 \\
+True Negative & 248,360             & 33                 \\
 True Positive & 32                 & 28                 \\ \bottomrule
 \end{tabular}
 
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 246522             & 1871               \\
+True Negative & 246,522             & 1871               \\
 True Positive & 42                 & 18                 \\ \bottomrule
 \end{tabular}
 \caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
@@ -274,7 +274,7 @@ True Positive & 42                 & 18                 \\ \bottomrule
 
 To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
-For logistic regression, we use standardized coefficients as the feature importance score:
+For logistic regression, we used standardized coefficients as the feature importance score:
 the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ in the logistic regression model and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
 The feature importance scores for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
 The most discriminative features are
@@ -387,7 +387,7 @@ Mean (b)               & 0.0080411          \\ \bottomrule
 % \label{fig:afterhist}
 % \end{figure*}
 
-To compare the performance of random forests and logistic regression, we finetune the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as random forests classifier, then we compare the number of false positive instances of the two classifiers.
+To compare the performance of random forests and logistic regression, we fine tuned the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as the random forests classifier, then we compared the number of false positive instances of the two classifiers.
 We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
 while random forests has 33 false positive instances at a 47\% true positive rate (28 true positive instances).
 Thus the performance of the two classifiers seems comparable in this regime.
