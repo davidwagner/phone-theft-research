@@ -1,13 +1,10 @@
 \section{Introduction}
 
-According to Consumer Reports, 2.1 million smartphones were stolen in the United States in 2014~\cite{deitrick:consumer}, and the Pew Research Center's Internet \& American Life Project reported in 2012 that nearly one third of mobile phone users have experienced a lost or stolen devices~\cite{boyles:pew}.
-People can lock their phones to mitigate the risks of phone theft, but some find this less convenient as it requires unlocking their phone every time they want to use their phone.
-About 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information~\cite{egelman:lock}.
+According to Consumer Reports, 2.1 million smartphones were stolen in the United States in 2014~\cite{deitrick:consumer}, and the Pew Research Center's Internet \& American Life Project reported in 2012 that nearly one third of mobile phone users have experienced a lost or stolen device~\cite{boyles:pew}.
+People can lock their phones to mitigate the risks of phone theft, but some find this inconvenient, as it requires unlocking the phone every time it is needed.
+As a result, about 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information---information that most users underestimate the sensitivity of~\cite{egelman:lock}.
 
-In this paper, we develop a method to automatically detect pickpocket and grab-and-run smartphone theft. To be more specific, we train a binary classifier to recognize the movements that are specific to theft and use it monitor accelerometer data in the background.
-When theft is detected, it can signal the device to lock the phone or take other actions. Thus, our theft detector offers another layer of protection against smartphone theft.
-Because our detector is completely automatic, it is convenient for users.
-Compared to software, like kill switch and remote erase, that retroactively protects users' privacy, our system operates in real-time and can protect users' private information in its entirety.
+Our goal is to increase the usability of phone locking, and therefore its adoption, by only forcing users to provide unlock codes when there is a reasonable chance that the device is being used by someone other than the rightful owner. To that end, we developed a method to automatically detect pickpocket and grab-and-run smartphone theft by training a binary classifier to recognize the movements that are specific to theft and use it to monitor accelerometer data in the background. When theft is detected, our system can signal the device to lock the screen or take other actions. Thus, our theft detector offers another layer of protection against smartphone theft, as well as decreases the number of times that legitimate users will be asked to explicitly unlock their device screens under ordinary circumstances. Because our theft detection software results in fewer explicit unlock prompts, it increases the usability of current smartphone locking mechanisms, and is therefore likely to increase overall adoption. Compared to {\it post hoc} security software, like kill switches and remote erase, which retroactively protects users' privacy, our system operates in real-time and may therefore better protect users' private information.
 
 There are multiple ways that a phone might be stolen.
 We focus specifically on grab-and-run theft, where the thief snatches the phone out of the user's hand and runs away, and pickpocket theft, where the thief steals the phone from the user's pocket or bag and runs away.
@@ -18,16 +15,16 @@ Consequently, our scheme cannot offer comprehensive protection against all forms
 We measure the efficacy of our scheme by gathering two datasets.
 First, we simulated three types of phone theft: grab-and-run while the victim is standing still, grab-and-run while the victim is walking at a constant speed, and pick-pocket theft.
 We collect accelerometer sensor readings during the simulated thefts; these serve as known positives.
-Second, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday life.
-No phone was stolen during the field study, so these serve as known negatives.
+Second, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday activities.
+No phone was stolen during the field study, so this dataset serves as known negatives.
 We use this to train a classifier and then evaluate its detection rate and false positive rate.
-Our best classifier produces 1 false alarm per week on average while detecting 100\% of simulated thefts.
+Our best classifier produces 1 false alarm per week on average, while detecting 100\% of simulated thefts.
 
 
 Our contributions are:
 \begin{enumerate}
-  \item We conduct a user study and collect a large dataset of smartphone sensor data while devices are being used in real world.
-  \item We devise features and methods to detect theft, and we show that it can detect thefts with few false positives.
+  \item We conducted a user study and collected a large dataset of smartphone sensor data while devices were being used in the real world.
+  \item We devise features and methods to detect two common types of theft, and we show that our system can detect these types of thefts with few false positives.
 \end{enumerate}
 
 \input{cfp}
