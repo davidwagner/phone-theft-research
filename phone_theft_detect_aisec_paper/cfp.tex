@@ -62,7 +62,7 @@ training data from each user; we use the same classifier for all users.
 
 \section{Methodology}
 
-In this section, we describe our data collection software, feature extraction, and other classifier design decisions.
+In this section, we describe the data collection software, \textcolor{red}{which we used to gather positive and negative data for our training and test sets as well as} the feature extraction scheme, and other classifier design decisions.
 
 \subsection{Data Collection}
 
@@ -72,7 +72,7 @@ We acquired sensor data at the highest sampling rate supported by the phone usin
 On most devices, including the one we used for the simulated theft experiment, the sampling rate is 100 Hz. 
 
 \subsubsection{Simulated Theft Experiment}
-We simulated three types of smartphone theft scenarios with one researcher acting as a smartphone user and another one playing the role of a thief. 
+\textcolor{red}{Because data from real thefts is hard to obtain,} we simulated three types of \textcolor{red}{common [based on this article from 2014, 44\% of phone theft is stealing unattended phones, 11\% grab-and-run. https://www.cio.com/article/2370003/smartphones/leading-cause-of-smartphone-theft--careless-owners.html]} smartphone theft scenarios, \textcolor{red}{based on campus police alerts that we receive,} with one researcher acting as a smartphone user and another one playing the role of a thief. 
 The three theft scenarios are as follows:
 \begin{enumerate}
 \item The user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
@@ -100,7 +100,7 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 
 \subsubsection{Field Study}
 We performed a field study to gather data from ordinary smartphone users
-during their everyday lives.
+during their everyday \textcolor{red}{activities, including walking, running, driving, possibly excercising and anything else that occurred during their lives over the field study period.}
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
 We obtained approval from our university IRB for this study. 
 The study was conducted in a metropolitan area from September to December 2016.
@@ -110,7 +110,7 @@ so we were able to use the accelerometer data collected from the user study as n
 
 We posted a recruitment advertisement on Craigslist in September 2016. 
 % We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
-We only recruited participants who used an Android smartphone with version 5.0 and above.
+We only recruited participants who used an Android smartphone with version 5.0 and above. 
 After obtaining their consent, we installed our data collection application on their phones and collected data for a three-week period.
 The application ran in the background and collected accelerometer sensor readings continuously, 24 hours a day.
 We contacted participants weekly to make sure their phones were functioning correctly and troubleshoot any data collection issues.
@@ -121,9 +121,9 @@ A total of 55 participants were recruited, and
 53 out of the 55 subjects completed the study. 
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
-In aggregate, they used 21 different smartphone models from 6 different manufacturers.
-We asked them how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
-Therefore, we believe we observed a wide variety of behaviors and devices in this study.
+In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Adroid versions. \textcolor{red}{This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Adroid version.}
+We also asked participants how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
+\textcolor{red}{During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it.} \st{Therefore, we believe we observed a wide variety of devices and behaviors in this study.}
 
 \begin{table}[H]
 \centering
@@ -189,7 +189,7 @@ We then applied boolean classification techniques to this data set.
 We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forests.
 Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
 We also evaluated different window sizes for the after-window.
-We found that a 2-second after-window yielded better accuracy than a 1-second after-window, and larger window sizes did not offer much improvement.
+We found that a 2-second after-window yielded better accuracy than a 1-second after-window \textcolor{red}{since 2-second windows encapsulate more complete acceleration information about the motions,} and larger window sizes did not offer much improvement.
 Therefore, all of our experiments use a 1-second before-window and a 2-second after-window.
 We evaluated the classifiers using 10-fold cross validation on the entire dataset, which consists of 60 positive samples and approximately 248,000 negative samples. 
 
@@ -199,10 +199,12 @@ We evaluated the classifiers using 10-fold cross validation on the entire datase
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
-The logistic regression classifier has a false positive rate of 0.07\%, which means that on average users receive 1 false alarm every week, and a true positive rate of 100\%.
+The logistic regression classifier has a false positive rate of 0.07\%. \textcolor{red}{Given that the field study involved 53*3=159 person-week of data, and the logistis regression would report 248,000*0.07\%=173 false positives, the total number of samples extracted from the field study times the false positive rate,} this means that on average users receive 173/159$\approx$1 false alarm every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate (less than one false alarm per month),
 but it only detects half of the thefts.
 The linear SVM's false positive rate is too high for our purposes.
+
+\textcolor{red}{Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.}
 
 
 \begin{table}[t]
