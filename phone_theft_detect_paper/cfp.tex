@@ -291,18 +291,19 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Maximum (b)            & 2.73319487         \\
-Arc length * SD (a)    & 2.69540663         \\
-Arc length (b)         & 1.18427357         \\
-Root mean square (a)   & 0.937781183        \\
-Mean (a)               & 0.880738694        \\
-Standard deviation (a) & 0.666823228        \\
-Standard deviation (b) & 0.477534932        \\
-Arc length (a)         & 0.273227115        \\
-Maximum (a)            & 0.0580951517       \\
-Arc length * SD (b)    & 0.0470492037       \\
-Root mean square (b)   & 0.0143829911       \\
-Mean (b)               & 0.0129842047       \\ \bottomrule
+Root mean square (b)   &   143.8786849  ($\pm$ 0.08714717)       \\
+Mean (b)               &   129.8910092 ($\pm$ 0.08033373)       \\ 
+Root mean square (a)   &  \ 93.8382532  ($\pm$ 0.04439512)       \\
+Mean (a)               &  \ 88.1273891  ($\pm$ 0.03972303)       \\
+Standard deviation (a) &  \ 66.7204655  ($\pm$ 0.02228971)       \\
+Standard deviation (b) &  \ 47.7685313  ($\pm$ 0.03349549)       \\
+Arc length (a)         &  \ 27.3736785  ($\pm$ 0.01463394)       \\
+Maximum (b)            & \ \ 2.73231469 ($\pm$ 0.00041407)       \\
+Arc length * SD (a)    & \ \ 2.69875036 ($\pm$ 0.00097762)       \\
+Arc length (b)         & \ \ 1.16578948 ($\pm$ 0.00855526)       \\
+Maximum (a)            & \ \ 0.05985700 ($\pm$ 0.00065551)       \\
+Arc length * SD (b)    & \ \ 0.04950325 ($\pm$ 0.00090281)       \\ \bottomrule
+
 \end{tabular}
 \caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
@@ -320,18 +321,18 @@ The resulting feature importance scores for the random forests classifier are li
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
-Root mean square (a)   & 0.21908845         \\
-Mean (a)               & 0.20288397         \\
-Standard deviation (a) & 0.16426152         \\
-Maximum (a)            & 0.12388036         \\
-Arc length * SD (a)    & 0.0830088          \\
-Arc length (a)         & 0.05162059         \\
-Maximum (b)            & 0.04751106         \\
-Arc length * SD (b)    & 0.03309431         \\
-Standard deviation (b) & 0.02881483         \\
-Arc length (b)         & 0.02245781         \\
-Root mean square (b)   & 0.01533719         \\
-Mean (b)               & 0.0080411          \\ \bottomrule
+Root mean square (a)   & 0.24251892 ($\pm$ 0.00734018)         \\
+Mean (a)               & 0.19351276 ($\pm$ 0.00685086)         \\
+Standard deviation (a) & 0.17634030 ($\pm$ 0.00601571)         \\
+Maximum (a)            & 0.10975278 ($\pm$ 0.00480411)         \\
+Arc length * SD (a)    & 0.07541471 ($\pm$ 0.00382659)         \\
+Arc length (a)         & 0.04821400 ($\pm$ 0.00264303)         \\
+Maximum (b)            & 0.04740376 ($\pm$ 0.00172894)         \\
+Arc length * SD (b)    & 0.03291854 ($\pm$ 0.00128944)         \\
+Standard deviation (b) & 0.02828350 ($\pm$ 0.00115971)         \\
+Arc length (b)         & 0.02072662 ($\pm$ 0.00103551)         \\
+Root mean square (b)   & 0.01544474 ($\pm$ 0.00078121)         \\
+Mean (b)               & 0.00946937 ($\pm$ 0.00077147)          \\ \bottomrule
 \end{tabular}
 \caption{Feature importances for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-rf}
