@@ -4,19 +4,26 @@ path = '/Users/JasonLiu/research/security/phone_theft_detect/data/theft_classifi
 % filename = 'theft_CSVs/AppMon_81452402_BatchedAccelerometer_2016_07_17_23_13_12_.csv'; % used to plot pos acc in the paper
 % filename = 'theft_CSVs/AppMon_e5b921a6-d94c-43a9-a38a-129bfebcdac9_BatchedAccelerometer_2016_12_04_19_24_47_.csv';
 
+% filename = 'theft_CSVs/AppMon_e5b921a6-d94c-43a9-a38a-129bfebcdac9_BatchedAccelerometer_2017_10_06_17_30_03_.csv';
+% filename = 'theft_CSVs/AppMon_e5b921a6-d94c-43a9-a38a-129bfebcdac9_BatchedAccelerometer_2017_10_06_20_06_48_.csv';
+filename = 'theft_CSVs/AppMon_e5b921a6-d94c-43a9-a38a-129bfebcdac9_BatchedAccelerometer_2017_10_07_15_28_57_ .csv';
+
 % filename = 'neg_CSVS/AppMon_72308974-27d4-452c-8ddb-752d5ea15c31_BatchedAccelerometer_2016_12_05_12_16_19_.csv';
 % filename = 'neg_CSVS/AppMon_53d9901d-c6fe-4ffa-9af5-5136d2443595_BatchedAccelerometer_2016_10_06_11_06_41_.csv';
-filename = 'neg_CSVS/AppMon_241eeff5-125c-493d-8217-eafedd17855c_BatchedAccelerometer_2016_10_27_21_41_31_.csv'; % used to plot neg acc in the paper
+% filename = 'neg_CSVS/AppMon_241eeff5-125c-493d-8217-eafedd17855c_BatchedAccelerometer_2016_10_27_21_41_31_.csv'; % used to plot neg acc in the paper
 
 f = strcat(path,filename);
 data = csvread(f);
-% t = data(:,1);
-% x = data(:,2);
-% y = data(:,3);
-% z = data(:,4);
-% A = [x y z];
-% n = sqrt(sum(A.^2,2)); % dot op '.' : element wise op, ^2.
 
+t = data(:,1);
+x = data(:,2);
+y = data(:,3);
+z = data(:,4);
+A = [x y z];
+n = sqrt(sum(A.^2,2)); % dot op '.' : element wise op, ^2.
+
+% plot magnitude
+plot(t,n,'m')
 
 
 
@@ -34,7 +41,6 @@ data = csvread(f);
 % area(t_after,acc_pos,'FaceColor',[0.4 1 0.4],'EdgeColor',[0.4 1 0.4]);
 % hold on;
 % area(t_after,acc_neg,'FaceColor',[0.4 1 0.4],'EdgeColor',[0.4 1 0.4]);
-
 
 
 
@@ -64,38 +70,38 @@ data = csvread(f);
 % y = data(116616:122616,3);
 % z = data(116616:122616,4);
 % negative instance:
-t = data(1:356036,1);
-x = data(1:356036,2);
-y = data(1:356036,3);
-z = data(1:356036,4);
-A = [x y z];
-n = sqrt(sum(A.^2,2));
+% t = data(1:356036,1);
+% x = data(1:356036,2);
+% y = data(1:356036,3);
+% z = data(1:356036,4);
+% A = [x y z];
+% n = sqrt(sum(A.^2,2));
+% 
+% figure
+% x_plot = subplot(1,4,1);
+% plot(t,x,'r')
+% title('x acceleration','FontSize',20,'FontWeight','bold')
+% xlabel('time (ms)','FontSize',15,'FontWeight','bold')
+% ylabel('acceleration (m/s^{2})','FontSize',15,'FontWeight','bold')
+% 
+% y_plot = subplot(1,4,2);
+% plot(t,y,'b')
+% title('y acceleration','FontSize',20,'FontWeight','bold')
+% xlabel('time (ms)','FontSize',15,'FontWeight','bold')
+% ylabel('acceleration (m/s^{2})','FontSize',15,'FontWeight','bold')
+% 
+% z_plot = subplot(1,4,3);
+% plot(t,z,'g')
+% title('z acceleration','FontSize',20,'FontWeight','bold')
+% xlabel('time (ms)','FontSize',15,'FontWeight','bold')
+% ylabel('acceleration (m/s^{2})','FontSize',15,'FontWeight','bold')
+% 
+% n_plot = subplot(1,4,4);
+% plot(t,n,'m')
+% title('magnitude of acceleration','FontSize',20,'FontWeight','bold')
+% xlabel('time (ms)','FontSize',15,'FontWeight','bold')
+% ylabel('acceleration (m/s^{2})','FontSize',15,'FontWeight','bold')
 
-figure
-x_plot = subplot(1,4,1);
-plot(t,x,'r')
-title('x acceleration')
-xlabel('ms')
-ylabel('m/s^2')
-
-y_plot = subplot(1,4,2);
-plot(t,y,'b')
-title('y acceleration')
-xlabel('ms')
-ylabel('m/s^2')
-
-z_plot = subplot(1,4,3);
-plot(t,z,'g')
-title('z acceleration')
-xlabel('ms')
-ylabel('m/s^2')
-
-n_plot = subplot(1,4,4);
-plot(t,n,'m')
-title('magnitude of acceleration')
-xlabel('ms')
-ylabel('m/s^2')
-
-linkaxes([x_plot,y_plot,z_plot,n_plot], 'xy')
-ylim([-55 165])
+% linkaxes([x_plot,y_plot,z_plot,n_plot], 'xy')
+% ylim([-55 165])
 

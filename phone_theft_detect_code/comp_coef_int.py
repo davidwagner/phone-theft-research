@@ -18,7 +18,7 @@ def conf_int(coefficients):
 
     return mean, interval
 
-def plot_bar_grasph(mean, interval):
+def plot_bar_graph(mean, interval):
     ind = np.arange(1, len(features)+1)
     width = 0.45
 
@@ -360,10 +360,10 @@ print(rf_coef.shape)
 mean, interval = conf_int(coefficients)
 for c in classifiers:
     for i, feature in enumerate(features):
-        print('95% confidence interval for classifier {}, feature {}: mean {}, ({}, {})'.\
-              format(c, feature, mean[c][i], mean[c][i]-interval[c][i], mean[c][i]+interval[c][i]))
+        print('95% confidence interval for classifier {}, feature {}: mean {}, interval {}'.\
+              format(c, feature, mean[c][i], interval[c][i]))
 
-plot_bar_grasph(mean, interval)
+plot_bar_graph(mean, interval)
 
 
 
