@@ -62,7 +62,7 @@ training data from each user; we use the same classifier for all users.
 
 \section{Methodology}
 
-In this section, we describe the data collection software, \textcolor{red}{which we used to gather positive and negative data for our training and test sets as well as} the feature extraction scheme, and other classifier design decisions.
+In this section, we describe the data collection software, which we used to gather positive and negative data for our training and test sets as well as the feature extraction scheme, and other classifier design decisions.
 
 \subsection{Data Collection}
 
@@ -72,15 +72,15 @@ We acquired sensor data at the highest sampling rate supported by the phone usin
 On most devices, including the one we used for the simulated theft experiment, the sampling rate is 100 Hz. 
 
 \subsubsection{Simulated Theft Experiment}
-\textcolor{red}{Because data from real thefts is hard to obtain,} we simulated three types of \textcolor{red}{common [based on this article from 2014, 44\% of phone theft is stealing unattended phones, 11\% grab-and-run. https://www.cio.com/article/2370003/smartphones/leading-cause-of-smartphone-theft--careless-owners.html]} smartphone theft scenarios, \textcolor{red}{based on campus police alerts that we receive,} with one researcher acting as a smartphone user and another one playing the role of a thief. 
+Because data from real thefts is hard to obtain, we simulated three types of common smartphone theft scenarios, based on campus police alerts that we receive, with one researcher acting as a smartphone user and another one playing the role of a thief. 
 The three theft scenarios are as follows:
 \begin{enumerate}
 \item The user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
 \item The user holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
 \item The third scenario simulates pick-pocket thefts. The user places the phone in the back pocket of their pants and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
 \end{enumerate}
-We collect 20 instances of each scenario, for a total of 60 trials. 
-Data collection was split across two sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these two sessions. 
+We collect 40 instances of each scenario, for a total of 120 trials. 
+Data collection was split across four sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these two sessions. 
 We ran the experiment on flat ground in an open space, so the experiment was not interrupted. 
 We also made sure that the thief ran at least 40 feet after gaining possession of the victim's phone.
 We used a Nexus 5X smartphone (InvenSense MPU6515 embedded accelerometer) with Android version 7.1.1 for data collection in our simulated theft experiment.
@@ -99,8 +99,7 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 
 
 \subsubsection{Field Study}
-We performed a field study to gather data from ordinary smartphone users
-during their everyday \textcolor{red}{activities, including walking, running, driving, possibly excercising and anything else that occurred during their lives over the field study period.}
+We performed a field study to gather data from ordinary smartphone users while they perform everyday activities, including walking, running, driving, possibly excercising, and anything else that occurred during their lives over the field study period.
 % We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
 We obtained approval from our university IRB for this study. 
 The study was conducted in a metropolitan area from September to December 2016.
@@ -121,9 +120,9 @@ A total of 55 participants were recruited, and
 53 out of the 55 subjects completed the study. 
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
-In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Adroid versions. \textcolor{red}{This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Adroid version.}
+In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Adroid versions. This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Adroid version.
 We also asked participants how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
-\textcolor{red}{During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it.} \st{Therefore, we believe we observed a wide variety of devices and behaviors in this study.}
+During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it. 
 
 \begin{table}[H]
 \centering
@@ -189,9 +188,10 @@ We then applied boolean classification techniques to this data set.
 We evaluate three standard machine learning algorithms: linear SVM, logistic regression and random forests.
 Because we have many more negative samples than positive ones, we tried different settings for class weights to weight positive instances more highly than negative ones.
 We also evaluated different window sizes for the after-window.
-We found that a 2-second after-window yielded better accuracy than a 1-second after-window \textcolor{red}{since 2-second windows encapsulate more complete acceleration information about the motions,} and larger window sizes did not offer much improvement.
+We found that a 2-second after-window yielded better accuracy than a 1-second after-window since 2-second windows encapsulate more complete acceleration information about the motions, and larger window sizes did not offer much improvement.
 Therefore, all of our experiments use a 1-second before-window and a 2-second after-window.
-We evaluated the classifiers using 10-fold cross validation on the entire dataset, which consists of 60 positive samples and approximately 248,000 negative samples. 
+We partitioned the entire dataset, which consists of 120 positive samples and approximately 248,000 negative samples, into training and test sets with 7:3 ratio.
+Then we trained the classifiers on the training set and reported the predition results of the test set.
 
 
 
@@ -199,12 +199,11 @@ We evaluated the classifiers using 10-fold cross validation on the entire datase
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
-The logistic regression classifier has a false positive rate of 0.07\%. \textcolor{red}{Given that the field study involved 53*3=159 person-week of data, and the logistis regression would report 248,000*0.07\%=173 false positives, the total number of samples extracted from the field study times the false positive rate,} this means that on average users receive 173/159$\approx$1 false alarm every week, and a true positive rate of 100\%.
-The random forests classifier has an even lower false positive rate (less than one false alarm per month),
-but it only detects half of the thefts.
-The linear SVM's false positive rate is too high for our purposes.
+The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-week of data, and the logistis regression would report 248,000*0.09\%=223 false positives, the total number of samples extracted from the field study data times the false positive rate. This means that on average users receive 223/159$\approx$1.4 false alarm every week, and a true positive rate of 100\%.
+The random forests classifier has an even lower false positive rate (approximately one false alarm per month),
+but it only detects 60\% of the thefts.
 
-\textcolor{red}{Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.}
+Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
 
 \begin{table}[t]
@@ -212,22 +211,22 @@ The linear SVM's false positive rate is too high for our purposes.
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 248,223             & 170                \\
-True Positive & 0                  & 60                 \\ \bottomrule
+True Negative & 74446              & 72                 \\
+True Positive & 0                  & 37                 \\ \bottomrule
 \end{tabular}
 
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 248,360             & 33                 \\
-True Positive & 32                 & 28                 \\ \bottomrule
+True Negative & 74503              & 15                 \\
+True Positive & 14                 & 23                 \\ \bottomrule
 \end{tabular}
 
 \begin{tabular}{@{}lll@{}}
 \toprule
               & Predicted Negative & Predicted Positive \\ \midrule
-True Negative & 246,522             & 1871               \\
-True Positive & 42                 & 18                 \\ \bottomrule
+True Negative & 74501              & 17               \\
+True Positive & 17                 & 20                 \\ \bottomrule
 \end{tabular}
 \caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
 \label{fig:cmat}
@@ -278,7 +277,8 @@ To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
 For logistic regression, we used standardized coefficients as the feature importance score:
 the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ in the logistic regression model and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
-The feature importance scores for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
+In addition, we computed the 95\% confidence intervals for all standardized coefficents using 50 epoches of the entire data set.
+The feature importance scores and their 95\% confidence intervals for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
 The most discriminative features are
 the maximum of the before-window,
 the product of arc length and standard deviation of the after-window,
@@ -305,14 +305,15 @@ Maximum (a)            & \ \ 0.05985700 ($\pm$ 0.00065551)       \\
 Arc length * SD (b)    & \ \ 0.04950325 ($\pm$ 0.00090281)       \\ \bottomrule
 
 \end{tabular}
-\caption{Feature importances for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
+\caption{Feature importances and their 95\% confidence intervals for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
 \end{table}
 
 We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to. 
 Thus the higher in the tree, the more important the feature is~\cite{sklearn:rfdoc}. 
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
-The resulting feature importance scores for the random forests classifier are listed in Table~\ref{tbl:importance-rf}.
+We also computed the 95\% confidence intervals for all feature importance scores using 50 epoches of the entire data set.
+The resulting feature importance scores and their 95\% confidence intervals for the random forests classifier are listed in Table~\ref{tbl:importance-rf}.
 
 % Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.
 
@@ -334,7 +335,7 @@ Arc length (b)         & 0.02072662 ($\pm$ 0.00103551)         \\
 Root mean square (b)   & 0.01544474 ($\pm$ 0.00078121)         \\
 Mean (b)               & 0.00946937 ($\pm$ 0.00077147)          \\ \bottomrule
 \end{tabular}
-\caption{Feature importances for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
+\caption{Feature importances and their 95\% confidence intervals for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-rf}
 \end{table}
 
@@ -391,8 +392,8 @@ Mean (b)               & 0.00946937 ($\pm$ 0.00077147)          \\ \bottomrule
 % \end{figure*}
 
 To compare the performance of random forests and logistic regression, we fine tuned the class weights for the logistic regression classifier to lower its true positive rate until it is approximately the same as the random forests classifier, then we compared the number of false positive instances of the two classifiers.
-We find that logistic regression has 34 false positive instances at a 42\% true positive rate (25 true positive instances),
-while random forests has 33 false positive instances at a 47\% true positive rate (28 true positive instances).
+We find that logistic regression has 14 false positive instances at a 67\% true positive rate (25 true positive instances),
+while random forests has 15 false positive instances at a 62\% true positive rate (23 true positive instances).
 Thus the performance of the two classifiers seems comparable in this regime.
 The advantage of logistic regression is that we found adjusting class weights was more effective at controlling the false-positive/false-negative tradeoff for the logistic regression classifier.
 The Receiver Operating Characteristic (ROC) curves for the logistic regression and random forests classifiers are shown in Figure~\ref{fig:roc}.
