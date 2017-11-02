@@ -1509,6 +1509,7 @@ def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
             basisPeakIntervals.append((start, end))
 
     noBasisPeakIntervals = inverseIntervals(basisPeakIntervals, START_OF_TIME, END_OF_TIME)
+    noHeartIntervals = inverseIntervals(heartRateIntervals, START_OF_TIME, END_OF_TIME)
 
     heartAndBasisPeakIntervals = findCommonIntervals(heartRateIntervals, basisPeakIntervals)
     noHeartNoBasicPeakIntervals = findCommonIntervals(noHeartIntervals, noBasisPeakIntervals)
