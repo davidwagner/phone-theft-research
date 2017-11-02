@@ -1468,11 +1468,39 @@ def main():
     # print("Dashboard results generated in: " + dashboardFileName)
 
 def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
+    if len(userData) > 0 and len(userData[sensors.ACCELEROMETER]) > 0:
+        accelData = userData[sensors.ACCELEROMETER]
+        accelStart, accelEnd = accelData[0][0], accelData[-1][0]
+        START_OF_TIME = max(accelStart, datetime.datetime.combine(accelStart.date(), START_OF_TIME))
+        END_OF_TIME = min(accelEnd, datetime.datetime.combine(accelEnd.date(), END_OF_TIME))
+
     allIntervals = continuousWatchInterals(USER_ID, userData)
 
     bluetoothIntervals = allIntervals[sensors.CONNECTED_DEVICES]
     heartRateIntervals = allIntervals[HEARTRATE_SENSOR]
-    states = ["phoneNear", "phoneFar", "unknown"]
+
+    def filterInRange(intervals):
+        filtered_intervals = []
+        i = 0
+        for interval in intervals:
+            start, end = interval[0], interval[1]
+            if end < START_OF_TIME:
+                i += 1
+            elif start < START_OF_TIME:
+                i += 1
+                if len(interval) <= 2:
+                    filtered_intervals.append((START_OF_TIME, end))
+                else:
+                    interval = list(interval)
+                    interval[0] = START_OF_TIME
+                    filtered_intervals.append(tuple(interval))
+                break
+
+        filtered_intervals.extend(intervals[i:])
+        return filtered_intervals
+
+    bluetoothIntervals = filterInRange(bluetoothIntervals)
+    heartRateIntervals = filterInRange(heartRateIntervals)
 
     basisPeakIntervals = []
     for b in bluetoothIntervals:
@@ -1480,8 +1508,23 @@ def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
         if str(state) == "Basis Peak":
             basisPeakIntervals.append((start, end))
 
+    print("Basis Peak")
+    for interval in basisPeakIntervals:
+        print(formatTimeInterval(interval))
+
+    print("Heart")
+    for interval in heartRateIntervals:
+        print(formatTimeInterval(interval))
+
     noBasisPeakIntervals = inverseIntervals(basisPeakIntervals, START_OF_TIME, END_OF_TIME)
+    print("No basis peak")
+    for interval in noBasisPeakIntervals:
+        print(formatTimeInterval(interval))
+
+    print("No heart")
     noHeartIntervals = inverseIntervals(heartRateIntervals, START_OF_TIME, END_OF_TIME)
+    for interval in noHeartIntervals:
+        print(formatTimeInterval(interval))
 
     heartAndBasisPeakIntervals = findCommonIntervals(heartRateIntervals, basisPeakIntervals)
     noHeartNoBasicPeakIntervals = findCommonIntervals(noHeartIntervals, noBasisPeakIntervals)
@@ -1497,14 +1540,16 @@ def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
 
 def inverseIntervals(intervals, START_OF_TIME, END_OF_TIME):
     inverseIntervals = []
-    start = datetime.datetime.combine(intervals[0][0].date(), START_OF_TIME)
-    print(intervals[0])
+    start = START_OF_TIME
+    # start = datetime.datetime.combine(intervals[0][0].date(), START_OF_TIME)
+    # print(intervals[0])
     for interval in intervals:
         end = interval[0]
         next_start = interval[1]
         inverseIntervals.append((start, end))
         start = next_start
-    end = datetime.datetime.combine(start.date(), END_OF_TIME)
+    end = END_OF_TIME
+    # end = datetime.datetime.combine(start.date(), END_OF_TIME)
     inverseIntervals.append((start, end))
     return inverseIntervals
 
