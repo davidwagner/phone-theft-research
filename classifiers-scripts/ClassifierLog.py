@@ -1508,23 +1508,7 @@ def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
         if str(state) == "Basis Peak":
             basisPeakIntervals.append((start, end))
 
-    print("Basis Peak")
-    for interval in basisPeakIntervals:
-        print(formatTimeInterval(interval))
-
-    print("Heart")
-    for interval in heartRateIntervals:
-        print(formatTimeInterval(interval))
-
     noBasisPeakIntervals = inverseIntervals(basisPeakIntervals, START_OF_TIME, END_OF_TIME)
-    print("No basis peak")
-    for interval in noBasisPeakIntervals:
-        print(formatTimeInterval(interval))
-
-    print("No heart")
-    noHeartIntervals = inverseIntervals(heartRateIntervals, START_OF_TIME, END_OF_TIME)
-    for interval in noHeartIntervals:
-        print(formatTimeInterval(interval))
 
     heartAndBasisPeakIntervals = findCommonIntervals(heartRateIntervals, basisPeakIntervals)
     noHeartNoBasicPeakIntervals = findCommonIntervals(noHeartIntervals, noBasisPeakIntervals)
