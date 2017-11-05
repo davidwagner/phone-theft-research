@@ -1735,6 +1735,175 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
 
         return {}
 
+def runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID):
+    try:
+        unlockData = possessionState.unlockData
+        userData = possessionState.allData
+        activatedIntervals = activatedIntervalsPhone["activated"]
+
+        activatedIntervalsBle = continousIntervalsBleConnected(userData[sensors.CONNECTED_DEVICES])
+
+        # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
+        # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
+
+        numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+
+        numUnlocksSavedBle, numUnlocksTotalBle, unlockTimesBle = computeUnlocks(unlockData, activatedIntervalsBle)
+
+        print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
+        smartUnlockFile.write("#####UNLOCKS SAVED#######\n")
+        smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
+        smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
+
+        smartUnlockFile.write("#####UNLOCKS SAVED (BLE) #######\n")
+        smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSavedBle) + "\n")
+        smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotalBle) + "\n")
+
+        ##########################
+
+        activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksSavedBle, numUnlocksTotal]
+        smartUnlockSummaryWriter.writerow(activatedRow)
+
+        smartUnlockFile.write("####### VERBOSE INFO #########\n")
+        smartUnlockFile.write("######## SAVED UNLOCK TIMES #######\n")
+
+        for time in unlockTimes:
+            smartUnlockFile.write(formatTimeValue(time) + "\n")
+
+        smartUnlockFile.write("######## SAVED UNLOCK TIMES (BLE) #######\n")
+
+        for time in unlockTimesBle:
+            smartUnlockFile.write(formatTimeValue(time) + "\n")
+
+    except:
+        tb = traceback.format_exc()
+        print(tb)
+        smartUnlockFile.write("******EXCEPTION (while computing activations)*******\n")
+        smartUnlockFile.write(tb)
+        smartUnlockFile.write("\n")
+
+def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, possessionState, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME):
+    try:
+        activatedFile.write("***********" + USER_ID + "*************" + "\n")
+        if activatedIntervalsWatch == None or activatedIntervalsPhone == None:
+            activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
+
+        else:
+            # print("********Finding both activated**********")
+            # bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
+            # print("********Finding both deactivated**********")
+            # bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
+            # print("********Finding phone activated**********")
+            # onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
+            # print("********Finding watch activated**********")
+            # onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
+
+            # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
+            ### CALCULATE UNLOCKS ###
+
+            unlockData = possessionState.unlockData
+            activatedIntervals = activatedIntervalsPhone["activated"]
+            # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
+            # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
+
+            numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+            print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
+            activatedFile.write("#####UNLOCKS SAVED#######\n")
+            activatedFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
+            activatedFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
+
+            ##########################
+
+            activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
+
+            totalActivatedTestTimes = 0
+            stateTimes = {}
+            for stateP in activatedIntervalsPhone:
+                for stateW in activatedIntervalsWatch:
+                    if stateP == "activated" and stateW == "deactivated":
+                        # print("WTF PHONE ACTIVATED")
+                        for interval in activatedIntervalsPhone[stateP]:
+                            print(formatTimeInterval(interval))
+                        # print("WTF WATCH DEACTIVATED")
+                        for interval in activatedIntervalsPhone[stateW]:
+                            print(formatTimeInterval(interval))
+
+                    state = "Phone: " + stateP + " Watch: " + stateW
+                    print(state)
+                    # activatedFile.write(str(state) + '\n')
+                    # print("Phone Intervals:", activatedIntervalsPhone[stateP])
+                    # print("Watch Intervals:", activatedIntervalsWatch[stateW])
+                    commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP],
+                                                          activatedIntervalsWatch[stateW])
+                    # print("COMMON INTERVALS:", commonIntervals)
+                    stats = getIntervalStats(commonIntervals)
+                    # print(stats["totalTimeSpent"])
+                    # activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
+
+                    timeSeconds = stats["totalTimeSpent"].total_seconds()
+                    totalActivatedTestTimes += timeSeconds
+                    stateTimes[state] = stats["totalTimeSpent"]
+
+            print("ACTIVATION PERCENTAGES")
+            print(str(stateTimes))
+            activatedFile.write("######ACTIVATION CONFUSION MATRIX#######\n")
+            header = " " * 15 + "\t" + "Watch Activated\t\t" + "Watch Deactivated\n"
+            activatedFile.write(header)
+            percentRow = []
+            timeRow = []
+            for stateP in ["activated", "deactivated"]:
+                state1 = "Phone: " + stateP + " Watch: " + "activated"
+                time1 = stateTimes[state1].total_seconds()
+                percentage1 = time1 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
+                print("Time1:", time1)
+
+                state2 = "Phone: " + stateP + " Watch: " + "deactivated"
+                time2 = stateTimes[state2].total_seconds()
+                print("Time2:", time2)
+                percentage2 = time2 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
+
+                if stateP == "activated":
+                    stateP += '\t'
+
+                datum = "Phone " + stateP + "\t" + str(percentage1 * 100)[:6] + '%' + "\t\t" + str(percentage2 * 100)[
+                                                                                               :6] + '%' + "\n"
+                times = " " * 20 + "\t" + str(stateTimes[state1])[:7] + "\t\t" + str(stateTimes[state2])[:7] + "\n"
+
+                # print(state, "-->", percentage)
+                # activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
+                activatedFile.write(datum)
+                activatedFile.write(times)
+                percentRow += [percentage1, percentage2]
+                timeRow += [str(stateTimes[state1]), str(stateTimes[state2])]
+
+            activatedRow += percentRow
+            activatedRow += timeRow
+
+            activatedSummaryWriter.writerow(activatedRow)
+
+            activatedFile.write("####### VERBOSE INFO #########\n")
+            activatedFile.write("######## SAVED UNLOCK TIMES #######\n")
+
+            for time in unlockTimes:
+                activatedFile.write(formatTimeValue(time) + "\n")
+
+            activatedFile.write("######## PHONE INTERVALS #######\n")
+            for state, intervals in activatedIntervalsPhone.items():
+                activatedFile.write("#########" + str(state).upper() + "########" + "\n")
+                for interval in intervals:
+                    activatedFile.write(formatTimeInterval(interval) + "\n")
+
+            activatedFile.write("######## WATCH INTERVALS #######\n")
+            for state, intervals in activatedIntervalsWatch.items():
+                activatedFile.write("#########" + str(state).upper() + "########" + "\n")
+                for interval in intervals:
+                    activatedFile.write(formatTimeInterval(interval) + "\n")
+    except:
+        tb = traceback.format_exc()
+        print(tb)
+        activatedFile.write("******EXCEPTION (while computing activations)*******\n")
+        activatedFile.write(tb)
+        activatedFile.write("\n")
 
 
 def main():
@@ -1747,22 +1916,6 @@ def main():
     NOW = datetime.datetime.now()
     NOW_TIME = NOW.strftime('_%m_%d_%H_%M')
     DIRECTORY_PATH = DIRECTORY
-
-    # DATA_DAY = 'FULL_STUDY_RUN'
-    # file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-    # watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-    # results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-    # watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-    # resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-    # watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-    # resultsSummaryWriter = csv.writer(resultsSummary)
-    # watchSummaryWriter = csv.writer(watchSummary)
-    # resultsSummaryWriter.writerow(["Day","User", "Classifier", "Percentage of Time"])
-    # watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
-    # activatedFile = open('activated-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-    # activatedSummary = open('activated-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-    # activatedSummaryWriter = csv.writer(activatedSummary)
-    # activatedSummaryWriter.writerow(["Day", "User", "Unlocks Saved", "Unlocks Total", "Percent Both Activated", "Percent Only Phone Activated", "Percent Only Watch Activated", "Percent Both Deactivated", "Both Activated", "Only Phone Activated", "Only Watch Activated", "Both Deactivated"])
 
     for DATA_DAY in DATA_DATES:
         print("DIRECTORY started as:", DIRECTORY)
@@ -1805,183 +1958,15 @@ def main():
                 activatedIntervalsPhone, possessionState = functionResults['activatedIntervalsPhone'], functionResults['possessionState']
 
             if activatedIntervalsPhone != None:
-                try:
-                    unlockData = possessionState.unlockData
-                    userData = possessionState.allData
-                    activatedIntervals = activatedIntervalsPhone["activated"]
+                runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
 
-                    activatedIntervalsBle = continousIntervalsBleConnected(userData[sensors.CONNECTED_DEVICES])
-
-                    # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
-                    # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
-
-                    numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
-
-                    numUnlocksSavedBle, numUnlocksTotalBle, unlockTimesBle = computeUnlocks(unlockData, activatedIntervalsBle)
-                    
-                    print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
-                    smartUnlockFile.write("#####UNLOCKS SAVED#######\n")
-                    smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
-                    smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
-
-                    smartUnlockFile.write("#####UNLOCKS SAVED (BLE) #######\n")
-                    smartUnlockFile.write("Unlocks saved: " + str(numUnlocksSavedBle) + "\n")
-                    smartUnlockFile.write("Total Unlocks: " + str(numUnlocksTotalBle) + "\n")
-
-                    ##########################
-
-                    activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksSavedBle, numUnlocksTotal]
-                    smartUnlockSummaryWriter.writerow(activatedRow)
-
-                    smartUnlockFile.write("####### VERBOSE INFO #########\n")
-                    smartUnlockFile.write("######## SAVED UNLOCK TIMES #######\n")
-
-                    for time in unlockTimes:
-                        smartUnlockFile.write(formatTimeValue(time) + "\n")
-
-                    smartUnlockFile.write("######## SAVED UNLOCK TIMES (BLE) #######\n")
-
-                    for time in unlockTimesBle:
-                        smartUnlockFile.write(formatTimeValue(time) + "\n")
-
-                except:
-                    tb = traceback.format_exc()
-                    print(tb)
-                    smartUnlockFile.write("******EXCEPTION (while computing activations)*******\n")
-                    smartUnlockFile.write(tb)
-                    smartUnlockFile.write("\n")
-
-
-            try:
-                activatedFile.write("***********" + USER_ID + "*************" + "\n")
-                if activatedIntervalsWatch == None or activatedIntervalsPhone == None:
-                    activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
-
-                else:
-                    # print("********Finding both activated**********")
-                    # bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
-                    # print("********Finding both deactivated**********")
-                    # bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
-                    # print("********Finding phone activated**********")
-                    # onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
-                    # print("********Finding watch activated**********")
-                    # onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
-                    
-                    # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
-                    ### CALCULATE UNLOCKS ###
-
-                    unlockData = possessionState.unlockData
-                    activatedIntervals = activatedIntervalsPhone["activated"]
-                    # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
-                    # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
-
-                    numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
-                    print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
-                    activatedFile.write("#####UNLOCKS SAVED#######\n")
-                    activatedFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
-                    activatedFile.write("Total Unlocks: " + str(numUnlocksTotal) + "\n")
-
-                    ##########################
-
-                    activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
-
-                    totalActivatedTestTimes = 0
-                    stateTimes = {}
-                    for stateP in activatedIntervalsPhone:
-                        for stateW in activatedIntervalsWatch:
-                            if stateP == "activated" and stateW == "deactivated":
-                                # print("WTF PHONE ACTIVATED")
-                                for interval in activatedIntervalsPhone[stateP]:
-                                    print(formatTimeInterval(interval))
-                                # print("WTF WATCH DEACTIVATED")
-                                for interval in activatedIntervalsPhone[stateW]:
-                                    print(formatTimeInterval(interval))
-
-                            state = "Phone: " + stateP + " Watch: " + stateW
-                            print(state)
-                            # activatedFile.write(str(state) + '\n')
-                            # print("Phone Intervals:", activatedIntervalsPhone[stateP])
-                            # print("Watch Intervals:", activatedIntervalsWatch[stateW])
-                            commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP], activatedIntervalsWatch[stateW])
-                            # print("COMMON INTERVALS:", commonIntervals)
-                            stats = getIntervalStats(commonIntervals)
-                            # print(stats["totalTimeSpent"])
-                            # activatedFile.write(str(stats["totalTimeSpent"]) + '\n')
-
-                            timeSeconds = stats["totalTimeSpent"].total_seconds()
-                            totalActivatedTestTimes += timeSeconds
-                            stateTimes[state] = stats["totalTimeSpent"]
-
-
-                    print("ACTIVATION PERCENTAGES")
-                    print(str(stateTimes))
-                    activatedFile.write("######ACTIVATION CONFUSION MATRIX#######\n")
-                    header = " " * 15 + "\t" + "Watch Activated\t\t" + "Watch Deactivated\n"
-                    activatedFile.write(header)
-                    percentRow = []
-                    timeRow = []
-                    for stateP in ["activated", "deactivated"]:
-                        state1 = "Phone: " + stateP + " Watch: " + "activated"
-                        time1 = stateTimes[state1].total_seconds()
-                        percentage1 = time1 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
-                        print("Time1:", time1)
-
-                        state2 = "Phone: " + stateP + " Watch: " + "deactivated"
-                        time2 = stateTimes[state2].total_seconds()
-                        print("Time2:", time2)
-                        percentage2 = time2 / totalActivatedTestTimes if totalActivatedTestTimes > 0 else 0
-                        
-                        if stateP == "activated":
-                            stateP += '\t'
-
-                        datum = "Phone " + stateP + "\t" + str(percentage1 * 100)[:6] + '%' + "\t\t" + str(percentage2 * 100)[:6] + '%' + "\n"
-                        times = " " * 20 + "\t" + str(stateTimes[state1])[:7] + "\t\t" + str(stateTimes[state2])[:7] + "\n"
-                        
-                        print(state, "-->", percentage)
-                        # activatedFile.write(str(state) + " --> " + str(percentage * 100) + '\n')
-                        activatedFile.write(datum)
-                        activatedFile.write(times)
-                        percentRow += [percentage1, percentage2]
-                        timeRow += [str(stateTimes[state1]), str(stateTimes[state2])]
-                    
-                    activatedRow += percentRow
-                    activatedRow += timeRow
-                    
-
-                    activatedSummaryWriter.writerow(activatedRow)
-
-                    activatedFile.write("####### VERBOSE INFO #########\n")
-                    activatedFile.write("######## SAVED UNLOCK TIMES #######\n")
-
-                    for time in unlockTimes:
-                        activatedFile.write(formatTimeValue(time) + "\n")
-
-                    activatedFile.write("######## PHONE INTERVALS #######\n")
-                    for state, intervals in activatedIntervalsPhone.items():
-                        activatedFile.write("#########" + str(state).upper() + "########" + "\n")
-                        for interval in intervals:
-                            activatedFile.write(formatTimeInterval(interval) + "\n")
-
-                    activatedFile.write("######## WATCH INTERVALS #######\n")
-                    for state, intervals in activatedIntervalsWatch.items():
-                        activatedFile.write("#########" + str(state).upper() + "########" + "\n")
-                        for interval in intervals:
-                            activatedFile.write(formatTimeInterval(interval) + "\n")
-            except:
-                tb = traceback.format_exc()
-                print(tb)
-                activatedFile.write("******EXCEPTION (while computing activations)*******\n")
-                activatedFile.write(tb)
-                activatedFile.write("\n")
-                    
+            runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, possessionState, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME)
 
         if not FULL_STUDY_RUN:
             file.close()
             watchFile.close()
             results.close()
             watchResults.close()
-    # print("Start:", start_time)
-    # print("Time:", time.time())
 
     print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
