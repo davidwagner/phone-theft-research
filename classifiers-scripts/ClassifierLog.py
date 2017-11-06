@@ -1267,7 +1267,10 @@ def plotIntervals(intervals):
 
 
 def intervalLength(interval):
-    return interval[1] - interval[0]
+    try:
+        return interval[1] - interval[0]
+    except:
+        return datetime.timedelta(seconds=0)
 
 
 def classifierPolicy(classifiedWindow):
@@ -1617,6 +1620,8 @@ def main_filter_consistent():
                     row.append(formatTimeValue(stats["totalTimeSpent"]))
                     row.append(formatTimeValue(stats["medianLength"]))
                     row.append(formatTimeValue(stats["avgLength"]))
+                    print("long:", type(stats["longestInterval"]), stats["longestInterval"])
+                    print("short:", type(stats["shortestInterval"]), stats["shortestInterval"])
                     row.append(formatTimeValue(intervalLength(stats["longestInterval"])))
                     row.append(formatTimeValue(intervalLength(stats["shortestInterval"])))
                     row.append(formatTimeValue(stats["longestInterval"]))
@@ -1972,6 +1977,6 @@ def main():
     print("Yay I finished!")
 
 if __name__ == '__main__':
-    # main()
-    main_filter_consistent()
+    main()
+    # main_filter_consistent()
 
