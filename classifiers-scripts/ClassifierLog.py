@@ -1471,6 +1471,33 @@ def main():
     resultsFile.close()
     # print("Dashboard results generated in: " + dashboardFileName)
 
+def filterConsistentData(userData, consistentIntervals):
+    consistentDataChunks = {}
+    i = 0
+    currentInterval = consistentIntervals[i]
+    currentStart, currentEnd = currentInterval
+    currentDataChunk = []
+    consistentDataChunks[currentInterval] = currentDataChunk
+
+    for rowOfData in userData:
+        time = rowOfData[0]
+
+        if time < currentStart:
+            continue
+        elif time < currentEnd:
+            currentDataChunk.append(rowOfData)
+        else:
+            i += 1
+            if i >= len(consistentIntervals):
+                break
+
+            currentInterval = consistentIntervals[i]
+            currentStart, currentEnd = currentInterval
+            currentDataChunk = []
+            consistentDataChunks[currentInterval] = currentDataChunk
+
+    return consistentDataChunks
+
 def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
     if len(userData) > 0 and len(userData[sensors.ACCELEROMETER]) > 0:
         accelData = userData[sensors.ACCELEROMETER]
@@ -1533,7 +1560,7 @@ def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
 
     # no heart rate, but watch connected (user not wearing watch) OR heart rate, but watch not connected (impossible)
     inconsistentIntervals = inverseIntervals(consistentIntervals, START_OF_TIME, END_OF_TIME)
-    return heartAndBasisPeakIntervals, noHeartNoBasicPeakIntervals, inconsistentIntervals
+    return heartAndBasisPeakIntervals, noHeartNoBasicPeakIntervals, consistentIntervals, inconsistentIntervals
 
 
 
@@ -1610,7 +1637,7 @@ def main_filter_consistent():
                 accelData = userData[sensors.ACCELEROMETER]
                 TOTAL_DAY_TIME = (accelData[-1][0] - accelData[0][0]).total_seconds()
                 print(str(accelData[-1][0]), str(accelData[0][0]), str(accelData[-1][0] - accelData[0][0]))
-                nearIntervals, farIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID, START_TIME, END_TIME, userData=userData)
+                nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID, START_TIME, END_TIME, userData=userData)
 
                 row = [USER_ID]
 
@@ -1638,7 +1665,7 @@ def main_filter_consistent():
     print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
 
-def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, userData={}):
+def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, userData={}):
     watchResults.write("#########" + USER_ID + "#######\n")
     try:
         watchState, continousWatchState = stateFromWatchData(continuousWatchInterals(USER_ID, userData=userData), watchFile)
@@ -1685,9 +1712,10 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
     try:
         classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, log_file, userData=userData)
 
-        expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
+
+        # expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
         ### Joanna Finish ###
-        checkClassifications(classifications, expectedIntervalsDiary)
+        # checkClassifications(classifications, expectedIntervalsDiary)
         #####################
 
         activatedIntervalsPhone = possessionState.getIntervalsByState()
@@ -1787,31 +1815,28 @@ def runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnloc
         smartUnlockFile.write(tb)
         smartUnlockFile.write("\n")
 
-def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, possessionState, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME):
+def calculateUnlocksMetrics(possessionState, activatedIntervalsPhone):
+    if activatedIntervalsPhone != None:
+        unlockData = possessionState.unlockData
+        activatedIntervals = activatedIntervalsPhone["activated"]
+
+        numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+        unlockMetrics = {
+            'numUnlocksSaved' : numUnlocksSaved,
+            'numUnlocksTotal' : numUnlocksTotal,
+            'unlockTimes' : unlockTimes
+        }
+        return unlockMetrics
+    return {}
+
+def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, unlockMetrics, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME):
     try:
         activatedFile.write("***********" + USER_ID + "*************" + "\n")
         if activatedIntervalsWatch == None or activatedIntervalsPhone == None:
             activatedFile.write("Check: " + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt')
 
         else:
-            # print("********Finding both activated**********")
-            # bothActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["activated"])
-            # print("********Finding both deactivated**********")
-            # bothDeactivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["deactivated"])
-            # print("********Finding phone activated**********")
-            # onlyPhoneActivated = findCommonIntervals(activatedIntervalsPhone["activated"], activatedIntervalsWatch["deactivated"])
-            # print("********Finding watch activated**********")
-            # onlyWatchActivated = findCommonIntervals(activatedIntervalsPhone["deactivated"], activatedIntervalsWatch["activated"])
-
-            # activatedRow = [DATA_DAY, USER_ID, numUnlocksSaved, numUnlocksTotal]
-            ### CALCULATE UNLOCKS ###
-
-            unlockData = possessionState.unlockData
-            activatedIntervals = activatedIntervalsPhone["activated"]
-            # pickle.dump(unlockData, open( "unlock_test_data.pkl", "wb" ) )
-            # pickle.dump(activatedIntervals, open( "unlock_test_intervals.pkl", "wb" ) )
-
-            numUnlocksSaved, numUnlocksTotal, unlockTimes = computeUnlocks(unlockData, activatedIntervals)
+            numUnlocksSaved, numUnlocksTotal, unlockTimes = unlockMetrics['numUnlocksSaved'], unlockMetrics['numUnlocksTotal'], unlockMetrics['unlockTimes']
             print("UNLOCK DATA:", str(numUnlocksSaved), str(numUnlocksTotal), str(unlockTimes))
             activatedFile.write("#####UNLOCKS SAVED#######\n")
             activatedFile.write("Unlocks saved: " + str(numUnlocksSaved) + "\n")
@@ -1910,6 +1935,14 @@ def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, pos
         activatedFile.write(tb)
         activatedFile.write("\n")
 
+def mergeActivationIntervals(a1, a2):
+    a1[PossessionState.PHONE_ACTIVATED].extend(a2[PossessionState.PHONE_ACTIVATED])
+    a1[PossessionState.PHONE_DEACTIVATED].extend(a2[PossessionState.PHONE_DEACTIVATED])
+
+def mergeUnlockMetrics(m1, m2):
+    m1['numUnlocksSaved'] += m2['numUnlocksSaved']
+    m1['numUnlocksTotal'] += m2['numUnlocksTotal']
+    m1['unlockTimes'].extend(m2['unlockTimes'])
 
 def main():
     # main_filter_consistent()
@@ -1951,21 +1984,45 @@ def main():
             count += 1
             print("Number of users processed:", count)
             print("Currently on:", USER_ID)
-            
-            # activatedIntervalsWatch = None
-            activatedIntervalsPhone = None
 
-            if not RUN_CLASSIFIERS_ONLY:
-                activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter)
-            
-            if not RUN_WATCH_ONLY:
-                functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, userData={})
-                activatedIntervalsPhone, possessionState = functionResults['activatedIntervalsPhone'], functionResults['possessionState']
+            userData = getRelevantUserData(USER_ID)
 
-            if activatedIntervalsPhone != None:
-                runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
+            nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
+                                                                                                                START_TIME_FILTER,
+                                                                                                                END_TIME_FILTER,
+                                                                                                                userData=userData)
 
-            runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, possessionState, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME)
+            consistentDataSegments = filterConsistentData(userData, consistentIntervals)
+
+            activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
+            activatedIntervalsWatchAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
+            unlockMetricsAggregate = {
+            'numUnlocksSaved' : 0,
+            'numUnlocksTotal' : 0,
+            'unlockTimes' : []
+            }
+
+            for consistentInterval, userData in consistentDataSegments.items():
+                activatedIntervalsWatch = None
+                activatedIntervalsPhone = None
+
+                if not RUN_CLASSIFIERS_ONLY:
+                    activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, userData=userData)
+                    mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
+
+                if not RUN_WATCH_ONLY:
+                    functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, userData=userData)
+                    if len(functionResults) > 0:
+                        activatedIntervalsPhone, possessionState = functionResults['activatedIntervalsPhone'], functionResults['possessionState']
+                        mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
+
+                if activatedIntervalsPhone != None:
+                    runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
+                    unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
+                    if len(unlockMetrics) > 0:
+                        mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
+
+            runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, unlockMetrics, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME)
 
         if not FULL_STUDY_RUN:
             file.close()
