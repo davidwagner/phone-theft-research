@@ -1488,11 +1488,10 @@ def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_
 
         for rowOfData in sensorData:
             time = rowOfData[0].time()
-            # print(type(time))
 
-            if time < currentStart:
+            if time < currentStart.time():
                 continue
-            elif time < currentEnd:
+            elif time < currentEnd.time():
                 currentDataChunk.append(rowOfData)
             else:
                 i += 1
@@ -1676,6 +1675,49 @@ def main_filter_consistent():
 
     print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
+
+def logConsistentIntervals(userData, USER_ID, DATA_DAY, NOW_TIME):
+    headers = ["% Time", "Total Time", "Median Period Length", "Average Period Length",
+               "Longest Period Length", "Shortest Period Length", "Longest Period", "Shortest Period"]
+
+    headers = ["User"] + [header + " (Near)" for header in headers] + [header + " (Far)" for header in headers] + [header + " (Inconsistent)" for header in headers]
+    START_TIME = START_TIME_FILTER
+    END_TIME = END_TIME_FILTER
+
+    f = open('consistent-data-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+    writer = csv.writer(f)
+    writer.writerow(headers)
+
+    try:
+        accelData = userData[sensors.ACCELEROMETER]
+        TOTAL_DAY_TIME = (accelData[-1][0] - accelData[0][0]).total_seconds()
+        print(str(accelData[-1][0]), str(accelData[0][0]), str(accelData[-1][0] - accelData[0][0]))
+        nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
+                                                                                                            START_TIME,
+                                                                                                            END_TIME,
+                                                                                                            userData=userData)
+
+        row = [USER_ID]
+
+        for intervals in [nearIntervals, farIntervals, inconsistentIntervals]:
+            stats = getIntervalStats(intervals)
+            row.append(stats["totalTimeSpent"].total_seconds() / TOTAL_DAY_TIME)
+            row.append(formatTimeValue(stats["totalTimeSpent"]))
+            row.append(formatTimeValue(stats["medianLength"]))
+            row.append(formatTimeValue(stats["avgLength"]))
+            print("long:", type(stats["longestInterval"]), stats["longestInterval"])
+            print("short:", type(stats["shortestInterval"]), stats["shortestInterval"])
+            row.append(formatTimeValue(intervalLength(stats["longestInterval"])))
+            row.append(formatTimeValue(intervalLength(stats["shortestInterval"])))
+            row.append(formatTimeValue(stats["longestInterval"]))
+            row.append(formatTimeValue(stats["shortestInterval"]))
+
+        writer.writerow(row)
+    except:
+        tb = traceback.format_exc()
+        print(tb)
+
+    f.close()
 
 def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData={}):
     watchResults.write("#########" + USER_ID + "#######\n")
@@ -2005,6 +2047,8 @@ def main():
                                                                                                                 END_TIME_FILTER,
                                                                                                                 userData=userData)
 
+            logConsistentIntervals(userData, USER_ID, DATA_DAY, NOW_TIME)
+
             consistentDataSegments = filterConsistentData(userData, consistentIntervals)
 
             activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
@@ -2030,7 +2074,7 @@ def main():
                         mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
 
                 if activatedIntervalsPhone != None:
-                    runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
+                    # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
                     unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
                     if len(unlockMetrics) > 0:
                         mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
