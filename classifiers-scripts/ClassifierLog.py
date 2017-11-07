@@ -1471,30 +1471,42 @@ def main():
     resultsFile.close()
     # print("Dashboard results generated in: " + dashboardFileName)
 
-def filterConsistentData(userData, consistentIntervals):
+def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_TIME_FILTER)]):
     consistentDataChunks = {}
-    i = 0
-    currentInterval = consistentIntervals[i]
-    currentStart, currentEnd = currentInterval
-    currentDataChunk = []
-    consistentDataChunks[currentInterval] = currentDataChunk
+    if len(consistentIntervals) <= 0:
+        return consistentDataChunks
 
-    for rowOfData in userData:
-        time = rowOfData[0]
+    for sensor, sensorData in userData.items():
+        i = 0
+        currentInterval = consistentIntervals[i]
+        currentStart, currentEnd = currentInterval
+        currentDataChunk = []
+        if currentInterval not in consistentDataChunks:
+            consistentDataChunks[currentInterval] = {}
 
-        if time < currentStart:
-            continue
-        elif time < currentEnd:
-            currentDataChunk.append(rowOfData)
-        else:
-            i += 1
-            if i >= len(consistentIntervals):
-                break
+        consistentDataChunks[currentInterval][sensor] = currentDataChunk
 
-            currentInterval = consistentIntervals[i]
-            currentStart, currentEnd = currentInterval
-            currentDataChunk = []
-            consistentDataChunks[currentInterval] = currentDataChunk
+        for rowOfData in sensorData:
+            time = rowOfData[0].time()
+            # print(type(time))
+
+            if time < currentStart:
+                continue
+            elif time < currentEnd:
+                currentDataChunk.append(rowOfData)
+            else:
+                i += 1
+                if i >= len(consistentIntervals):
+                    break
+
+                currentInterval = consistentIntervals[i]
+                currentStart, currentEnd = currentInterval
+                currentDataChunk = []
+
+                if currentInterval not in consistentDataChunks:
+                    consistentDataChunks[currentInterval] = {}
+
+                consistentDataChunks[currentInterval][sensor] = currentDataChunk
 
     return consistentDataChunks
 
@@ -1665,7 +1677,7 @@ def main_filter_consistent():
     print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
 
-def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, userData={}):
+def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData={}):
     watchResults.write("#########" + USER_ID + "#######\n")
     try:
         watchState, continousWatchState = stateFromWatchData(continuousWatchInterals(USER_ID, userData=userData), watchFile)
@@ -1705,7 +1717,8 @@ def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, user
         watchResults.write("******EXCEPTION (while computing watch state)*******\n")
         watchResults.write(tb)
         watchResults.write("\n")
-        return []
+        return {PossessionState.PHONE_ACTIVATED: [],
+                                   PossessionState.PHONE_DEACTIVATED: []}
 
 def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DATA_DAY, userData={}):
     results.write("#########" + USER_ID + "#######\n")
@@ -2007,7 +2020,7 @@ def main():
                 activatedIntervalsPhone = None
 
                 if not RUN_CLASSIFIERS_ONLY:
-                    activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, userData=userData)
+                    activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData=userData)
                     mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
 
                 if not RUN_WATCH_ONLY:
