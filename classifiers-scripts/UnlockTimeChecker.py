@@ -9,7 +9,8 @@ def computeUnlocks(keyguardData, activationIntervals):
 
 	intervalIndex = 0
 
-	keyGuardState = keyguardData[0][2]
+	if len(keyguardData) > 0:
+		keyGuardState = keyguardData[0][2]
 
 	for event in keyguardData:
 		tempState = event[2]

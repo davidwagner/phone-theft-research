@@ -17,7 +17,7 @@ import pickle
 import traceback
 
 from configsettings import *
-from collections import deque, Counter
+from collections import deque, Counter, OrderedDict
 from UnlockTimeChecker import computeUnlocks
 
 DUMP_RESULTS = True
@@ -50,6 +50,7 @@ maxWindowSize = 100
 
 START_TIME_FILTER = datetime.time(hour=8)
 END_TIME_FILTER = datetime.time(hour=22)
+RESULTS_DIRECTORY = './' + 'RESULTS/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
 # START_TIME_FILTER = None
 # END_TIME_FILTER = None
 
@@ -132,8 +133,8 @@ def dataFilesToDataListAbsTime(userFiles):
                 if len(row) > 1:
                     timestamp = int(row[1]) / 1000
                     row[0] = datetime.datetime.fromtimestamp(timestamp)
-                    if (START_TIME_FILTER != None or firstRow[0].time() >= START_TIME_FILTER):
-                        if (END_TIME_FILTER != None or firstRow[0].time() < END_TIME_FILTER):
+                    if (START_TIME_FILTER == None or row[0].time() >= START_TIME_FILTER):
+                        if (END_TIME_FILTER == None or row[0].time() < END_TIME_FILTER):
                             dataList.append(row)
     # print "Number of heartrate files"
     # print len(dataList)
@@ -1471,10 +1472,20 @@ def main():
     resultsFile.close()
     # print("Dashboard results generated in: " + dashboardFileName)
 
+def toTime(t):
+    if type(t) == datetime.datetime:
+        return t.time()
+    else:
+        return t
+
 def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_TIME_FILTER)]):
-    consistentDataChunks = {}
+    consistentDataChunks = OrderedDict()
     if len(consistentIntervals) <= 0:
         return consistentDataChunks
+
+    print("Consistent Intervals:")
+    for interval in consistentIntervals:
+        print(formatTimeValue(interval, withDate=True))
 
     for sensor, sensorData in userData.items():
         i = 0
@@ -1489,9 +1500,9 @@ def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_
         for rowOfData in sensorData:
             time = rowOfData[0].time()
 
-            if time < currentStart.time():
+            if time < toTime(currentStart):
                 continue
-            elif time < currentEnd.time():
+            elif time < toTime(currentEnd):
                 currentDataChunk.append(rowOfData)
             else:
                 i += 1
@@ -1500,12 +1511,16 @@ def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_
 
                 currentInterval = consistentIntervals[i]
                 currentStart, currentEnd = currentInterval
+                print("Data chunk (%s)" % sensor, formatTimeValue(consistentIntervals[i - 1], withDate=True), str(len(currentDataChunk)))
                 currentDataChunk = []
 
                 if currentInterval not in consistentDataChunks:
                     consistentDataChunks[currentInterval] = {}
 
                 consistentDataChunks[currentInterval][sensor] = currentDataChunk
+
+        for interval, chunk in consistentDataChunks.items():
+            print(formatTimeInterval(interval), len(chunk))
 
     return consistentDataChunks
 
@@ -1599,7 +1614,7 @@ def merge_sorted_lists(l1, l2, cmp_func):
         item1 = l1[i1]
         item2 = l2[i2]
 
-        if cmp_func(item1, item2) < 0:
+        if cmp_func(item1, item2):
             merged.append(item1)
             i1 += 1
         else:
@@ -1684,7 +1699,7 @@ def logConsistentIntervals(userData, USER_ID, DATA_DAY, NOW_TIME):
     START_TIME = START_TIME_FILTER
     END_TIME = END_TIME_FILTER
 
-    f = open('consistent-data-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+    f = open(RESULTS_DIRECTORY + '/' + 'consistent-data-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
     writer = csv.writer(f)
     writer.writerow(headers)
 
@@ -2010,76 +2025,85 @@ def main():
     NOW_TIME = NOW.strftime('_%m_%d_%H_%M')
     DIRECTORY_PATH = DIRECTORY
 
+    if not os.path.exists(RESULTS_DIRECTORY):
+        os.makedirs(RESULTS_DIRECTORY)
+    else:
+        print("RESULTS DIR ALREADY EXISTS:", RESULTS_DIRECTORY)
+
     for DATA_DAY in DATA_DATES:
         print("DIRECTORY started as:", DIRECTORY)
         DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
         print("DIRECTORY now:", DIRECTORY)
         # if not FULL_STUDY_RUN:
-        file = open('testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchFile = open('watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        results = open('testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchResults = open('watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        resultsSummary = open('testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        watchSummary = open('watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        file = open(RESULTS_DIRECTORY + '/' + 'testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        watchFile = open(RESULTS_DIRECTORY + '/' + 'watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        results = open(RESULTS_DIRECTORY + '/' + 'testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        watchResults = open(RESULTS_DIRECTORY + '/' + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        resultsSummary = open(RESULTS_DIRECTORY + '/' + 'testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        watchSummary = open(RESULTS_DIRECTORY + '/' + 'watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
         resultsSummaryWriter = csv.writer(resultsSummary)
         watchSummaryWriter = csv.writer(watchSummary)
         resultsSummaryWriter.writerow(["Day", "User", "Classifier", "Percentage of Time"])
         watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
-        activatedFile = open('activated-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        activatedSummary = open('activated-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        activatedFile = open(RESULTS_DIRECTORY + '/' + 'activated-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        activatedSummary = open(RESULTS_DIRECTORY + '/' + 'activated-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
         activatedSummaryWriter = csv.writer(activatedSummary)
         activatedSummaryWriter.writerow(["Day", "User", "Unlocks Saved", "Unlocks Total", "Percent Both Activated", "Percent Only Phone Activated", "Percent Only Watch Activated", "Percent Both Deactivated", "Both Activated", "Only Phone Activated", "Only Watch Activated", "Both Deactivated"])
 
-        smartUnlockSummary = open('smart-unlock-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
+        smartUnlockSummary = open(RESULTS_DIRECTORY + '/' + 'smart-unlock-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
         smartUnlockSummaryWriter = csv.writer(smartUnlockSummary)
-        smartUnlockFile = open('smart-unlock-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+        smartUnlockFile = open(RESULTS_DIRECTORY + '/' + 'smart-unlock-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
         count = 0
         for USER_ID in USERS:
-            count += 1
-            print("Number of users processed:", count)
-            print("Currently on:", USER_ID)
+            try:
+                count += 1
+                print("Number of users processed:", count)
+                print("Currently on:", USER_ID)
 
-            userData = getRelevantUserData(USER_ID)
+                userData = getRelevantUserData(USER_ID)
 
-            nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
-                                                                                                                START_TIME_FILTER,
-                                                                                                                END_TIME_FILTER,
-                                                                                                                userData=userData)
+                nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
+                                                                                                                    START_TIME_FILTER,
+                                                                                                                    END_TIME_FILTER,
+                                                                                                                    userData=userData)
 
-            logConsistentIntervals(userData, USER_ID, DATA_DAY, NOW_TIME)
+                logConsistentIntervals(userData, USER_ID, DATA_DAY, NOW_TIME)
 
-            consistentDataSegments = filterConsistentData(userData, consistentIntervals)
+                consistentDataSegments = filterConsistentData(userData, consistentIntervals)
 
-            activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
-            activatedIntervalsWatchAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
-            unlockMetricsAggregate = {
-            'numUnlocksSaved' : 0,
-            'numUnlocksTotal' : 0,
-            'unlockTimes' : []
-            }
+                activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
+                activatedIntervalsWatchAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
+                unlockMetricsAggregate = {
+                'numUnlocksSaved' : 0,
+                'numUnlocksTotal' : 0,
+                'unlockTimes' : []
+                }
 
-            for consistentInterval, userData in consistentDataSegments.items():
-                activatedIntervalsWatch = None
-                activatedIntervalsPhone = None
+                for consistentInterval, userData in consistentDataSegments.items():
+                    activatedIntervalsWatch = None
+                    activatedIntervalsPhone = None
 
-                if not RUN_CLASSIFIERS_ONLY:
-                    activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData=userData)
-                    mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
+                    if not RUN_CLASSIFIERS_ONLY:
+                        activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData=userData)
+                        mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
 
-                if not RUN_WATCH_ONLY:
-                    functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, userData=userData)
-                    if len(functionResults) > 0:
-                        activatedIntervalsPhone, possessionState = functionResults['activatedIntervalsPhone'], functionResults['possessionState']
-                        mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
+                    if not RUN_WATCH_ONLY:
+                        functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, userData=userData)
+                        if len(functionResults) > 0:
+                            activatedIntervalsPhone, possessionState = functionResults['activatedIntervalsPhone'], functionResults['possessionState']
+                            mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
 
-                if activatedIntervalsPhone != None:
-                    # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
-                    unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
-                    if len(unlockMetrics) > 0:
-                        mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
+                    if activatedIntervalsPhone != None:
+                        # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
+                        unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
+                        if len(unlockMetrics) > 0:
+                            mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
 
-            runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, unlockMetrics, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME)
+                runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, DATA_DAY, USER_ID, NOW_TIME)
+            except:
+                tb = traceback.format_exc()
+                print(tb)
 
         if not FULL_STUDY_RUN:
             file.close()
