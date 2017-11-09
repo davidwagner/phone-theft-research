@@ -1732,8 +1732,6 @@ def logConsistentIntervals(userData, USER_ID, consistentDataFile):
         tb = traceback.format_exc()
         print(tb)
 
-    f.close()
-
 def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData={}):
     watchResults.write("#########" + USER_ID + "#######\n")
     try:
