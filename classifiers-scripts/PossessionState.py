@@ -10,12 +10,12 @@ HAND_CLASSIFIER = "Hand Classifier"
 unlockIndex = 3
 PHONE_ACTIVATED = "activated"
 PHONE_DEACTIVATED = "deactivated"
-SAFE_PERIOD = datetime.timedelta(minutes=3)
+# SAFE_PERIOD = datetime.timedelta(minutes=3)
 BENIGN_CLASSIFIERS = set([POCKET_BAG_CLASSIFIER, HAND_CLASSIFIER])
 START_OF_TIME = datetime.datetime.min
 # unlock = 0, locked = 1
 class PossessionState():
-    def __init__(self, allData, sensorData, unlockData, smoothingNum):
+    def __init__(self, allData, sensorData, unlockData, smoothingNum, safe_period=3):
         self.activeSensorData = sensorData
         self.unlockData = unlockData
         self.allData = allData
@@ -29,6 +29,8 @@ class PossessionState():
         self.lastClassificationTimes = {}
         self.intervals = []
         self.currentInterval = (self.getStateTime(), self.getStateTime())
+
+        self.safe_period = datetime.timedelta(minutes=safe_period)
 
         self.transitionTimes = OrderedDict()
         self.toActivatedTimes = OrderedDict()
@@ -78,7 +80,7 @@ class PossessionState():
             self.lastUnlockedTime = self.getStateTime()
             transitionReason = "Activated: Phone unlocked. Cur: %(cur)s, Prev: %(prev)s, Ben: %(benign)s" % vals
         elif self.state == PHONE_ACTIVATED:
-            if timeSinceLastBenign <= SAFE_PERIOD:
+            if timeSinceLastBenign <= self.safe_period:
                 self.state = PHONE_ACTIVATED
                 transitionReason = "Activated: Less than 3 minutes since last benign classification."
             else:
@@ -93,11 +95,22 @@ class PossessionState():
             self.intervals.append((interval, prevState))
             self.currentInterval = (currentTime, currentTime)
 
+            print("STATE CHANGED")
+
             self.transitionTimes[(time,currentTime)] = transitionReason
             if self.state == PHONE_ACTIVATED:
                 self.toActivatedTimes[currentTime] = transitionReason
             else:
                 self.toDeactivatedTimes[currentTime] = transitionReason
+
+            print("Activated Times")
+            for time, s in self.toActivatedTimes.items():
+                print(time.strftime('%H_%M'), s)
+
+            print("Deactivated Times")
+            for time, s in self.toDeactivatedTimes.items():
+                print(time.strftime('%H_%M'), s)
+
 
         self.lastClassification = classification
         if classification in BENIGN_CLASSIFIERS:

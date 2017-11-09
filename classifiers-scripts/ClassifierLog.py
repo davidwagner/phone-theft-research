@@ -54,6 +54,7 @@ RESULTS_DIRECTORY = './' + 'RESULTS/' + datetime.datetime.now().strftime('%Y_%m_
 # START_TIME_FILTER = None
 # END_TIME_FILTER = None
 
+SAFE_PERIOD = 3
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
@@ -689,7 +690,9 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile, userData={}):
     limit = numRows // maxWindowSize * maxWindowSize
     # print("LIMIT", limit)
 
-    possessionState = PossessionState.PossessionState(userData, userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM)
+    print("########")
+    print("SAFE PERIOD:", SAFE_PERIOD)
+    possessionState = PossessionState.PossessionState(userData, userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM, safe_period=SAFE_PERIOD)
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -1780,7 +1783,10 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
     try:
         classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, log_file, userData=userData)
 
-
+        # print("TRANSITION REASONS")
+        # print(possessionState.transitionTimes)
+        # print(possessionState.toActivatedTimes)
+        # print(possessionState.toDeactivatedTimes)
         # expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
         ### Joanna Finish ###
         # checkClassifications(classifications, expectedIntervalsDiary)
@@ -1910,6 +1916,10 @@ def matchTimesWithIntervals(timesWithDescriptions, intervals, classifications, l
     for time, description in timesWithDescriptions.items():
         print("Time:", formatTimeValue(time), "Description:", description)
 
+    print("The bad intervals yo")
+    for interval in intervals:
+        print(formatTimeValue(interval))
+
 
     j = 0
     currClassification = None
@@ -1923,6 +1933,7 @@ def matchTimesWithIntervals(timesWithDescriptions, intervals, classifications, l
             if time < start:
                 continue
             elif time < end:
+                print("TIME LESS THAN END")
                 # while j < len(classifications) and cEnd < start:
                 #     j += 1
                 #     cInterval, currClassification = classifications[j]
@@ -1941,7 +1952,7 @@ def matchTimesWithIntervals(timesWithDescriptions, intervals, classifications, l
             break
 
 
-def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, possessionState, classifications, unlockMetrics, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag=""):
+def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, toActivatedTimes, toDeactivatedTimes, classifications, unlockMetrics, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag=""):
     print(tag)
     try:
         activatedFile.write("***********" + USER_ID + "*************" + "\n")
@@ -1972,16 +1983,19 @@ def runActivationFunctions(activatedIntervalsWatch, activatedIntervalsPhone, pos
                     commonIntervals = findCommonIntervals(activatedIntervalsPhone[stateP],
                                                           activatedIntervalsWatch[stateW])
 
-                    # try:
-                    #     if stateP == PossessionState.PHONE_ACTIVATED and stateW == PossessionState.PHONE_DEACTIVATED:
-                    #         #TODO: Find all transition changes within the common intervals
-                    #         matchTimesWithIntervals(possessionState.toActivatedTimes, commonIntervals, classifications, activationsLogFile)
-                    #         print("States don't match")
-                    #     elif stateP == PossessionState.PHONE_DEACTIVATED and stateW == PossessionState.PHONE_ACTIVATED:
-                    #         matchTimesWithIntervals(possessionState.toDeactivatedTimes, commonIntervals, classifications, activationsLogFile)
-                    # except:
-                    #     tb = traceback.format_exc()
-                    #     print(tb)
+                    try:
+                        if stateP == PossessionState.PHONE_ACTIVATED and stateW == PossessionState.PHONE_DEACTIVATED:
+                            #TODO: Find all transition changes within the common intervals
+                            matchTimesWithIntervals(toActivatedTimes, commonIntervals, classifications, activationsLogFile)
+                            print("False positives!")
+                            # print(possessionState.transitionTimes)
+                        elif stateP == PossessionState.PHONE_DEACTIVATED and stateW == PossessionState.PHONE_ACTIVATED:
+                            matchTimesWithIntervals(toDeactivatedTimes, commonIntervals, classifications, activationsLogFile)
+                            print("False negatives!")
+                            # print(possessionState.transitionTimes)
+                    except:
+                        tb = traceback.format_exc()
+                        print(tb)
 
 
                     # print("COMMON INTERVALS:", commonIntervals)
@@ -2136,6 +2150,9 @@ def main():
 
                 activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
                 activatedIntervalsWatchAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
+                activatedTransitionTimes = OrderedDict()
+                deactivatedTransitionTimes = OrderedDict()
+
                 unlockMetricsAggregate = {
                 'numUnlocksSaved' : 0,
                 'numUnlocksTotal' : 0,
@@ -2155,6 +2172,8 @@ def main():
                         if len(functionResults) > 0:
                             activatedIntervalsPhone, possessionState, classifications = functionResults['activatedIntervalsPhone'], functionResults['possessionState'], functionResults['classifications']
                             mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
+                            activatedTransitionTimes.update(possessionState.toActivatedTimes)
+                            deactivatedTransitionTimes.update(possessionState.toDeactivatedTimes)
 
                     if activatedIntervalsPhone != None:
                         # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
@@ -2163,7 +2182,7 @@ def main():
                             mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
                 
                 print("Run with watchActivation")
-                runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, possessionState, classifications, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (Filtered)")
+                runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (Filtered)")
                 
                 activatedIntervalsWatchFromConsistency = {
                     PossessionState.PHONE_ACTIVATED : nearIntervals,
@@ -2171,7 +2190,7 @@ def main():
                 }
                 
                 print("Run with raw")
-                runActivationFunctions(activatedIntervalsWatchFromConsistency, activatedIntervalsPhoneAggregate, possessionState, classifications, unlockMetricsAggregate, activatedRawFile, activatedRawSummaryWriter, activationsLogRawFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (RAW)")
+                runActivationFunctions(activatedIntervalsWatchFromConsistency, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedRawFile, activatedRawSummaryWriter, activationsLogRawFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (RAW)")
             except:
                 tb = traceback.format_exc()
                 print(tb)
@@ -2187,6 +2206,9 @@ def main():
 
 if __name__ == '__main__':
     # print("HELLO")
+    global SAFE_PERIOD
+    SAFE_PERIOD = int(sys.argv[1])
+
     main()
     # main_filter_consistent()
 
