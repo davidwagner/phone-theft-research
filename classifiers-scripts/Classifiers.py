@@ -18,6 +18,7 @@ STEADY_BAG_CLASSIFIER = "Steady State Bag Classifier"
 BACKPACK_CLASSIFIER = "Backpack Classifier"
 BAG_CLASSIFIER = "Bag Classifier"
 POCKET_CLASSIFIER = "Pocket Classifier"
+STEADY_STATE_CLASSIFIER = "Steady State Classifier"
 
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
@@ -29,6 +30,7 @@ CLASSIFIERS = {
     BACKPACK_CLASSIFIER: bpc.Classifier()
     BAG_CLASSIFIER: bc.Classifier()
     POCKET_CLASSIFIER: pc.Classifier()
+    STEADY_STATE_CLASSIFIER: ss.Classifier()
 }
 
 FILE_INTERVALS = "fileIntervals"
