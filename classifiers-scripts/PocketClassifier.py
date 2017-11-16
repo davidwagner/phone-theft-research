@@ -24,13 +24,10 @@ class Classifier(BaseClassifier.BaseClassifier):
 
 		features = np.expand_dims(features, axis=0)
 		features = np.expand_dims(features, axis=2)
-		print(np.shape(features))
+
 		results = clf.predict(features)
 		
-		if results[0] > 0.5:
-			return 1
-		else:
-			return 0
+		return round(results[0][0])
 
 	# Need to change to time
 	def getWindowTime(self):
