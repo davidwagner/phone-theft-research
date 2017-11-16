@@ -1113,7 +1113,7 @@ def getExpectedIntervals(file):
 
 ### Joanna Finish #####
 # actualIntervals is a list of intervals, classifications like [((startTime, endTime), "table"), ((start, end), "pocket")]
-def checkClassifications(actualIntervals, expectedIntervals=None):
+def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=None):
     # However you want to load the expectedIntervals, maybe parse a text file?
     # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
 
@@ -1290,10 +1290,14 @@ def classifierPolicy(classifiedWindow):
     c = classifiers.CLASSIFIERS
     if c[classifiers.TABLE_CLASSIFIER] in averagedClassifications:
         return classifiers.TABLE_CLASSIFIER
-    elif c[classifiers.STEADY_BAG_CLASSIFIER] in averagedClassifications:
-        return classifiers.POCKET_BAG_CLASSIFIER
-    elif c[classifiers.POCKET_BAG_CLASSIFIER] in averagedClassifications:
-        return classifiers.POCKET_BAG_CLASSIFIER
+    elif c[classifiers.STEADY_STATE_CLASSIFIER] in averagedClassifications:
+        return classifiers.STEADY_STATE_CLASSIFIER
+    elif c[classifiers.BACKPACK_CLASSIFIER] in averagedClassifications:
+        return classifiers.BACKPACK_CLASSIFIER
+    elif c[classifiers.BAG_CLASSIFIER] in averagedClassifications:
+        return classifiers.BAG_CLASSIFIER
+    elif c[classifiers.POCKET_CLASSIFIER] in averagedClassifications:
+        return classifiers.POCKET_CLASSIFIER
     elif c[classifiers.HAND_CLASSIFIER] in averagedClassifications:
         return classifiers.HAND_CLASSIFIER
     else: 
@@ -1783,7 +1787,7 @@ def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA
         return {PossessionState.PHONE_ACTIVATED: [],
                                    PossessionState.PHONE_DEACTIVATED: []}
 
-def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DATA_DAY, userData={}):
+def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData={}):
     results.write("#########" + USER_ID + "#######\n")
     try:
         classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, log_file, userData=userData)
@@ -1794,7 +1798,7 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
         # print(possessionState.toDeactivatedTimes)
         if DIARY_STUDY:
             expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
-            checkClassifications(classifications, expectedIntervalsDiary)
+            checkClassifications(classifications, DATA_DAY, NOW_TIME, expectedIntervalsDiary)
 
         activatedIntervalsPhone = possessionState.getIntervalsByState()
 
@@ -2172,7 +2176,7 @@ def main():
                         mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
 
                     if not RUN_WATCH_ONLY:
-                        functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, userData=userData)
+                        functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData=userData)
                         if len(functionResults) > 0:
                             activatedIntervalsPhone, possessionState, classifications = functionResults['activatedIntervalsPhone'], functionResults['possessionState'], functionResults['classifications']
                             mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)

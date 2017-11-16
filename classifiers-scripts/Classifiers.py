@@ -23,13 +23,13 @@ STEADY_STATE_CLASSIFIER = "Steady State Classifier"
 RELEVANT_SENSORS = [s.ACCELEROMETER, s.STEP_COUNT]
 CLASSIFIERS = {
     TABLE_CLASSIFIER: table.Classifier(),
-    POCKET_BAG_CLASSIFIER: pbb.Classifier(),
+    # POCKET_BAG_CLASSIFIER: pbb.Classifier(),
     # THEFT_CLASSIFIER: theft.Classifier()
     HAND_CLASSIFIER: hand.Classifier(),
-    STEADY_BAG_CLASSIFIER: sbb.Classifier()
-    BACKPACK_CLASSIFIER: bpc.Classifier()
-    BAG_CLASSIFIER: bc.Classifier()
-    POCKET_CLASSIFIER: pc.Classifier()
+    # STEADY_BAG_CLASSIFIER: sbb.Classifier(),
+    BACKPACK_CLASSIFIER: bpc.Classifier(),
+    BAG_CLASSIFIER: bc.Classifier(),
+    POCKET_CLASSIFIER: pc.Classifier(),
     STEADY_STATE_CLASSIFIER: ss.Classifier()
 }
 
