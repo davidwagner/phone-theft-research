@@ -6,12 +6,17 @@ TABLE_CLASSIFIER = "Table Classifier"
 POCKET_BAG_CLASSIFIER = "Pocket/Bag Classifier"
 THEFT_CLASSIFIER = "Theft Classifier"
 HAND_CLASSIFIER = "Hand Classifier"
+STEADY_BAG_CLASSIFIER = "Steady State Bag Classifier"
+BACKPACK_CLASSIFIER = "Backpack Classifier"
+BAG_CLASSIFIER = "Bag Classifier"
+POCKET_CLASSIFIER = "Pocket Classifier"
+STEADY_STATE_CLASSIFIER = "Steady State Classifier"
 
 unlockIndex = 3
 PHONE_ACTIVATED = "activated"
 PHONE_DEACTIVATED = "deactivated"
 # SAFE_PERIOD = datetime.timedelta(minutes=3)
-BENIGN_CLASSIFIERS = set([POCKET_BAG_CLASSIFIER, HAND_CLASSIFIER])
+BENIGN_CLASSIFIERS = set([HAND_CLASSIFIER, BACKPACK_CLASSIFIER, BAG_CLASSIFIER, POCKET_CLASSIFIER])
 START_OF_TIME = datetime.datetime.min
 # unlock = 0, locked = 1
 class PossessionState():
