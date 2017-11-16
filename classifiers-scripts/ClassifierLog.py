@@ -48,11 +48,11 @@ START_OF_TIME = datetime.datetime.min
 SANITY_TEST = False
 maxWindowSize = 100
 
-START_TIME_FILTER = datetime.time(hour=8)
-END_TIME_FILTER = datetime.time(hour=22)
+# START_TIME_FILTER = datetime.time(hour=8)
+# END_TIME_FILTER = datetime.time(hour=22)
 RESULTS_DIRECTORY = './' + 'RESULTS/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
-# START_TIME_FILTER = None
-# END_TIME_FILTER = None
+START_TIME_FILTER = None
+END_TIME_FILTER = None
 
 SAFE_PERIOD = 3
 
@@ -1119,7 +1119,7 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
 
     comparedIntervals, matchingIntervals, conflictingIntervals = compareIntervals(actualIntervals, expectedIntervals)
 
-    file = open('diary-study-stats' + DATA_DAY + NOW_TIME + '.txt', 'w+')
+    file = open(RESULTS_DIRECTORY + '/' + 'diary-study-stats-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
     file.write("############ DIARY STUDY COMPARISON ############## \n")
 
@@ -1537,6 +1537,12 @@ def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_
     return consistentDataChunks
 
 def filterConsistentIntervals(USER_ID, START_OF_TIME, END_OF_TIME, userData={}):
+    if START_OF_TIME == None:
+        START_OF_TIME = datetime.time(hour=0)
+
+    if END_OF_TIME == None:
+        END_OF_TIME = datetime.time(hour=23, minute=59)
+
     if len(userData) > 0 and len(userData[sensors.ACCELEROMETER]) > 0:
         accelData = userData[sensors.ACCELEROMETER]
         accelStart, accelEnd = accelData[0][0], accelData[-1][0]
@@ -1788,6 +1794,7 @@ def runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA
                                    PossessionState.PHONE_DEACTIVATED: []}
 
 def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData={}):
+    print("RUNNING CLASSIFIER FUNCTIONS")
     results.write("#########" + USER_ID + "#######\n")
     try:
         classifications, intervalsByClass, possessionState = runClassifiersOnUser(USER_ID, None, log_file, userData=userData)
@@ -1797,6 +1804,7 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
         # print(possessionState.toActivatedTimes)
         # print(possessionState.toDeactivatedTimes)
         if DIARY_STUDY:
+            print("Checking against Diary Study")
             expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
             checkClassifications(classifications, DATA_DAY, NOW_TIME, expectedIntervalsDiary)
 
@@ -1845,6 +1853,7 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
     except:
         tb = traceback.format_exc()
         print(tb)
+        print("******EXCEPTION (while computing classifications)*******\n")
         results.write("******EXCEPTION (while computing classifications)*******\n")
         results.write(tb)
         results.write("\n")

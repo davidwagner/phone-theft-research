@@ -3,14 +3,14 @@ import csv
 # Replace with your own
 DASHBOARDDIR = '../data/Classifier_Results_TEST/'
 USERS_TO_IDS_FILE = "../joanna_watch.csv"
-DIRECTORY = "../data/Decrypted_Data"
-DIARY_STUDY_FILE = "../data/diary_irwin/diary_state.txt"
+DIRECTORY = "../data/diary-study-11-14-15"
+DIARY_STUDY_FILE = "../data/diary-study-11-14-15/diary_state.txt"
 # DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############USERS###########################
 FILTER_ONLY_CONSISTENT_DATA = False
 FULL_STUDY_RUN = False
 RUN_WATCH_ONLY = False
-RUN_CLASSIFIERS_ONLY = False
+RUN_CLASSIFIERS_ONLY = True
 DIARY_STUDY = True
 READ_USERS_FROM_FILE = False
 USERS = []
@@ -27,6 +27,6 @@ if READ_USERS_FROM_FILE:
 
 	USERS = ids
 else:
-	USERS = ["6fdda897"]
+	USERS = ["d792b61e"]
 ###############DAYS###########################
-DATA_DATES = ["Integration_Test_Small"]
+DATA_DATES = ["diary_data"]
