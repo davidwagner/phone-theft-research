@@ -1483,7 +1483,12 @@ def toTime(t):
 
 def filterConsistentData(userData, consistentIntervals=[(START_TIME_FILTER, END_TIME_FILTER)]):
     consistentDataChunks = OrderedDict()
+
     if len(consistentIntervals) <= 0:
+        return consistentDataChunks
+
+    if not FILTER_ONLY_CONSISTENT_DATA:
+        consistentDataChunks[(START_TIME_FILTER, END_TIME_FILTER)] = userData
         return consistentDataChunks
 
     print("Consistent Intervals:")
@@ -1787,10 +1792,9 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
         # print(possessionState.transitionTimes)
         # print(possessionState.toActivatedTimes)
         # print(possessionState.toDeactivatedTimes)
-        # expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
-        ### Joanna Finish ###
-        # checkClassifications(classifications, expectedIntervalsDiary)
-        #####################
+        if DIARY_STUDY:
+            expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
+            checkClassifications(classifications, expectedIntervalsDiary)
 
         activatedIntervalsPhone = possessionState.getIntervalsByState()
 
@@ -1932,7 +1936,7 @@ def matchTimesWithIntervals(timesWithDescriptions, intervals, classifications, l
         while time >= end:
             if time < start:
                 continue
-            elif time < end:
+            elif time <= end:
                 print("TIME LESS THAN END")
                 # while j < len(classifications) and cEnd < start:
                 #     j += 1
