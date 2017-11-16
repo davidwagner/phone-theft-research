@@ -1,23 +1,33 @@
 import BaseClassifier
-import SteadyStatePhoneFeaturizer as featurizer
-from sklearn.externals import joblib
 
 import Sensors as s
 
-CLASSIFIER_PATH = './classifier_pickles/TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
-clf = joblib.load(CLASSIFIER_PATH)
+import numpy as np
+
+# CLASSIFIER_PATH = './classifier_pickles/TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
+# clf = joblib.load(CLASSIFIER_PATH)
+
 class Classifier(BaseClassifier.BaseClassifier):
+	THRESHOLD_X = 1
+	THRESHOLD_Y = 1
+	THRESHOLD_Z = 1
+
 
 	def classify(self, windowOfData):
-		features = featurizer.dataToFeatures(windowOfData)
-		results = clf.predict(features)
+		accelData = windowOfData[s.ACCELEROMETER]
 
-		return int(results[0])
-		# return results
+		x_data = [float(i[1]) for i in data]
+	    y_data = [float(i[1]) for i in data]
+	    z_data = [float(i[1]) for i in data]
+
+	    if (np.ptp(x_data) < THRESHOLD_X and np.ptp(y_data) < THRESHOLD_Y and np.ptp(z_data) THRESHOLD_Z)
+	    	return 1
+
+		return 0
 
 	# Need to change to time
 	def getWindowTime(self):
-		return 10
+		return 50
 
 	def getRelevantSensors(self):
 		return [s.ACCELEROMETER]

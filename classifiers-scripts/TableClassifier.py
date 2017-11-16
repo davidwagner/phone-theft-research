@@ -12,9 +12,9 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def classify(self, windows):
 
 		"""Edit as Necessary"""
-		thresholdX = 1
-		thresholdY = 1
-		thresholdZ = 1
+		thresholdX = 1.3
+		thresholdY = 1.3
+		thresholdZ = 1.3
 
 		if s.ACCELEROMETER not in windows:
 			raise Exception("Accelerometer not found")

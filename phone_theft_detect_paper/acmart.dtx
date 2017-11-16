@@ -15,13 +15,8 @@
 % The Current Maintainer of this work is Boris Veytsman,
 % <borisv@lk.net>
 %
-% This work consists of the file acmart.dtx, the derived file
-% acmart.cls, the files ACM-Reference-Format.bst, and templates
-% sample-acmlarge.tex, sample-acmsmall.tex, sample-acmtog.tex,
-% samplebody-conf.tex, samplebody-journals.tex, sample-manuscript.tex,
-% sample-sigchi-a.tex, sample-sigchi.tex,
-% sample-sigconf-authordraft.tex, sample-sigconf.tex,
-% sample-sigplan.tex
+% This work consists of the file acmart.dtx and the
+% derived file acmart.cls, and
 %
 % \fi
 %
@@ -192,7 +187,6 @@
 % \item \textsl{url}, \url{http://www.ctan.org/pkg/url}
 % \item \textsl{xcolor}, \url{http://www.ctan.org/pkg/xcolor}
 % \item \textsl{xkeyval}, \url{http://www.ctan.org/pkg/xkeyval}
-% \item \textsl{xstring}, \url{http://www.ctan.org/pkg/xstring}
 % \end{itemize}
 % 
 %
@@ -240,14 +234,14 @@
 %     \midrule
 %     manuscript  & A manuscript. This is the default \\
 %   acmsmall & Small single column format, used for CIE, CSUR, JACM, JDIQ, JEA, JERIC,
-%            JETC, PACMPL, TAAS, TACCESS, TACO, TALG, TALLIP (formerly TALIP), TCPS,
+%            JETC, TAAS, TACCESS, TACO, TALG, TALLIP (formerly TALIP), TCPS,
 %            TEAC, TECS, TIIS, TISSEC, TIST, TKDD, TMIS, TOCE, TOCHI, TOCL,
 %            TOCS, TOCT, TODAES, TODS, TOIS, TOIT, TOMACS, TOMM (formerly
 %            TOMCCAP), TOMPECS, TOMS, TOPC, TOPLAS, TOPS,
 %            TOS, TOSEM, TOSN, TRETS,
 %            TSAS, TSC, TSLP, TWEB, including special issues. \\
 %           acmlarge  & Large single column format, used for
-%           IMWUT, JOCCH, PACMHCI, POMACS, TAP, including special issues. \\
+%           IMWUT, JOCCH, PACMPL, POMACS, TAP, including special issues. \\
 %            acmtog   & Large double column format, used for
 %          TOG, including special issues.\\
 %           sigconf & Proceedings format for most of ACM
@@ -377,7 +371,6 @@
 %     JERIC & ACM Journal of Educational Resources in Computing\\
 %     JETC & ACM Journal on Emerging Technologies in Computing Systems \\
 %     JOCCH & ACM Journal on Computing and Cultural Heritage \\
-%     PACMHCI & PACM on Human-Computer Interaction\\
 %     PACMPL & PACM on Programming Languages \\
 %     POMACS & PACM on Measurement and Analysis of Computing Systems \\
 %     TAAS & ACM Transactions on Autonomous and Adaptive Systems\\
@@ -734,20 +727,6 @@
 % commands, since this confuses metadata extraction software (actually
 % these commands now produce errors).
 %
-% \DescribeMacro{\authornotemark}%
-% Sometimes one may need to have the same footnote connected to
-% several authors.  The command \cs{authornotemark}\oarg{number} adds
-% just the footnote mark, for example
-% \begin{verbatim}
-% \author{A. U. Thor}
-% \authornote{Both authors contributed equally to the paper}
-% ...
-% \author{A. N. Other}
-% \authornotemark[1]
-% \end{verbatim}
-% The correct numbering of these marks is the responsibility of the
-% user. 
-%
 % \DescribeMacro{\acmVolume}%
 % \DescribeMacro{\acmNumber}%
 % \DescribeMacro{\acmArticle}%
@@ -989,18 +968,7 @@
 % \begin{verbatim}
 % \settopmatter{printacmref=false, printccs=true, printfolios=true}
 % \end{verbatim}
-% The parameter |authorsperrow| requires some explanation.  In
-% conference proceedings authors' information is typeset in boxes,
-% several boxes per row (see |sample-sigconf.pdf|,
-% |sample-sigplan.pdf| etc.).  The number of the boxes per row is
-% determined automatically.  If you want to override this decision,
-% you may do it using this parameter, for example,
-% \begin{verbatim}
-% \settopmatter{authorsperrow=4}
-% \end{verbatim}
-% However, in most cases you should \emph{not} do this and use the
-% default settings.  Setting |authorsperrow| to $0$ will revert to
-% default settings.
+%
 %
 % \begin{table}
 %   \centering
@@ -1013,11 +981,7 @@
 %     printccs & true/false & Whether to print CCS categories\\
 %     printacmref & true/false & Whether to print ACM bibliographic
 %     entry\\
-%     printfolios & true/false & Whether to print page numbers
-%     (folios)\\
-%     authorsperrow & numeric & Number of authors per row for title
-%     page in
-%     conference proceedings formats\\
+%     printfolios & true/false & Whether to print page numbers (folios)\\
 %     \bottomrule
 %   \end{tabularx}
 % \end{table}
@@ -1545,7 +1509,7 @@
 \ProvidesFile{acmart.dtx}
 %</gobble>
 %<class>\ProvidesClass{acmart}
-[2017/05/14 v1.39 Typesetting articles for Association of
+[2017/04/23 v1.35 Typesetting articles for Association of
 Computing Machinery]
 %    \end{macrocode}
 %
@@ -1598,11 +1562,6 @@ Computing Machinery]
 % \changes{v1.33}{2017/03/28}{Added acmart-preload-hook} 
 % \changes{v1.33}{2017/03/33}{Documentation updates} 
 % \changes{v1.35}{2017/04/23}{BibTeX bug fixed: et al.}
-% \changes{v1.36}{2017/05/12}{Added the possibility to adjust number of
-% author boxes per row in conference formats}
-% \changes{v1.37}{2017/05/13}{Set \cs{normalparindent}; Reduce list
-% indentation (Matthew Fluet)}%
-% \changes{v1.38}{2017/05/13}{Increase default font size for SIGPLAN}
 %
 %
 % And the driver code:
@@ -1648,11 +1607,7 @@ Computing Machinery]
 \RequirePackage{xkeyval}
 %    \end{macrocode}
 %
-% We use |xstring| to check whether user input is integer
-%    \begin{macrocode}
-\RequirePackage{xstring}
-%    \end{macrocode}
-% 
+%
 %
 % \begin{macro}{format}
 %   The possible formats
@@ -1782,7 +1737,6 @@ Computing Machinery]
 %
 % \begin{macro}{\if@ACM@authordraft}
 % \changes{v1.33}{2017/03/28}{Added macro}
-% \changes{v1.36}{2017/05/13}{Corrected typo, thanks to bargteil}
 %   Whether we use authordraft mode
 %    \begin{macrocode}
 \define@boolkey+{acmart.cls}[@ACM@]{authordraft}[true]{%
@@ -1794,7 +1748,7 @@ Computing Machinery]
     \PackageInfo{\@classname}{Not using authordraft mode}%
   \fi}{\PackageError{\@classname}{Option authordraft can be either true or
     false}}
-\ExecuteOptionsX{authordraft=false}
+\ExecuteOptionsX{timestamp=false}
 %    \end{macrocode}
 %
 % \end{macro}
@@ -1896,7 +1850,6 @@ Computing Machinery]
 %\label{sec:loading}
 %
 % \changes{v1.13}{2016/06/06}{Increased font size for ACM Large}
-% \changes{v1.38}{2017/05/13}{Increase default font size for SIGPLAN}
 %
 %
 % At this point we either have \cs{ACM@fontsize}, or use defaults
@@ -1916,7 +1869,7 @@ Computing Machinery]
   \or % siggraph
     \def\ACM@fontsize{9pt}%
    \or % sigplan
-    \def\ACM@fontsize{10pt}%
+    \def\ACM@fontsize{9pt}%
    \or % sigchi
     \def\ACM@fontsize{10pt}%
   \or % sigchi-a
@@ -2430,20 +2383,6 @@ Computing Machinery]
 % \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\normalparindent}
-% \changes{v1.37}{2017/05/13}{Set \cs{normalparindent} (Matthew Fluet)}%
-%   |amsart| defines the \cs{normalparindent} length and initializes it
-%   to 12pt (the value of \cs{parindent} in |amsart|).  It is later used
-%   to set the \cs{listparindent} length in the |quotation| environment
-%   and the \cs{parindent} length in the \cs{@footnotetext} command.  We
-%   set \cs{normalparindent} to the value of \cs{parindent} as selected
-%   by |acmart| for consistent paragraph indents.
-%    \begin{macrocode}
-\setlength\normalparindent{\parindent}
-%    \end{macrocode}
-%
-% \end{macro}
-%
 % Footnotes require some consideration.  We have several layers of
 % footnotes:  frontmatter footnotes, ``regular'' footnotes and the
 % special insert for bibstrip.  In the old ACM classes bibstrip was a
@@ -2794,78 +2733,24 @@ Computing Machinery]
 %    \end{macrocode}
 %
 %
-% \changes{v1.37}{2017/05/13}{Reduce list indentation (Matthew Fluet)}%
-% AMS uses generous margins for the lists.  Note that |amsart| defines
-% \cs{leftmargin} values for list levels at begin document, so we must
-% redefine them in the same manner.  Also, note that |amsart|
-% redefines |enumerate| and |itemize| environments with a
-% \cs{makelabel} command that uses \cs{llap}, so the \cs{labelwidth}
-% value is (effectively) irrelevant; nonetheless, we follow |amsart|
-% and set \cs{labelwidth} to \cs{leftmargin} minus \cs{labelsep}.
-%    \begin{macrocode}
-\newdimen\@ACM@labelwidth
-\AtBeginDocument{%
-  \setlength\labelsep{4pt}
-  \setlength{\@ACM@labelwidth}{6.5pt}
-
-  %% First-level list: when beginning after the first line of an
-  %% indented paragraph or ending before an indented paragraph, labels
-  %% should not hang to the left of the preceding/following text.
-  \setlength\leftmargini{\z@}
-  \addtolength\leftmargini{\parindent}
-  \addtolength\leftmargini{2\labelsep}
-  \addtolength\leftmargini{\@ACM@labelwidth}
-
-  %% Second-level and higher lists.
-  \setlength\leftmarginii{\z@}
-  \addtolength\leftmarginii{0.5\labelsep}
-  \addtolength\leftmarginii{\@ACM@labelwidth}
-  \setlength\leftmarginiii{\leftmarginii}
-  \setlength\leftmarginiv{\leftmarginiii}
-  \setlength\leftmarginv{\leftmarginiv}
-  \setlength\leftmarginvi{\leftmarginv}
-  \@listi}
-\newskip\listisep
-\listisep\smallskipamount
-\def\@listI{\leftmargin\leftmargini
-  \labelwidth\leftmargini \advance\labelwidth-\labelsep
-  \listparindent\z@
-  \topsep\listisep}
-\let\@listi\@listI
-\def\@listii{\leftmargin\leftmarginii
-  \labelwidth\leftmarginii \advance\labelwidth-\labelsep
-  \topsep\z@skip}
-\def\@listiii{\leftmargin\leftmarginiii
-  \labelwidth\leftmarginiii \advance\labelwidth-\labelsep}
-\def\@listiv{\leftmargin\leftmarginiv
-  \labelwidth\leftmarginiv \advance\labelwidth-\labelsep}
-\def\@listv{\leftmargin\leftmarginv
-  \labelwidth\leftmarginv \advance\labelwidth-\labelsep}
-\def\@listvi{\leftmargin\leftmarginvi
-  \labelwidth\leftmarginvi \advance\labelwidth-\labelsep}
-%    \end{macrocode}
-%
-%
 % \begin{macro}{\descriptionlabel}
-% \changes{v1.37}{2017/05/13}{Reduce list indentation (Matthew Fluet)}%
 % \changes{v1.12}{2016/05/30}{Redefined}
 %   We do not use default colon as \cs{amsart} does:
 %    \begin{macrocode}
-\renewcommand{\descriptionlabel}[1]{\upshape\bfseries #1}
+\renewcommand{\descriptionlabel}[1]{\hspace\labelsep \upshape\bfseries #1}
 %    \end{macrocode}
 %   
 % \end{macro}
 %
 %
 % \begin{macro}{\description}
-% \changes{v1.37}{2017/05/13}{Reduce list indentation (Matthew Fluet)}%
 % \changes{v1.17}{2016/07/07}{Decreased indent}
-%   Make |description| environment indentation consistent with that of
-%   |itemize| and |enumerate| environments.
+%   AMS uses additional indent of 6pt.  Frank recommends
+%   dropping it.
 %    \begin{macrocode}
 \renewenvironment{description}{\list{}{%
-    \labelwidth\@ACM@labelwidth
-    \let\makelabel\descriptionlabel}%
+    \itemindent-12\p@
+    \labelwidth\z@ \let\makelabel\descriptionlabel}%
 }{
   \endlist
 }
@@ -2882,7 +2767,6 @@ Computing Machinery]
 % \changes{v1.24}{2016/11/16}{Add IMWUT journal option}
 % \changes{v1.25}{2016/12/03}{Updated PACMPL}
 % \changes{v1.30}{2017/02/15}{Updated IMWUT and PACMPL}
-% \changes{v1.36}{2017/05/13}{Added PACMHCI journal options}
 %
 % We use keyval interface to define journal title and relevant
 % information
@@ -2897,7 +2781,6 @@ Computing Machinery]
   JERIC,%
   JETC,%
   JOCCH,%
-  PACMHCI,%
   PACMPL,%
   POMACS,%
   TAAS,%
@@ -2977,10 +2860,6 @@ Computing Machinery]
 \or % JOCCH
   \def\@journalName{ACM Journal on Computing and Cultural Heritage}%
   \def\@journalName{ACM J. Comput. Cult. Herit.}%
-\or % PACMHCI
-  \def\@journalName{Proceedings of the ACM on Human-Computer Interaction}%
-  \def\@journalName{Proc. ACM Hum.-Comput. Interact.}%
-  \def\@permissionCodeOne{2573-0142}%
 \or % PACMPL
   \def\@journalName{Proceedings of the ACM on Programming Languages}%
   \def\@journalName{Proc. ACM Program. Lang.}%
@@ -3390,26 +3269,12 @@ Computing Machinery]
 %    \begin{macrocode}
 \def\authornote#1{%
   \if@ACM@anonymous\else
-    \g@addto@macro\addresses{\@authornotemark}%
+    \g@addto@macro\addresses{\@authornotemark}
     \g@addto@macro\@authornotes{%
       \stepcounter{footnote}\footnotetext{#1}}%
   \fi}
 %    \end{macrocode}
 %
-% \end{macro}
-%
-% \begin{macro}{\authornotemark}
-% \changes{v1.39}{2017/05/14}{Added macro}
-% Adding footnotemark to authors
-%    \begin{macrocode}
-\newcommand\authornotemark[1][\relax]{%
-  \ifx#1\relax\relax\relax
-  \g@addto@macro\addresses{\@authornotemark}%
-  \else
-  \g@addto@macro\addresses{\@@authornotemark{#1}}%
-  \fi}
-%    \end{macrocode}
-% 
 % \end{macro}
 %
 % \begin{macro}{\acmVolume}
@@ -3695,18 +3560,6 @@ Computing Machinery]
 %    \end{macrocode}
 % \end{macro}
 % 
-% \begin{macro}{\@ACM@authorsperrow}
-% \changes{v1.36}{2017/05/13}{Added macro}
-%   The number of authors per row.  0 means use default algorithm.
-%    \begin{macrocode}
-\define@cmdkey{@ACM@topmatter@}[@ACM@]{authorsperrow}[0]{%
-  \IfInteger{#1}{\ClassInfo{\@classname}{Setting authorsperrow to
-      #1}}{\ClassWarning{\@classname}{Parameter authorsperrow must be
-      numerical. Ignoring the input #1}\gdef\@ACM@authorsperrow{0}}}
-%    \end{macrocode}
-%   
-% \end{macro}
-%
 % \begin{macro}{\settopmatter}
 %   The usual syntactic sugar
 %    \begin{macrocode}
@@ -3730,7 +3583,6 @@ Computing Machinery]
     \settopmatter{printfolios=false}
   \fi
 \fi
-\settopmatter{authorsperrow=0}
 %    \end{macrocode}
 %
 % \begin{macro}{\@received}
@@ -4177,6 +4029,7 @@ Computing Machinery]
     \footnotetextcopyrightpermission{%
       \def\par{\let\par\@par}\parindent\z@\@setthanks}%
   \fi
+  \iffalse %%!! added for CCS submission
   \footnotetextcopyrightpermission{%
     \if@ACM@authordraft
         \raisebox{-2ex}[\z@][\z@]{\makebox[0pt][l]{\large\bfseries 
@@ -4221,12 +4074,14 @@ Computing Machinery]
             \ifx\@acmPrice\@empty\else\ \$\@acmPrice\fi\\
             \@formatdoi{\@acmDOI}%
           \else % Conference
-             ACM~ISBN~\@acmISBN
-             \ifx\@acmPrice\@empty.\else\dots\$\@acmPrice\fi\\
-             \@formatdoi{\@acmDOI}%
+             %%! Not supposed to change this, but can't figure out a better way to remove it
+             %% ACM~ISBN~\@acmISBN
+             %% \ifx\@acmPrice\@empty.\else\dots\$\@acmPrice\fi\\
+             %% \@formatdoi{\@acmDOI}%
           \fi
         \fi
       \fi}
+    \fi %%!
   \endgroup
   \setcounter{footnote}{0}%
   \@mkabstract
@@ -4806,7 +4661,6 @@ Computing Machinery]
 % \begin{macro}{\@mkauthors@iii}
 % \changes{v1.15}{2016/07/04}{New authors system}
 % \changes{v1.33}{2017/03/28}{Added obeypunctuation code}
-% \changes{v1.36}{2017/05/12}{Added authorsperrow overrride}
 %   The |sigconf| version.  Here we use centered design with each
 %   author in a separate box.
 %    \begin{macrocode}
@@ -4820,21 +4674,17 @@ Computing Machinery]
 %    \begin{macrocode}
   \author@bx@wd=\textwidth\relax
   \advance\author@bx@wd by -\author@bx@sep\relax
-  \ifnum\@ACM@authorsperrow>0\relax
-    \divide\author@bx@wd by \@ACM@authorsperrow\relax
-  \else
-    \ifcase\num@authorgroups
-    \relax % 0?
-    \or  % 1=one author per row
-    \or  % 2=two authors per row
-       \divide\author@bx@wd by \num@authorgroups\relax
-    \or  % 3=three authors per row
-       \divide\author@bx@wd by \num@authorgroups\relax
-    \or  % 4=two authors per row (!)
-       \divide\author@bx@wd by 2\relax
-    \else % three authors per row
-       \divide\author@bx@wd by 3\relax
-    \fi
+  \ifcase\num@authorgroups
+  \relax % 0?
+  \or  % 1=one author per row
+  \or  % 2=two authors per row
+     \divide\author@bx@wd by \num@authorgroups\relax
+  \or  % 3=three authors per row
+     \divide\author@bx@wd by \num@authorgroups\relax
+  \or  % 4=two authors per row (!)
+     \divide\author@bx@wd by 2\relax
+  \else % three authors per row
+     \divide\author@bx@wd by 3\relax
   \fi
   \advance\author@bx@wd by -\author@bx@sep\relax
 %    \end{macrocode}
@@ -4879,10 +4729,8 @@ Computing Machinery]
 %
 % \begin{macro}{\@mkauthors@iv}
 % \changes{v1.33}{2017/03/28}{Added obeypunctuation code}
-% \changes{v1.36}{2017/05/12}{Added authorsperrow overrride}
 %   The |sigchia| version.  Now we put
-%   authors in the main text, and no more than 2 authors per line,
-%   unless overriden.
+%   authors in the main text, and no more than 2 authors per line.
 %    \begin{macrocode}
 \def\@mkauthors@iv{%
 %    \end{macrocode}
@@ -4894,15 +4742,11 @@ Computing Machinery]
 %    \begin{macrocode}
   \author@bx@wd=\columnwidth\relax
   \advance\author@bx@wd by -\author@bx@sep\relax
-  \ifnum\@ACM@authorsperrow>0\relax
-    \divide\author@bx@wd by \@ACM@authorsperrow\relax
-  \else
-    \ifcase\num@authorgroups
-    \relax % 0?
-    \or  % 1=one author per row
-    \else  % 2=two authors per row
-       \divide\author@bx@wd by 2\relax
-    \fi
+  \ifcase\num@authorgroups
+  \relax % 0?
+  \or  % 1=one author per row
+  \else  % 2=two authors per row
+     \divide\author@bx@wd by 2\relax
   \fi
   \advance\author@bx@wd by -\author@bx@sep\relax
 %    \end{macrocode}
@@ -4944,21 +4788,11 @@ Computing Machinery]
 % \end{macro}
 %
 % \begin{macro}{\@authornotemark}
-% Adding footnotemark to authors.  This version adds ``normal''
-% footnotemark.
+%   Adding footnotemark to authors
 %    \begin{macrocode}
-\def\@authornotemark{\g@addto@macro\@currentauthors{\footnotemark\relax}}
+\def\@authornotemark{\g@addto@macro\@currentauthors{\footnotemark}}
 %    \end{macrocode}
 %
-% \end{macro}
-%
-% \begin{macro}{\@@authornotemark}
-% \changes{v1.39}{2017/05/14}{Added macro}
-% Adding footnotemark to authors with the given number
-%    \begin{macrocode}
-\def\@@authornotemark#1{\g@addto@macro\@currentauthors{\footnotemark[#1]}}
-%    \end{macrocode}
-% 
 % \end{macro}
 %
 % \begin{macro}{\@mkteasers}

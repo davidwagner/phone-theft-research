@@ -9,21 +9,11 @@
 PACKAGE=acmart
 
 SAMPLES = \
-	sample-manuscript.tex \
-	sample-acmsmall.tex \
-	sample-acmlarge.tex \
-	sample-acmtog.tex \
-	sample-sigconf.tex \
-	sample-sigconf-authordraft.tex \
-	sample-sigplan.tex \
-	sample-sigchi.tex \
-	sample-sigchi-a.tex 
+	ccs-template.tex 
 
-
-PDF = $(PACKAGE).pdf ${SAMPLES:%.tex=%.pdf} acmguide.pdf
+PDF = $(PACKAGE).pdf ${SAMPLES:%.tex=%.pdf}
 
 all:  ${PDF}
-
 
 %.pdf:  %.dtx   $(PACKAGE).cls
 	pdflatex $<

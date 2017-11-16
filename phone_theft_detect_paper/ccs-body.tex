@@ -1,0 +1,81 @@
+\section{Introduction}
+
+According to Consumer Reports, 2.1 million smartphones were stolen in the United States in 2014~\cite{deitrick:consumer}, and the Pew Research Center's Internet \& American Life Project reported in 2012 that nearly one third of mobile phone users have experienced a lost or stolen device~\cite{boyles:pew}.
+People can lock their phones to mitigate the risks of phone theft, but some find this inconvenient, as it requires unlocking the phone every time it is needed.
+As a result, about 40\% of smartphone users do not lock their phones, which allows thieves to gain access to the victims' personal information---information that most users underestimate the sensitivity of~\cite{egelman:lock}.
+
+Our goal is to increase the usability of phone locking, and therefore its adoption, by only forcing users to provide unlock codes when there is a reasonable chance that the device is being used by someone other than the rightful owner. To that end, we developed a method to automatically detect pickpocket and grab-and-run smartphone theft by training a binary classifier to recognize the movements that are specific to theft and use it to monitor accelerometer data in the background. When theft is detected, our system can signal the device to lock the screen or take other actions. Thus, our theft detector offers another layer of protection against smartphone theft, as well as decreases the number of times that legitimate users will be asked to explicitly unlock their device screens under ordinary circumstances. Because our theft detection software results in fewer explicit unlock prompts, it increases the usability of current smartphone locking mechanisms, and is therefore likely to increase overall adoption. Compared to {\it post hoc} security software, like kill switches and remote erase, which retroactively protects users' privacy, our system operates in real-time and may therefore better protect users' private information.
+
+There are multiple ways that a phone might be stolen.
+We focus specifically on grab-and-run theft, where the thief snatches the phone out of the user's hand and runs away, and pickpocket theft, where the thief steals the phone from the user's pocket or bag and runs away.
+This creates an abrupt and unusual movement pattern, which we show can be detected from analysis of accelerometer sensor data.
+We do not attempt to detect other forms of theft, such as where the phone is left unattended and the thief walks off with it, or where the phone is lost or left behind somewhere.
+Consequently, our scheme cannot offer comprehensive protection against all forms of theft, but we hope that it will be useful nonetheless.
+
+We measure the efficacy of our scheme by gathering two datasets.
+First, we simulated three types of phone theft: grab-and-run while the victim is standing still, grab-and-run while the victim is walking at a constant speed, and pick-pocket theft.
+We collect accelerometer sensor readings during the simulated thefts; these serve as known positives.
+Second, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday activities.
+No phone was stolen during the field study, so this dataset serves as known negatives.
+We use this to train a classifier and then evaluate its detection rate and false positive rate.
+Our best classifier produces 1 false alarm per week on average, while detecting 100\% of simulated thefts.
+
+
+Our contributions are:
+\begin{enumerate}
+  \item We conducted a user study and collected a large dataset of smartphone sensor data while devices were being used in the real world.
+  \item We devise features and methods to detect two common types of theft, and we show that our system can detect these types of thefts with few false positives.
+\end{enumerate}
+
+\input{cfp}
+% \input{cfp}
+% \input{cfp}
+
+\section{Conclusions}
+
+In this work, we demonstrate that accelerometer data is enough to detect some common forms of smartphone theft, such as pickpocket and grab-and-run, without sacrificing usability by inundating the user with false alarms. 
+It is remarkable that machine learning is so effective and can detect 100\% of our simulated thefts.
+We suspect that this is because the kinds of thefts we consider here involve a rapid jerking motion followed by the thief running away, which induces a unique pattern in the accelerometer sensor readings.
+
+We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a suspected theft event is detected.
+We expect that the inconvenience of unlocking your phone one extra time per week would be tolerable, and might not even be noticed by users.
+If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well, when a theft is detected.
+
+As mentioned earlier, 40\% of smartphone users do not lock their phone with a PIN or passcode~\cite{egelman:lock,Harbach2016b}, so currently thieves have full access to the personal data of these users.
+We envision our solution would help protect those users: if a suspected theft is detected, the phone could lock itself so it requires a PIN or passcode to unlock; this way, users would only need to enter a PIN or passcode about once a week, rather than every time they want to use the phone.
+For the 60\% of smartphone users who do have a PIN or passcode enabled, our scheme might have less benefit.
+Because the phone can immediately detect the theft and lock itself, it prevents thieves who grab the phone while it is unlocked from accessing the user's data, but it is unnecessary against thieves who steal the phone while it is locked (e.g., pickpocket theft).
+Our scheme might also be helpful for finding the stolen phone: if a suspected theft is detected, the phone could enable GPS, start tracking its location, upload its location to a cloud server in real-time, and continue until the phone is unlocked (if the user has not already enabled a ``find my phone'' feature).
+
+We expect that our solution would have negligible impact on battery life and phone performance.
+Modern phones support batched accelerometer sensing, where the accelerometer hardware buffers sensor readings, so the application CPU only has to wake up to read sensor data when the buffer is full.
+As a result, it is possible to record accelerometer sensor values at high sampling rates with negligible power draw.
+Moreover, thanks to the pre-filtering (the~$40 m/s^2$ threshold),
+we only need to apply the classifier on a tiny fraction of time windows (only about 10 times per hour on average),
+so the impact on battery life should be negligible.
+
+The primary limitation of our work is that we work with simulated thefts.
+It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data, and then use it to further train the classifier.
+
+It may be possible to improve our results further by using other sensors on the smartphone, such as the step counter.
+The biggest open question is whether our methods can be extended to a more diverse set of theft scenarios; we hope that our work will inspire others to investigate this direction further.
+
+
+% \appendix
+
+% \section{Location}
+
+% Note that in the new ACM style, the Appendices come before the References.
+
+% \input{cfp}
+
+\begin{acks}
+% TODO: For the submission, don't include acknowledgments since they would most likely deanonymize you.
+\begin{comment}
+\textcolor{red}{Comment out for double blind review}. 
+
+The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding with the Android sensor monitoring software, Jennider Chen from the Good Research for her assistance on conducting the user study, and Irwin Reyes, David Fifield and Michael McCoyd for giving feedback to our paper drafts. 
+This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley. 
+The work is supported by \textcolor{red}{What Grants and Funds}. 
+\end{comment}
+\end{acks}
