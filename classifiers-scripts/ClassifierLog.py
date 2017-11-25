@@ -50,7 +50,7 @@ maxWindowSize = 100
 
 # START_TIME_FILTER = datetime.time(hour=8)
 # END_TIME_FILTER = datetime.time(hour=22)
-RESULTS_DIRECTORY = './' + 'RESULTS/' + datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+RESULTS_DIRECTORY = './' + 'DATA/'
 START_TIME_FILTER = None
 END_TIME_FILTER = None
 
@@ -2114,38 +2114,6 @@ def main():
         print("DIRECTORY started as:", DIRECTORY)
         DIRECTORY = DIRECTORY_PATH + DATA_DAY + "/"
         print("DIRECTORY now:", DIRECTORY)
-        # if not FULL_STUDY_RUN:
-        file = open(RESULTS_DIRECTORY + '/' + 'testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchFile = open(RESULTS_DIRECTORY + '/' + 'watch-testing-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        results = open(RESULTS_DIRECTORY + '/' + 'testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        watchResults = open(RESULTS_DIRECTORY + '/' + 'watch-testing-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        resultsSummary = open(RESULTS_DIRECTORY + '/' + 'testing-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        watchSummary = open(RESULTS_DIRECTORY + '/' + 'watch-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        resultsSummaryWriter = csv.writer(resultsSummary)
-        watchSummaryWriter = csv.writer(watchSummary)
-        resultsSummaryWriter.writerow(["Day", "User", "Classifier", "Percentage of Time"])
-        watchSummaryWriter.writerow(["Day", "User", "State", "Percentage of Time", "Hours", "Total Hours"])
-        activatedFile = open(RESULTS_DIRECTORY + '/' + 'activated-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        activatedSummary = open(RESULTS_DIRECTORY + '/' + 'activated-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        activatedSummaryWriter = csv.writer(activatedSummary)
-        activatedSummaryWriter.writerow(["Day", "User", "Unlocks Saved", "Unlocks Total", "Percent Both Activated", "Percent Only Phone Activated", "Percent Only Watch Activated", "Percent Both Deactivated", "Both Activated", "Only Phone Activated", "Only Watch Activated", "Both Deactivated"])
-
-        activatedRawFile = open(RESULTS_DIRECTORY + '/' + 'activated-raw-results-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-        activatedRawSummary = open(RESULTS_DIRECTORY + '/' + 'activated-raw-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        activatedRawSummaryWriter = csv.writer(activatedRawSummary)
-        activatedRawSummaryWriter.writerow(
-            ["Day", "User", "Unlocks Saved", "Unlocks Total", "Percent Both Activated", "Percent Only Phone Activated",
-             "Percent Only Watch Activated", "Percent Both Deactivated", "Both Activated", "Only Phone Activated",
-             "Only Watch Activated", "Both Deactivated"])
-
-        activationsLogFile = open(RESULTS_DIRECTORY + '/' + 'activated-log-'+ DATA_DAY + NOW_TIME + '.txt', 'w+')
-        activationsLogRawFile = open(RESULTS_DIRECTORY + '/' + 'activated-raw-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
-
-        consistentDataFile = open(RESULTS_DIRECTORY + '/' + 'consistent-data-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-
-        smartUnlockSummary = open(RESULTS_DIRECTORY + '/' + 'smart-unlock-summary-' + DATA_DAY + NOW_TIME + '.csv', 'w+')
-        smartUnlockSummaryWriter = csv.writer(smartUnlockSummary)
-        smartUnlockFile = open(RESULTS_DIRECTORY + '/' + 'smart-unlock-log-' + DATA_DAY + NOW_TIME + '.txt', 'w+')
 
         count = 0
         for USER_ID in USERS:
@@ -2155,68 +2123,13 @@ def main():
                 print("Currently on:", USER_ID)
 
                 userData = getRelevantUserData(USER_ID)
+                pickle_file_name = RESULTS_DIRECTORY + USER_ID + "_data_full.pkl"
+                pickle_file = open(pickle_file_name, 'wb')
+                pickle.dump(userData, pickle_file)
 
-                nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
-                                                                                                                    START_TIME_FILTER,
-                                                                                                                    END_TIME_FILTER,
-                                                                                                                    userData=userData)
-
-                logConsistentIntervals(userData, USER_ID, consistentDataFile)
-
-                consistentDataSegments = filterConsistentData(userData, consistentIntervals)
-
-                activatedIntervalsPhoneAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
-                activatedIntervalsWatchAggregate = {PossessionState.PHONE_ACTIVATED : [], PossessionState.PHONE_DEACTIVATED : []}
-                activatedTransitionTimes = OrderedDict()
-                deactivatedTransitionTimes = OrderedDict()
-
-                unlockMetricsAggregate = {
-                'numUnlocksSaved' : 0,
-                'numUnlocksTotal' : 0,
-                'unlockTimes' : []
-                }
-
-                for consistentInterval, userData in consistentDataSegments.items():
-                    activatedIntervalsWatch = None
-                    activatedIntervalsPhone = None
-
-                    if not RUN_CLASSIFIERS_ONLY:
-                        activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData=userData)
-                        mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
-
-                    if not RUN_WATCH_ONLY:
-                        functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData=userData)
-                        if len(functionResults) > 0:
-                            activatedIntervalsPhone, possessionState, classifications = functionResults['activatedIntervalsPhone'], functionResults['possessionState'], functionResults['classifications']
-                            mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
-                            activatedTransitionTimes.update(possessionState.toActivatedTimes)
-                            deactivatedTransitionTimes.update(possessionState.toDeactivatedTimes)
-
-                    if activatedIntervalsPhone != None:
-                        # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
-                        unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
-                        if len(unlockMetrics) > 0:
-                            mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
-                
-                print("Run with watchActivation")
-                runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (Filtered)")
-                
-                activatedIntervalsWatchFromConsistency = {
-                    PossessionState.PHONE_ACTIVATED : nearIntervals,
-                    PossessionState.PHONE_DEACTIVATED : farIntervals
-                }
-                
-                print("Run with raw")
-                runActivationFunctions(activatedIntervalsWatchFromConsistency, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedRawFile, activatedRawSummaryWriter, activationsLogRawFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (RAW)")
             except:
                 tb = traceback.format_exc()
                 print(tb)
-
-        if not FULL_STUDY_RUN:
-            file.close()
-            watchFile.close()
-            results.close()
-            watchResults.close()
 
     print("--- %s seconds ---" % (TIMER.time() - start_time))
     print("Yay I finished!")
@@ -2224,7 +2137,7 @@ def main():
 if __name__ == '__main__':
     # print("HELLO")
     global SAFE_PERIOD
-    SAFE_PERIOD = int(sys.argv[1])
+    # SAFE_PERIOD = int(sys.argv[1])
 
     main()
     # main_filter_consistent()
