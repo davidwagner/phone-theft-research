@@ -14,6 +14,7 @@ import Sensors as sensors
 import Classifiers as classifiers 
 import PossessionState
 import pickle
+import argparse
 import traceback
 
 from configsettings import *
@@ -55,6 +56,7 @@ START_TIME_FILTER = None
 END_TIME_FILTER = None
 
 SAFE_PERIOD = 3
+USE_CACHED_DATA = False
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
@@ -2095,6 +2097,7 @@ def mergeUnlockMetrics(m1, m2):
     m1['unlockTimes'].extend(m2['unlockTimes'])
 
 def main():
+    print("SAFE PERIOD:", SAFE_PERIOD)
     # main_filter_consistent()
     # USER_ID = '6fdda897'
     start_time = TIMER.time()
@@ -2154,7 +2157,14 @@ def main():
                 print("Number of users processed:", count)
                 print("Currently on:", USER_ID)
 
-                userData = getRelevantUserData(USER_ID)
+                pickle_file_name = './' + 'DATA/' + USER_ID + "_data_full.pkl"
+                pickle_file = open(pickle_file_name, 'rb')
+
+                if USE_CACHED_DATA:
+                    userData = pickle.load(pickle_file)
+                else:
+                    userData = getRelevantUserData(USER_ID)
+
 
                 nearIntervals, farIntervals, consistentIntervals, inconsistentIntervals = filterConsistentIntervals(USER_ID,
                                                                                                                     START_TIME_FILTER,
@@ -2223,8 +2233,17 @@ def main():
 
 if __name__ == '__main__':
     # print("HELLO")
-    global SAFE_PERIOD
-    SAFE_PERIOD = int(sys.argv[1])
+    # global SAFE_PERIOD
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("safeperiod", help="Safe period for policy",
+                        type=int)
+    parser.add_argument("--cached", help="Use cached data files in ./DATA/",
+                        action="store_true")
+    args = parser.parse_args()
+
+    SAFE_PERIOD = args.safeperiod
+    USE_CACHED_DATA = args.cached
 
     main()
     # main_filter_consistent()
