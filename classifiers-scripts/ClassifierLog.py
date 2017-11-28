@@ -54,7 +54,7 @@ RESULTS_DIRECTORY = './' + 'RESULTS/' + datetime.datetime.now().strftime('%Y_%m_
 START_TIME_FILTER = None
 END_TIME_FILTER = None
 
-SAFE_PERIOD = 3
+# SAFE_PERIOD = 3
 
 def getUserFilesByDayAndInstrument(userID, instrument):
     query = DIRECTORY + 'AppMon_' + userID + '*_' + instrument + '_' + '*'
@@ -1129,6 +1129,13 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
     matchingTime = totalTimeOfIntervals(matchingIntervals)
     conflictingTime = totalTimeOfIntervals(conflictingIntervals)
 
+    classificationAccuracy = getClassificationAccuracy(comparedIntervals)
+    print(classificationAccuracy)
+    ccm = classifierConfusionMatrix(classificationAccuracy, comparedIntervals)
+    print("Confusion matrix without Steady State")
+    print(ccm)
+    
+
     file.write("Total Time: " + formatTimeValue(totalTime) + "\n")
     file.write("Total time matching: " + formatTimeValue(matchingTime) +"\n")
     file.write("% of time matched: " + str(1.0 * matchingTime/totalTime) + "\n")
@@ -1152,6 +1159,53 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
     # All of comparedIntervals, matchingIntervals, and conflictingIntervals have the following format:
     # ((startDateTime, endDateTime), classificationString, isMatchingClassifications)
     # the classificationString is either one classifier if the expected/actual matched, else two classifier names
+
+# classifier = [true positive, false positive, false negtive, total time]
+def getClassificationAccuracy(comparedIntervals):
+    confusionList = {}
+    for interval, classificationString, isMatching in comparedIntervals:
+        tokens = classificationString.split("|");
+        chosen = tokens[0]
+        chosen = chosen.strip()
+        if chosen  == classifiers.STEADY_STATE_CLASSIFIER:
+            continue
+        if not isMatching:
+            expected = tokens[1]
+            expected = expected.strip()
+            if expected == classifiers.STEADY_STATE_CLASSIFIER:
+                continue
+            if expected not in confusionList:
+                confusionList[expected] = [datetime.timedelta(seconds=0)] * 4
+        if chosen not in confusionList:
+            confusionList[chosen] = [datetime.timedelta(seconds=0)] * 4
+        length = intervalLength(interval)
+        if isMatching:
+            confusionList[chosen][0] += length
+        else:
+            confusionList[chosen][1] += length
+            confusionList[expected][2] += length
+            confusionList[expected][3] += length
+        confusionList[chosen][3] += length
+    return confusionList
+
+def classifierConfusionMatrix(confusionList, comparedIntervals):
+    totalTime = totalTimeOfIntervals(comparedIntervals)
+    confusionMatrix  = {}
+    for c in confusionList:
+        tp, fp, fn, tt = confusionList[c]
+        tn = totalTime - tp - fp - fn
+        posTotal = tp + fn
+        negTotal = tn + fp
+        if posTotal == datetime.timedelta(seconds=0):
+            tp = "N/A"
+            fn = "N/A"
+        else:
+            tp = 1.0 * tp/posTotal
+            fn = 1.0 * fn/posTotal
+        confusionMatrix[c] = [tp, 1.0 * fp/negTotal, fn, 1.0 * (tn/negTotal)]
+    return confusionMatrix
+
+
 
 def findCommonIntervals(intervals1, intervals2):
     # print("Finding common intervals!")
