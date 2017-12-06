@@ -107,10 +107,10 @@ def train_model(args):
 
 	#Shuffle_Data
 	# Generate the permutation index array.
-    permutation = np.random.permutation(a.shape[0])
-    # Shuffle the arrays by giving the permutation in the square brackets.
-    shuffled_features = features[permutation]
-    shuffled_labels = labels[permutation]
+	permutation = np.random.permutation(a.shape[0])
+	# Shuffle the arrays by giving the permutation in the square brackets.
+	shuffled_features = features[permutation]
+	shuffled_labels = labels[permutation]
 
 	for _ in range(args.repeat):
 
