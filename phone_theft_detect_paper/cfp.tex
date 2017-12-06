@@ -2,13 +2,13 @@
 
 Many researchers have studied using smartphone sensors for continuous user authentication.
 The benefit of continuous user authentication is that it happens unobtrusively, without requiring any action from users.
-Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone. 
+Continuous authentication could serve as a mitigation for theft: if the phone can detect rapidly enough that it is no longer being used by the rightful owner, it could lock itself to prevent the thief from accessing sensitive data on the phone.
 
 One approach is to use smartphone accelerometer data for gait recognition.
 These systems often extract some features from the sensor data and then apply machine learning.
 Derawi et~al.\ achieved an equal error rate of 20\%~\cite{derawi:gait}.
 ``Equal error rate'' is a measure of accuracy where the system is tuned so the false accept rate and false reject rates are equal, and then that error rate is reported.
-Primo et~al.\ show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment~\cite{primo:context}. 
+Primo et~al.\ show that accelerometer-based gait authentication is somewhat dependent on the position in which the phone is held, which is a challenge for deploying gait authentication outside of a laboratory environment~\cite{primo:context}.
 They showed how to infer the position of the phone (in the person's hand vs.\ in a pocket) with 85\% accuracy, and they showed how to use this information to increase the accuracy of user authentication to 70--80\%.
 They do not report performance as equal error rate.
 Juefei-Xu et~al.\ show that the pace at which people walk also affects the sensor readings, and it is possible to improve accuracy by first identifying the pace at which the user is walking, then using a model tailored towards that pace~\cite{xu:pace}.
@@ -28,15 +28,15 @@ These schemes typically divide the resulting time series into windows, each wind
 For instance, Primo et~al.\ used overlapping windows, with each window containing 100 samples and having an overlap of 50 samples with the next window; Derawi et~al.\ and Juefei-Xu et~al.\ used non-overlapping windows, which were about 1 second in width.
 Derawi et~al.\ and Juefei-Xu et~al.\ used the sensor readings as the features, while Primo et~al.\ and Kwapisz et~al.\ computed hand-crafted features from the readings, where each feature records a summary statistic on the sensor readings in the window (e.g., mean, minimum, maximum, standard deviation, number of zero crossings, etc.).
 
-Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}. 
+Feng et~al.\ investigated using the unique way the user picks up their phone as a biometric for user authentication~\cite{feng:pickup}.
 They achieved an equal error rate of 6--7\%.
 They used the smartphone accelerometer, gyroscope, and magnetometer; in our work, we avoid the gyroscope sensor, as its power consumption is significantly higher than the accelerometer, and therefore is currently not a practical solution for continuous authentication.
 
-Mare et~al.\ developed a continuous authentication system where the user wears a smartwatch or bracelet, which is used to authenticate the user to their computer~\cite{mare:zebra}. 
+Mare et~al.\ developed a continuous authentication system where the user wears a smartwatch or bracelet, which is used to authenticate the user to their computer~\cite{mare:zebra}.
 Their continuous authentication scheme works well and could plausibly be used to authenticate to a smartphone, but it requires users to wear a bracelet; in contrast, we seek solutions that do not require the user to carry or wear any additional devices.
 
 The most closely related work is by Chang et~al.\, who used the way
-that each person takes their phone out of their bag or pocket as a 
+that each person takes their phone out of their bag or pocket as a
 form of biometric authentication~\cite{cheng:theft}.
 They use accelerometer and gyroscope data to detect when the user picks
 up their phone, and then they apply dynamic time warping and boosting to
@@ -68,23 +68,24 @@ In this section, we describe the data collection software, which we used to gath
 
 \subsubsection{Software}
 We used an Android application to record data from the smartphone's 3-axis accelerometer, which then encrypted it and stored it in the cloud.
-We acquired sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_\\FASTEST~\cite{android:doc}. 
-On most devices, including the one we used for the simulated theft experiment, the sampling rate is 100 Hz. 
+We acquired sensor data at the highest sampling rate supported by the phone using SENSOR\_DELAY\_\\FASTEST~\cite{android:doc}.
+On most devices, including the one we used for the simulated theft experiment, the sampling rate is 100 Hz.
 
 \subsubsection{Simulated Theft Experiment}
-Because data from real thefts is hard to obtain, we simulated three types of common smartphone theft scenarios, based on campus police alerts that we receive, with one researcher acting as a smartphone user and another one playing the role of a thief. 
+Because data from real thefts is hard to obtain, we simulated three types of common smartphone theft scenarios, based on campus police alerts that we receive, with one researcher acting as a smartphone user and another one playing the role of a thief.
 The three theft scenarios are as follows:
 \begin{enumerate}
-\item The user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
-\item The user holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction. 
+\item The user stands still and holds the phone with one hand as she is using the device, for instance reading a text; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction.
+\item The user holds the phone in front of her with one hand while walking at a constant speed; the thief approaches from behind, grabs the phone with both hands and runs away in the forward direction.
 \item The third scenario simulates pick-pocket thefts. The user places the phone in the back pocket of their pants and stands still; the thief approaches from behind, steals the phone from user's pocket and runs away in the forward direction.
 \end{enumerate}
-We collect 40 instances of each scenario, for a total of 120 trials. 
-Data collection was split across four sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these two sessions. 
-We ran the experiment on flat ground in an open space, so the experiment was not interrupted. 
+We collect 40 instances of each scenario, for a total of 120 trials.
+Data collection was split across four sessions, each consisting of 10 trials per scenario, with different researchers acting as the victim and thief in these sessions.
+We ran the experiment on flat ground in an open space, so the experiment was not interrupted.
 We also made sure that the thief ran at least 40 feet after gaining possession of the victim's phone.
 We used a Nexus 5X smartphone (InvenSense MPU6515 embedded accelerometer) with Android version 7.1.1 for data collection in our simulated theft experiment.
 Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a single simulated theft.
+We collected an additional set of 45 trials, 15 instances from each scenario using a Nexus 6P smartphone with Android version 6.0.1 to demonstrate our classifier can generaize to different smartphone models.
 
 
 \begin{figure}[t]
@@ -100,32 +101,33 @@ Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a sin
 
 \subsubsection{Field Study}
 We performed a field study to gather data from ordinary smartphone users while they perform everyday activities, including walking, running, driving, possibly excercising, and anything else that occurred during their lives over the field study period.
-% We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study. 
-We obtained approval from our university IRB for this study. 
+% We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study.
+We obtained approval from our university IRB for this study.
 The study was conducted in a metropolitan area from September to December 2016.
 % The study was conducted in the Bay Area of the United States from September to December 2016.
 None of the participants experienced a phone theft during the study interval,
 so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
-We posted a recruitment advertisement on Craigslist in September 2016. 
-% We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016. 
-We only recruited participants who used an Android smartphone with version 5.0 and above. 
+We posted a recruitment advertisement on Craigslist in September 2016.
+% We posted a recruitment advertisement on the Craigslist under the SF Bay Area `jobs et cetera' category in September 2016.
+We only recruited participants who used an Android smartphone with version 5.0 and above.
 After obtaining their consent, we installed our data collection application on their phones and collected data for a three-week period.
 The application ran in the background and collected accelerometer sensor readings continuously, 24 hours a day.
 We contacted participants weekly to make sure their phones were functioning correctly and troubleshoot any data collection issues.
 Each participant was paid \$150 for their participation.
 
-The study was divided across 3 rounds; each round lasted 3 consecutive weeks. 
+The study was divided across 3 rounds; each round lasted 3 consecutive weeks.
 A total of 55 participants were recruited, and
-53 out of the 55 subjects completed the study. 
+53 out of the 55 subjects completed the study.
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
 In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Adroid versions. This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Adroid version.
 We also asked participants how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
-During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it. 
+During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it.
 
 \begin{table}[H]
 \centering
+\caption{Participants' demographic information.}
 \begin{tabular}{rrrrrr}
 \hline
       & Male & Female & Age 20--29 & 30--39 & 40+ \\ \hline
@@ -134,7 +136,6 @@ R2    & 10   & 8      & 7         & 7     & 4   \\
 R3    & 11   & 8      & 9         & 4     & 6   \\
 Total & 26   & 27     & 24        & 17    & 12  \\ \hline
 \end{tabular}
-\caption{Participants' demographic information.}
 \label{tbl:demographics}
 \end{table}
 
@@ -153,9 +154,9 @@ We chose a threshold of~$40 m/s^2$ as all of our simulated thefts experienced ac
 
 We first identified 16 candidate features, 8 features for each of the two windows.
 In particular, we computed the minimum, maximum, mean, standard deviation, root mean square, arc length, product of arc length and standard deviation, and mean absolute value, each computed on the magnitude values ($M$) within the window.
-We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional and thus more robust to changes in the orientation of the phone. 
+We chose to only compute these features on the magnitude of the acceleration, and not the $X$, $Y$, and $Z$ components, because the magnitude is non-directional and thus more robust to changes in the orientation of the phone.
 We then visualized the distribution of these features for the two classes and applied feature selection techniques to choose a subset of features that yield good performance.
-We removed the minimum and mean absolute value from the feature list because removing them did not affect the performance of the classifiers. 
+We removed the minimum and mean absolute value from the feature list because removing them did not affect the performance of the classifiers.
 As a result, we extract a 12-dimensional feature vector, 6 features from the before-window and 6 from the after-window, every time the detector is triggered.
 
 Let $M_1,\dots,M_k$ denote the time series of acceleration magnitudes within the window.
@@ -173,7 +174,7 @@ Intuitively, this captures the average of the first derivative of the accelerati
 Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used for data capture (e.g., in contrast to the hardware-based differences documented by Dey et al.~\cite{Dey2014}).
 
 We obtained 60 positive instances from the 60 simulated thefts.
-After applying the~$40 m/s^2$ threshold, we obtained approximately approximately 248,000 negative samples from the data collected in the field study. 
+After applying the~$40 m/s^2$ threshold, we obtained approximately approximately 248,000 negative samples from the data collected in the field study.
 We then applied boolean classification techniques to this data set.
 
 
@@ -205,8 +206,10 @@ but it only detects 60\% of the thefts.
 
 Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
+We also tested our classifiers on a set of 45 positive data points collected using a Nexus 6P. A highest detection rate of 97.8\% indicates that our detector works with other smartphone models.
 
 \begin{table}[t]
+\caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
 \centering
 \begin{tabular}{@{}lll@{}}
 \toprule
@@ -228,7 +231,6 @@ True Positive & 14                 & 23                 \\ \bottomrule
 True Negative & 74501              & 17               \\
 True Positive & 17                 & 20                 \\ \bottomrule
 \end{tabular}
-\caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
 \label{fig:cmat}
 \end{table}
 
@@ -288,11 +290,12 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 
 \begin{table}[t]
 \centering
+\caption{Feature importances and their 95\% confidence intervals for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
 Root mean square (b)   &   143.8786849  ($\pm$ 0.08714717)       \\
-Mean (b)               &   129.8910092 ($\pm$ 0.08033373)       \\ 
+Mean (b)               &   129.8910092 ($\pm$ 0.08033373)       \\
 Root mean square (a)   &  \ 93.8382532  ($\pm$ 0.04439512)       \\
 Mean (a)               &  \ 88.1273891  ($\pm$ 0.03972303)       \\
 Standard deviation (a) &  \ 66.7204655  ($\pm$ 0.02228971)       \\
@@ -305,12 +308,11 @@ Maximum (a)            & \ \ 0.05985700 ($\pm$ 0.00065551)       \\
 Arc length * SD (b)    & \ \ 0.04950325 ($\pm$ 0.00090281)       \\ \bottomrule
 
 \end{tabular}
-\caption{Feature importances and their 95\% confidence intervals for logistic regression. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-lr}
 \end{table}
 
-We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to. 
-Thus the higher in the tree, the more important the feature is~\cite{sklearn:rfdoc}. 
+We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to.
+Thus the higher in the tree, the more important the feature is~\cite{sklearn:rfdoc}.
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
 We also computed the 95\% confidence intervals for all feature importance scores using 50 epoches of the entire data set.
 The resulting feature importance scores and their 95\% confidence intervals for the random forests classifier are listed in Table~\ref{tbl:importance-rf}.
@@ -319,6 +321,7 @@ The resulting feature importance scores and their 95\% confidence intervals for 
 
 \begin{table}[t]
 \centering
+\caption{Feature importances and their 95\% confidence intervals for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \begin{tabular}{@{}ll@{}}
 \toprule
 Feature                & Feature Importance \\ \midrule
@@ -335,7 +338,6 @@ Arc length (b)         & 0.02072662 ($\pm$ 0.00103551)         \\
 Root mean square (b)   & 0.01544474 ($\pm$ 0.00078121)         \\
 Mean (b)               & 0.00946937 ($\pm$ 0.00077147)          \\ \bottomrule
 \end{tabular}
-\caption{Feature importances and their 95\% confidence intervals for random forests. (b) denotes the features extracted from the 1s window before the 40-spike; (a) denotes the features extracted from the 2s window after the 40-spike.}
 \label{tbl:importance-rf}
 \end{table}
 
