@@ -3,12 +3,11 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 
-from sklearn.model_selection import train_test_split
-
 import numpy as np
 import csv
 import os
 import argparse
+import random
 
 POSITIVE_DATA = "../../Pocket_PosData"
 NEGATIVE_DATA = "../../Pocket_NegData"
@@ -98,33 +97,20 @@ def create_validation_data(isPositive=False):
 def train_model(args):
 
 	#Read from .npz
-	feature_vectors = np.load(FEATURES_FILE)
+	data = np.load(FEATURES_FILE)
 	print("Loaded")
 
-	positive_features = feature_vectors['positive_features']
-	negative_features = feature_vectors['negative_features']
-
-	full_data = np.concatenate((positive_features, negative_features))
-
-	print("yay")
-
-	labels = [1] * len(positive_features)
-	labels.extend([0] * len(negative_features))
-
-	print("Whee")
-
-	full_data, _, labels, __ =  train_test_split(full_data, labels, test_size=0.80)
-
-	#Split data randomly for validation/training
-	data_train, data_test, labels_train, labels_test = train_test_split(full_data, labels, \
-														test_size=0.20)
-
-	# data_train = np.expand_dims(data_train, axis=2)
-	# data_test = np.expand_dims(data_test,axis=2)
-
-	#Recurrent, 1D Convluitional 
+	features = data['full_feature_vector']
+	labels = data['all_labels']
 
 	repeat_scores = []
+
+	#Shuffle_Data
+	# Generate the permutation index array.
+    permutation = np.random.permutation(a.shape[0])
+    # Shuffle the arrays by giving the permutation in the square brackets.
+    shuffled_features = features[permutation]
+    shuffled_labels = labels[permutation]
 
 	for _ in range(args.repeat):
 
@@ -142,14 +128,14 @@ def train_model(args):
 		#compile
 		model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-		model.fit(data_train, labels_train, epochs=args.epochs, batch_size=10)
+		model.fit(shuffled_features, shuffled_labels, epochs=args.epochs, batch_size=10, validation_split=0.2)
 		#Save model
 
 
-		#Evaluate model
-		scores = model.evaluate(data_test, labels_test)
-		repeat_scores.append(scores[1])
-		print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+		# #Evaluate model
+		# scores = model.evaluate(data_test, labels_test)
+		# repeat_scores.append(scores[1])
+		# print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
 
 	model.save(CLASSIFIER_NAME)
