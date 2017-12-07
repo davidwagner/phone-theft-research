@@ -2191,6 +2191,61 @@ def mergeUnlockMetrics(m1, m2):
     m1['numUnlocksTotal'] += m2['numUnlocksTotal']
     m1['unlockTimes'].extend(m2['unlockTimes'])
 
+def analyzeWatchInactive(activatedIntervalsWatchAggregate, userData, USER_ID, DATA_DAY, writer):
+    phoneActiveData = userData[sensors.PHONE_ACTIVE_SENSORS]
+    numPhoneActiveData = len(phoneActiveData)
+    watchInactiveIntervals = activatedIntervalsWatchAggregate[PossessionState.PHONE_DEACTIVATED]
+    # 4 = touch, 5 = screen on, 6 = unlocked
+    phoneActiveIdx = 0
+
+    activeSensorsDuringWatchInactiveIntervals = {}
+    for start, end in watchInactiveIntervals:
+
+        numTouches, numScreenOn, numUnlocks = 0, 0, 0
+
+        # Find first row of phoneActiveData whose timestamp is within this inactive interval
+        while phoneActiveData[phoneActiveIdx][0] < start and phoneActiveIdx < numPhoneActiveData:
+            phoneActiveIdx += 1
+
+        # If no more phoneActiveData after start, then no data left
+        if phoneActiveIdx >= numPhoneActiveData:
+            break
+
+        phoneActiveDatum = phoneActiveData[phoneActiveIdx]
+        phoneActiveTime = phoneActiveDatum[0]
+
+        while phoneActiveTime < end and phoneActiveIdx < numPhoneActiveData:
+            numTouches += phoneActiveDatum[4]
+            numScreenOn += phoneActiveDatum[5]
+            numUnlocks += phoneActiveDatum[6]
+
+            phoneActiveIdx += 1
+            phoneActiveDatum = phoneActiveData[phoneActiveIdx]
+            phoneActiveTime = phoneActiveDatum[0]
+
+        activeSensorsDuringWatchInactiveIntervals[(start, end)] = (numTouches, numScreenOn, numUnlocks)
+
+        if phoneActiveIdx >= numPhoneActiveData:
+            break
+
+    totalDataTime = phoneActiveData[-1][0] - phoneActiveData[0][0]
+    totalInactiveTime = datetime.timedelta(seconds=0)
+    numTouches, numScreenOn, numUnlocks = 0, 0, 0
+    for interval, activeStats in activeSensorsDuringWatchInactiveIntervals.items():
+        totalInactiveTime += interval[1] - interval[0]
+        numTouches += activeStats[0]
+        numScreenOn += activeStats[1]
+        numUnlocks += activeStats[2]
+
+    totalInactiveTime = totalInactiveTime
+
+    writer.writerow([USER_ID, DATA_DAY,
+                     formatTimeValue(totalInactiveTime), formatTimeValue(totalDataTime),
+                     totalInactiveTime.total_seconds(), totalDataTime.total_seconds(), totalInactiveTime.total_seconds() / totalDataTime.total_seconds(),
+                     numTouches, numScreenOn, numUnlocks
+                     ])
+
+
 def main():
     print("SAFE PERIOD:", SAFE_PERIOD)
     # main_filter_consistent()
@@ -2207,6 +2262,12 @@ def main():
         os.makedirs(RESULTS_DIRECTORY)
     else:
         print("RESULTS DIR ALREADY EXISTS:", RESULTS_DIRECTORY)
+
+    inactiveAnalysisFile = open(RESULTS_DIRECTORY + '/' + 'inactive-analysis-' + NOW_TIME + '.csv', 'w+')
+    inactiveAnalysisWriter = csv.writer(inactiveAnalysisFile)
+    inactiveAnalysisWriter.writerow(["User", "Day", "Inactive Time", "Total Time",
+                                     "Inactive Time (s)", "Total Time (s)", "Inactive Proportion",
+                                     "Num. Touches", "Num. Screen On", "Num. Unlocks"])
 
     for DATA_DAY in DATA_DATES:
         print("DIRECTORY started as:", DIRECTORY)
@@ -2289,22 +2350,24 @@ def main():
                         activatedIntervalsWatch = runWatchFunctions(USER_ID, watchResults, watchSummaryWriter, watchFile, DATA_DAY, userData=userData)
                         mergeActivationIntervals(activatedIntervalsWatchAggregate, activatedIntervalsWatch)
 
-                    if not RUN_WATCH_ONLY:
-                        functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData=userData)
-                        if len(functionResults) > 0:
-                            activatedIntervalsPhone, possessionState, classifications = functionResults['activatedIntervalsPhone'], functionResults['possessionState'], functionResults['classifications']
-                            mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
-                            activatedTransitionTimes.update(possessionState.toActivatedTimes)
-                            deactivatedTransitionTimes.update(possessionState.toDeactivatedTimes)
+                    # if not RUN_WATCH_ONLY:
+                    #     functionResults = runClassifierFunctions(USER_ID, file, results, resultsSummaryWriter, DATA_DAY, NOW_TIME, userData=userData)
+                    #     if len(functionResults) > 0:
+                    #         activatedIntervalsPhone, possessionState, classifications = functionResults['activatedIntervalsPhone'], functionResults['possessionState'], functionResults['classifications']
+                    #         mergeActivationIntervals(activatedIntervalsPhoneAggregate, activatedIntervalsPhone)
+                    #         activatedTransitionTimes.update(possessionState.toActivatedTimes)
+                    #         deactivatedTransitionTimes.update(possessionState.toDeactivatedTimes)
+                    #
+                    # if activatedIntervalsPhone != None:
+                    #     # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
+                    #     unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
+                    #     if len(unlockMetrics) > 0:
+                    #         mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
 
-                    if activatedIntervalsPhone != None:
-                        # runSmartUnlockFunctions(possessionState, activatedIntervalsPhone, smartUnlockFile, smartUnlockSummaryWriter, DATA_DAY, USER_ID)
-                        unlockMetrics = calculateUnlocksMetrics(possessionState, activatedIntervalsPhone)
-                        if len(unlockMetrics) > 0:
-                            mergeUnlockMetrics(unlockMetricsAggregate, unlockMetrics)
+                analyzeWatchInactive(activatedIntervalsWatchAggregate, userData, USER_ID, DATA_DAY, inactiveAnalysisWriter)
                 
                 print("Run with watchActivation")
-                runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (Filtered)")
+                # runActivationFunctions(activatedIntervalsWatchAggregate, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedFile, activatedSummaryWriter, activationsLogFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (Filtered)")
                 
                 activatedIntervalsWatchFromConsistency = {
                     PossessionState.PHONE_ACTIVATED : nearIntervals,
@@ -2312,7 +2375,7 @@ def main():
                 }
                 
                 print("Run with raw")
-                runActivationFunctions(activatedIntervalsWatchFromConsistency, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedRawFile, activatedRawSummaryWriter, activationsLogRawFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (RAW)")
+                # runActivationFunctions(activatedIntervalsWatchFromConsistency, activatedIntervalsPhoneAggregate, activatedTransitionTimes, deactivatedTransitionTimes, classifications, unlockMetricsAggregate, activatedRawFile, activatedRawSummaryWriter, activationsLogRawFile, DATA_DAY, USER_ID, NOW_TIME, tag="Activation (RAW)")
             except:
                 tb = traceback.format_exc()
                 print(tb)
