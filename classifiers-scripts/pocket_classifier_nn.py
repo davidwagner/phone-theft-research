@@ -21,10 +21,14 @@ CLASSIFIER_NAME = "PocketNN.h5"
 
 WINDOW_SIZE = 150
 
+MAX_TRIM = 1500
+
 def create_training_data():
 
 	full_feature_vector = []
 	all_labels = []
+
+	count = 0
 
 	for folder in [POSITIVE_DATA, NEGATIVE_DATA]:
 
@@ -34,9 +38,16 @@ def create_training_data():
 				continue
 			with open(folder + "/" + filename, 'r') as datafile:
 				print(filename)
-				all_data = list(csv.reader(datafile))	
+
+				all_data = list(csv.reader(datafile))
+
+				if os.path.isfile(folder + "/" + filename[:-4] + "_trim.txt"):
+					fp = open(folder + "/" + filename[:-4] + "_trim.txt")
+					trim = int(fp.readline())
+
+					all_data = all_data[:trim]
 			
-			for i in range(len(all_data) - WINDOW_SIZE + 1):
+			for i in range(min(MAX_TRIM, len(all_data)) - WINDOW_SIZE + 1):
 
 				feature_vector = []
 				for j in range(WINDOW_SIZE):
@@ -56,6 +67,8 @@ def create_training_data():
 					all_labels.append(1)
 				else:
 					all_labels.append(0)
+
+			count += 1
 
 	#Save to .npz
 	np.savez(FEATURES_FILE, full_feature_vector = full_feature_vector, all_labels = all_labels)
@@ -107,7 +120,7 @@ def train_model(args):
 
 	#Shuffle_Data
 	# Generate the permutation index array.
-	permutation = np.random.permutation(a.shape[0])
+	permutation = np.random.permutation(features.shape[0])
 	# Shuffle the arrays by giving the permutation in the square brackets.
 	shuffled_features = features[permutation]
 	shuffled_labels = labels[permutation]
@@ -116,7 +129,7 @@ def train_model(args):
 
 		# create model
 		model = Sequential()
-		model.add(Conv1D(64, 3, activation='relu', input_shape=(WINDOW_SIZE * 3, 1)))
+		model.add(Conv1D(64, 3, activation='relu', input_shape=(WINDOW_SIZE, 3)))
 		model.add(Conv1D(64, 3, activation='relu'))
 		model.add(MaxPooling1D(3))
 		model.add(Conv1D(128, 3, activation='relu'))
