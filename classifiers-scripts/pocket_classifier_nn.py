@@ -23,12 +23,20 @@ WINDOW_SIZE = 150
 
 MAX_TRIM = 1500
 
-def create_training_data():
+def create_training_data(args):
+	if args.use_config:
+		import PocketConfig
+
+		POSITIVE_DATA = PocketConfig.POSITIVE_DATA
+		NEGATIVE_DATA = PocketConfig.NEGATIVE_DATA
+
+		FEATURES_FILE = PocketConfig.FEATURES_FILE
+		WINDOW_SIZE = PocketConfig.WINDOW_SIZE
+		MAX_TRIM = PocketConfig.MAX_TRIM
+
 
 	full_feature_vector = []
 	all_labels = []
-
-	count = 0
 
 	for folder in [POSITIVE_DATA, NEGATIVE_DATA]:
 
@@ -67,10 +75,8 @@ def create_training_data():
 					all_labels.append(1)
 				else:
 					all_labels.append(0)
-
-			count += 1
-
 	#Save to .npz
+
 	np.savez(FEATURES_FILE, full_feature_vector = full_feature_vector, all_labels = all_labels)
 
 def create_validation_data(isPositive=False):
@@ -109,14 +115,20 @@ def create_validation_data(isPositive=False):
 
 def train_model(args):
 
+	if args.use_config:
+		import PocketConfig
+
+		FEATURES_FILE = PocketConfig.FEATURES_FILE
+		CLASSIFIER_NAME = PocketConfig.CLASSIFIER_NAME
+
+		WINDOW_SIZE = PocketConfig.WINDOW_SIZE
+
+
 	#Read from .npz
 	data = np.load(FEATURES_FILE)
-	print("Loaded")
 
 	features = data['full_feature_vector']
 	labels = data['all_labels']
-
-	repeat_scores = []
 
 	#Shuffle_Data
 	# Generate the permutation index array.
@@ -125,34 +137,46 @@ def train_model(args):
 	shuffled_features = features[permutation]
 	shuffled_labels = labels[permutation]
 
+	# shuffled_features = np.reshape(shuffled_features, (len(shuffled_features),WINDOW_SIZE, 3))
+
+	repeat_scores = []
+
 	for _ in range(args.repeat):
 
 		# create model
-		model = Sequential()
-		model.add(Conv1D(64, 3, activation='relu', input_shape=(WINDOW_SIZE, 3)))
-		model.add(Conv1D(64, 3, activation='relu'))
-		model.add(MaxPooling1D(3))
-		model.add(Conv1D(128, 3, activation='relu'))
-		model.add(Conv1D(128, 3, activation='relu'))
-		model.add(GlobalAveragePooling1D())
-		model.add(Dropout(0.5))
-		model.add(Dense(1, activation='sigmoid'))
+		if args.model_num == 1:
+			model = Sequential()
+			model.add(Dense(12, input_shape=(WINDOW_SIZE,3), activation='relu'))
+			model.add(Flatten())
+			model.add(Dense(8, activation='relu'))
+			model.add(Dense(1, activation='sigmoid'))
+		else:
+			model = Sequential()
+			model.add(Conv1D(64, 3, activation='relu', input_shape=(WINDOW_SIZE, 3)))
+			model.add(Conv1D(64, 3, activation='relu'))
+			model.add(MaxPooling1D(3))
+			model.add(Conv1D(128, 3, activation='relu'))
+			model.add(Conv1D(128, 3, activation='relu'))
+			model.add(GlobalAveragePooling1D())
+			model.add(Dropout(0.5))
+			model.add(Dense(1, activation='sigmoid'))
 
 		#compile
 		model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-		model.fit(shuffled_features, shuffled_labels, epochs=args.epochs, batch_size=10, validation_split=0.2)
+		model.fit(shuffled_features, shuffled_labels, epochs=args.epochs, batch_size=10, validation_split = 0.2)
 		#Save model
 
 
-		# #Evaluate model
-		# scores = model.evaluate(data_test, labels_test)
-		# repeat_scores.append(scores[1])
-		# print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+	# 	#Evaluate model
+	# 	scores = model.evaluate(data_test, labels_test)
+	# 	print(scores)
+	# 	repeat_scores.append(scores[1])
+	# 	print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
-
-	model.save(CLASSIFIER_NAME)
-	print(np.mean(repeat_scores), np.std(repeat_scores))
+	# print(np.mean(repeat_scores), np.std(repeat_scores))
+	if args.save_model:
+		model.save(CLASSIFIER_NAME)
 
 def evaluate_classifier():
 	model = load_model(CLASSIFIER_NAME)
@@ -191,18 +215,29 @@ def parse_args():
   parser.add_argument(
 	'-method', metavar='method', dest='method', type=float,
 	required=True,  
-	help="Number of training steps.",
   )
+
+  parser.add_argument(
+	'-model_num', metavar='model_num', dest='model_num', type=int,
+	required=True
+  )
+
+  parser.add_argument(
+	'-save_model', metavar='save_model', dest='save_model', type=bool,
+	required=True
+  )
+
+  parser.add_argument(
+	'-use_config', metavar='use_config', dest='use_config', type=bool,
+	required=True
+  )
+
   args = parser.parse_args()
 
   if args.method == 0:
-  	create_training_data()
-  elif args.method == 1:
-  	train_model(args)
+  	create_training_data(args)
   else:
-  	# create_validation_data()
-  	1+1
-
+  	train_model(args)
   
 
 if __name__ == '__main__':

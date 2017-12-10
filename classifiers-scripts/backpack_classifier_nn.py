@@ -20,7 +20,17 @@ CLASSIFIER_NAME = "BackpackClassifierNN.h5"
 WINDOW_SIZE = 50
 MAX_TRIM = 2500
 
-def create_training_data():
+def create_training_data(args):
+	if args.use_config:
+		import BackpackConfig
+
+		POSITIVE_DATA = BackpackConfig.POSITIVE_DATA
+		NEGATIVE_DATA = BackpackConfig.NEGATIVE_DATA
+
+		FEATURES_FILE = BackpackConfig.FEATURES_FILE
+		WINDOW_SIZE = BackpackConfig.WINDOW_SIZE
+		MAX_TRIM = BackpackConfig.MAX_TRIM
+
 
 	full_feature_vector = []
 	all_labels = []
@@ -63,7 +73,6 @@ def create_training_data():
 				else:
 					all_labels.append(0)
 	#Save to .npz
-	print(np.shape(full_feature_vector))
 	np.savez(FEATURES_FILE, full_feature_vector = full_feature_vector, all_labels = all_labels)
 
 def create_validation_data(isPositive=True):
@@ -103,6 +112,15 @@ def create_validation_data(isPositive=True):
 
 
 def train_model(args):
+
+	if args.use_config:
+		import BackpackConfig
+
+		FEATURES_FILE = BackpackConfig.FEATURES_FILE
+		CLASSIFIER_NAME = BackpackConfig.CLASSIFIER_NAME
+
+		WINDOW_SIZE = BackpackConfig.WINDOW_SIZE
+
 
 	#Read from .npz
 	data = np.load(FEATURES_FILE)
@@ -155,7 +173,8 @@ def train_model(args):
 	# 	print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
 	# print(np.mean(repeat_scores), np.std(repeat_scores))
-	model.save(CLASSIFIER_NAME)
+	if args.save_model:
+		model.save(CLASSIFIER_NAME)
 
 def evaluate_classifier():
 	model = load_model(CLASSIFIER_NAME)
@@ -202,10 +221,20 @@ def parse_args():
 	required=True
   )
 
+  parser.add_argument(
+	'-save_model', metavar='save_model', dest='save_model', type=bool,
+	required=True
+  )
+
+  parser.add_argument(
+	'-use_config', metavar='use_config', dest='use_config', type=bool,
+	required=True
+  )
+
   args = parser.parse_args()
 
   if args.method == 0:
-  	create_training_data()
+  	create_training_data(args)
   else:
   	train_model(args)
 
