@@ -2,8 +2,6 @@ import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten, Conv1D, MaxPooling1D, GlobalAveragePooling1D
 
-from sklearn.model_selection import train_test_split
-
 import numpy as np
 import csv
 import os
@@ -14,12 +12,12 @@ NEGATIVE_DATA = "../../Backpack_NegData"
 
 VALIDATION_FOLDER = "../../validation_backpack"
 
-FEATURES_FILE = "BackpackFeatures.npz"
+FEATURES_FILE = "BackpackFeatures_50.npz"
 VALIDATION_FILE = "backpack_validation.npz"
 
 CLASSIFIER_NAME = "BackpackClassifierNN.h5"
 
-WINDOW_SIZE = 100
+WINDOW_SIZE = 50
 MAX_TRIM = 2500
 
 def create_training_data():
