@@ -697,9 +697,7 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile, userData={}):
     print("########")
     print("SAFE PERIOD:", SAFE_PERIOD)
     possessionState = PossessionState.PossessionState(userData, userData[sensors.PHONE_ACTIVE_SENSORS], userData[sensors.KEYGUARD], SMOOTHING_NUM, safe_period=SAFE_PERIOD)
-    aggregateClassifierResults = {}
-    for c in classifiers.CLASSIFIERS:
-        aggregateClassifierResults[c] = []
+    aggregateClassifierResults = []
     for i in range(0, limit, maxWindowSize):
         windowOfData = {}
         windowStartTime = 0
@@ -713,15 +711,19 @@ def runClassifiersOnUser(userID, csvWriter, resultsFile, userData={}):
             print("NumRows:", numRows)
         classifierResults = {}
         for c in classifiers.CLASSIFIERS:
-            aggregateClassifierResults[c].append(((windowStartTime, windowStartTime + datetime.timedelta(seconds=1)), results))
+            # aggregateClassifierResults[c].append(((windowStartTime, windowStartTime + datetime.timedelta(seconds=1)), results))
             classifier = classifiers.CLASSIFIERS[c]
             results = runClassifier(classifier, windowOfData)
             classifierResults[classifier] = results
             # if i % 50000 == 0 and c ==classifiers.HAND_CLASSIFIER:
             #     print("TYPE: ", type(results))
 
-        logString = windowStartTime.strftime("%H:%M:%S") + "| " 
 
+        logString = windowStartTime.strftime("%H:%M:%S") + "| " 
+        aggregateWindow = {}
+        for c in classifierResults:
+            aggregateWindow[c.getName()] = classifierResults[c]
+        aggregateClassifierResults.append(((windowStartTime, windowStartTime + datetime.timedelta(seconds = 1)), aggregateWindow))
         windowClassification = classifierPolicy(classifierResults)
         logString += "___" + windowClassification[0] + "___ " 
         for c, results in classifierResults.items():
@@ -1126,16 +1128,19 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
     # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
 
     classificationIntervals = {}
-    noSteadyState = combineSteadyState(actualIntervals)
+    # noSteadyState = combineSteadyState(actualIntervals)
+    # print(actualIntervals)
+    accuracyLengths = classificationAccWithoutPolicy(actualIntervals, expectedIntervals)
+    print(accuracyLengths)
     for c in classifiers.CLASSIFIERS:
         # print(actualIntervals[c])
-        if c == classifiers.STEADY_STATE_CLASSIFIER:
-            continue
+        # if c != classifiers.BACKPACK_CLASSIFIER:
+        #     continue
         print(c)
 
         # comparedIntervals, matchingIntervals, conflictingIntervals = classificationAccWithoutPolicy(actualIntervals[c], expectedIntervals, c)
         # classificationIntervals[c] = (comparedIntervals, matchingIntervals, conflictingIntervals)
-        accuracyLengths = classificationAccWithoutPolicy(actualIntervals[c], expectedIntervals, c)
+        # accuracyLengths = classificationAccWithoutPolicy(actualIntervals, expectedIntervals, c)
 
 
         # print(accuracyLengths)
@@ -1163,14 +1168,14 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
         # print(intervalsWithoutSteady);
         # classificationAccuracy = getClassificationAccuracy(comparedIntervals, c);
         # print(classificationAccuracy)
-        ccm = classifierConfusionMatrix(accuracyLengths)
+        ccm = classifierConfusionMatrix(accuracyLengths[c])
         print("Confusion matrix without Steady State")
         print(ccm)
 
-        accuracyNoSteady = classificationAccWithoutPolicy(noSteadyState[c], expectedIntervals, c)
-        ccm_no = classifierConfusionMatrix(accuracyNoSteady)
-        print("Confusion matrix with Steady State")
-        print(ccm_no)
+        # accuracyNoSteady = classificationAccWithoutPolicy(noSteadyState[c], expectedIntervals, c)
+        # ccm_no = classifierConfusionMatrix(accuracyNoSteady)
+        # print("Confusion matrix with Steady State")
+        # print(ccm_no)
         # return
 
 
@@ -1201,14 +1206,14 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
 
 # classifier = [true positive, false positive, false negtive, total time]
 
-def classificationAccWithoutPolicy(intervals1, intervals2, c):
-    i1 = 1
+def classificationAccWithoutPolicy(intervals1, intervals2):
+    i1 = 0
     i2 = 0
     
     interval1 = intervals1[i1][0]
     interval2 = intervals2[i2][0]
     class2 = intervals1[i2][1]
-    class1 = c
+    classifierToVal = intervals1[i1][1]
 
     startTime = interval1[0] if interval1[0] > interval2[0] else interval2[0]
     endTime = None
@@ -1216,12 +1221,12 @@ def classificationAccWithoutPolicy(intervals1, intervals2, c):
     comparedIntervals = []
     matchingIntervals = []
     conflictingIntervals = []
-    accuracyLengths = [datetime.timedelta(seconds=0)] * 4
+    accuracyLengths = {}
     while i1 < len(intervals1) and i2 < len(intervals2):
         interval1 = intervals1[i1][0]
         interval2 = intervals2[i2][0]
         class2 = intervals2[i2][1]
-        classification = intervals1[i1][1]
+        classifierToVal = intervals1[i1][1]
 
         if interval1[1] == interval2[1]:
             endTime = interval1[1]
@@ -1237,48 +1242,54 @@ def classificationAccWithoutPolicy(intervals1, intervals2, c):
         comparedClass = None
         # matchingClasses = False
         length = intervalLength((startTime, endTime))
+        for c in classifierToVal:
+            # print(c)
+            classification = classifierToVal[c]
+            if c not in accuracyLengths:
+                accuracyLengths[c] = [datetime.timedelta(seconds=0)] * 4
+            if c == class2:
+                if sum(classification) * 1.0 / len(classification) >= 0.5:
+                    accuracyLengths[c][0] += length
+                    # print("TRUE POSITIVES")
+                    # print(class1)
+                    # print(class2)
+                    # print(classification)
+                    # print("\n")
+                else:
+                    # if class2 == classifiers.HAND_CLASSIFIER:
 
-        if class1 == class2:
-            if sum(classification) * 1.0 / len(classification) >= 0.5:
-                accuracyLengths[0] += length
-                # print("TRUE POSITIVES")
-                # print(class1)
-                # print(class2)
-                # print(classification)
-                # print("\n")
+                    #     print("FALSE NEGATIVES")
+                    #     # print(class1)
+                    #     print(class2)
+                    #     print(classifierToVal)
+                    #     print((startTime, endTime))
+
+                    #     print("\n")
+
+
+                    accuracyLengths[c][2] += length
+                    #false negatives
             else:
-                # print("FALSE NEGATIVES")
-                # print(class1)
-                # print(class2)
-                # print(classification)
-                # print((startTime, endTime))
+                if sum(classification) * 1.0 / len(classification) > 0.5:
+                 #false positive
+                    # print("FALSE POSITIVE")
+                    # print(class1)
+                    # print(class2)
+                    # print(classification)
+                    # print(sum(classification) * 1.0 / len(classification))
+                    # print((startTime, endTime))
+                    # print("\n")
 
-                # print("\n")
+                    accuracyLengths[c][1] += length
 
-
-                accuracyLengths[2] += length
-                #false negatives
-        else:
-            if sum(classification) * 1.0 / len(classification) > 0.5:
-             #false positive
-                # print("FALSE POSITIVE")
-                # print(class1)
-                # print(class2)
-                # print(classification)
-                # print(sum(classification) * 1.0 / len(classification))
-                # print((startTime, endTime))
-                # print("\n")
-
-                accuracyLengths[1] += length
-
-            else :
-                # print("TRUE NEGATIVES")
-                # print(classification)
-                # print(class1)
-                # print(class2)
-                # print((startTime, endTime))
-                # print("\n")
-                accuracyLengths[3] += length
+                else :
+                    # print("TRUE NEGATIVES")
+                    # print(classification)
+                    # print(class1)
+                    # print(class2)
+                    # print((startTime, endTime))
+                    # print("\n")
+                    accuracyLengths[c][3] += length
 
              #true neg 
 
@@ -1333,7 +1344,7 @@ def combineSteadyState(actualIntervals):
                 endTime = interval2[1]
                 i2 += 1
 
-            print(steadyState)
+            # print(steadyState)
             if len(steadyState) == 0:
                 steadyValue = 0
             else:
