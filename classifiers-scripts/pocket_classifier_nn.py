@@ -1,7 +1,7 @@
 import keras
 from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout
-from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
+from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D, Flatten
 
 import numpy as np
 import csv
