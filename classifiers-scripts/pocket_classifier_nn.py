@@ -19,7 +19,7 @@ VALIDATION_FILE = "pocket_validation.npz"
 
 CLASSIFIER_NAME = "PocketNN.h5"
 
-WINDOW_SIZE = 150
+WINDOW_SIZE = 100
 
 MAX_TRIM = 1500
 

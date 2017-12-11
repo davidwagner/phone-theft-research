@@ -17,7 +17,7 @@ VALIDATION_FILE = "backpack_validation.npz"
 
 CLASSIFIER_NAME = "BackpackClassifierNN.h5"
 
-WINDOW_SIZE = 50
+WINDOW_SIZE = 100
 MAX_TRIM = 2500
 
 def create_training_data(args):
