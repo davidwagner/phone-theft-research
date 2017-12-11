@@ -1121,22 +1121,38 @@ def getExpectedIntervals(file):
     return intervals
 
 
+
 ### Joanna Finish #####
 # actualIntervals is a list of intervals, classifications like [((startTime, endTime), "table"), ((start, end), "pocket")]
-def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=None):
+def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=None, expectedNoSteady = None, normalIntervals=None):
     # However you want to load the expectedIntervals, maybe parse a text file?
     # Just make sure to load them as a list with each item formatted as ((startDateTime, endDateTime), classification)
 
     classificationIntervals = {}
-    # noSteadyState = combineSteadyState(actualIntervals)
-    # print(actualIntervals)
+    noSteadyState = combineSteadyState(actualIntervals)
+    # print(noSteadyState)
     accuracyLengths = classificationAccWithoutPolicy(actualIntervals, expectedIntervals)
-    print(accuracyLengths)
+    noSteadyAccuracyLenghts = classificationAccWithoutPolicy(noSteadyState, expectedNoSteady)
+
+    # print(accuracyLengths)
+    comparedIntervals, matchingIntervals, conflictingIntervals = compareIntervals(normalIntervals, expectedIntervals)
+    policyNoSteady = filterSteadyState(comparedIntervals);
+    # print("STEADY STATE FILTERING: " );
+    # print(intervalsWithoutSteady);
+    classificationAccuracy = getClassificationAccuracy(comparedIntervals)
+    # print(classificationAccuracy)
+    print("Policy Confusion Matrix with Steady State")
+    # print(classifierConfusionMatrix(classificationAccuracy))
+    noSteadyAccuracy = getClassificationAccuracy(policyNoSteady)
+    print("Policy Confusion Matrix with NO Steady State")
+    # print(classifierConfusionMatrix(noSteadyAccuracy))
+
     for c in classifiers.CLASSIFIERS:
         # print(actualIntervals[c])
         # if c != classifiers.BACKPACK_CLASSIFIER:
         #     continue
         print(c)
+
 
         # comparedIntervals, matchingIntervals, conflictingIntervals = classificationAccWithoutPolicy(actualIntervals[c], expectedIntervals, c)
         # classificationIntervals[c] = (comparedIntervals, matchingIntervals, conflictingIntervals)
@@ -1169,8 +1185,11 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
         # classificationAccuracy = getClassificationAccuracy(comparedIntervals, c);
         # print(classificationAccuracy)
         ccm = classifierConfusionMatrix(accuracyLengths[c])
-        print("Confusion matrix without Steady State")
+        print("Classifier Confusion matrix with Steady State")
         print(ccm)
+        ccm_no = classifierConfusionMatrix(noSteadyAccuracyLenghts[c])
+        print("Classifier Confusion Matrix with NO Steady State")
+        print(ccm_no)
 
         # accuracyNoSteady = classificationAccWithoutPolicy(noSteadyState[c], expectedIntervals, c)
         # ccm_no = classifierConfusionMatrix(accuracyNoSteady)
@@ -1198,6 +1217,15 @@ def checkClassifications(actualIntervals, DATA_DAY, NOW_TIME, expectedIntervals=
         #     file.write(formatTimeValue(interval, withDate=True) + ": " + formatTimeValue(intervalLength(interval))[:15] + ": " + classificationString + "\n")
 
         # file.close()
+    for c in classifiers.CLASSIFIERS:
+        print(c)
+        if c not in classificationAccuracy:
+            continue
+        print("Policy Confusion Matrix with Steady State")
+        print(classifierConfusionMatrix(classificationAccuracy[c]))
+        noSteadyAccuracy = getClassificationAccuracy(policyNoSteady)
+        print("Policy Confusion Matrix with NO Steady State")
+        print(classifierConfusionMatrix(noSteadyAccuracy[c]))
 
     # Write the results to some file, probably also calculate some stats on what % of time we match/don't match
     # All of comparedIntervals, matchingIntervals, and conflictingIntervals have the following format:
@@ -1291,72 +1319,46 @@ def classificationAccWithoutPolicy(intervals1, intervals2):
                     # print("\n")
                     accuracyLengths[c][3] += length
 
-             #true neg 
 
-        #     comparedClass = class2 + "|" + class1
-        #     matchingClass = False
-
-        # comparedInterval = ((startTime, endTime), comparedClass, matchingClasses)
-        # comparedIntervals.append(comparedInterval)
-
-        # if matchingClasses:
-        #     matchingIntervals.append(comparedInterval)
-        # else:
-        #     conflictingIntervals.append(comparedInterval)
 
         startTime = endTime
-
-    # return comparedIntervals, matchingIntervals, conflictingIntervals
     return accuracyLengths
 
 
 def combineSteadyState(actualIntervals):
-    results = {}
-    steadyStateIntervals = actualIntervals[classifiers.STEADY_STATE_CLASSIFIER]
-    for c in classifiers.CLASSIFIERS:
-        results[c] = []
-        if c == classifiers.STEADY_STATE_CLASSIFIER:
-            continue
-        classifierIntervals = actualIntervals[c]
-        i1 = 1
-        i2 = 0
+    results = []
+    i = 0
 
-        interval1 = classifierIntervals[i1][0]
-        interval2 = steadyStateIntervals[i2][0]
+    interval1 = actualIntervals[i][0]
+    classifierToVal = actualIntervals[i][1]
 
-        startTime = interval1[0] if interval1[0] > interval2[0] else interval2[0]
-        endTime = None
-        prev = 1;
-        while i1 < len(classifierIntervals) and i2 < len(steadyStateIntervals):
-            interval1 = classifierIntervals[i1][0]
-            interval2 = steadyStateIntervals[i2][0]
-            steadyState = steadyStateIntervals[i2][1]
-            classifierState = classifierIntervals[i2][1]
+    prev = {}
+    while i < 5:
+        interval1 = actualIntervals[i][0]
+        classifierToVal = actualIntervals[i][1]
+        for c in classifiers.CLASSIFIERS:
+            if c not in prev:
+                prev[c] = [0]* 5
+            prev[c][i%5] = sum(classifierToVal[c]) * 1.0 / len(classifierToVal[c])
+        results.append((interval1, classifierToVal))
+        i+=1
 
-            if interval1[1] == interval2[1]:
-                endTime = interval1[1]
-                i1 += 1
-                i2 += 1
-            elif interval1[1] < interval2[1]:
-                endTime = interval1[1]
-                i1 += 1
-            else:
-                endTime = interval2[1]
-                i2 += 1
+    while i < len(actualIntervals):
+        interval1 = actualIntervals[i][0]
+        classifierToVal = actualIntervals[i][1]
+        prevVal = 0
+        prevClass = classifiers.TABLE_CLASSIFIER
+        for c in prev:
+            if sum(prev[c]) > prevVal:
+                prevClass=c
+                prevVal = sum(prev[c])
+            prev[c][i%5] = sum(classifierToVal[c]) * 1.0 / len(classifierToVal[c])
+        condition = sum(classifierToVal[prevClass]) * 1.0 / len(classifierToVal[prevClass]) < 0.5 and sum(classifierToVal[classifiers.STEADY_STATE_CLASSIFIER]) * 1.0 / len(classifierToVal[classifiers.STEADY_STATE_CLASSIFIER]) >= 0.5
+        if  condition:
+            classifierToVal[prevClass] = [1]
 
-            # print(steadyState)
-            if len(steadyState) == 0:
-                steadyValue = 0
-            else:
-                steadyValue = sum(steadyState)*1.0 / len(steadyState)
-            if len(classifierState) == 0:
-                classifierValue = 0
-            else:
-                classifierValue = sum(classifierState) * 1.0 / len(classifierState)
-            if steadyValue >= 0.5 and classifierValue < 0.5:
-                results[c].append(((startTime, endTime), [prev]))
-            prev = classifierValue
-            startTime = endTime
+        results.append((interval1, classifierToVal))
+        i+=1
     return results
 
 
@@ -1387,8 +1389,8 @@ def filterSteadyState(comparedIntervals):
     return result
 
 
-def getClassificationAccuracy(comparedIntervals, c):
-    confusionList = [datetime.timedelta(seconds=0)] * 4
+def getClassificationAccuracy(comparedIntervals):
+    confusionList = {}
     for interval, classificationString, isMatching in comparedIntervals:
         tokens = classificationString.split("|");
         chosen = tokens[0]
@@ -1400,21 +1402,24 @@ def getClassificationAccuracy(comparedIntervals, c):
             expected = expected.strip()
             # if expected == classifiers.STEADY_STATE_CLASSIFIER:
             #     continue
-            # if expected not in confusionList:
-            #     confusionList[expected] = [datetime.timedelta(seconds=0)] * 4
-        # if chosen not in confusionList:
-        #     confusionList[chosen] = [datetime.timedelta(seconds=0)] * 4
+            if expected not in confusionList:
+                confusionList[expected] = [datetime.timedelta(seconds=0)] * 4
+        if chosen not in confusionList:
+            confusionList[chosen] = [datetime.timedelta(seconds=0)] * 4
         length = intervalLength(interval)
         if isMatching:
-            confusionList[0] += length
+            confusionList[chosen][0] += length
         else:
-            if expected == c:
-                confusionList[2] += length
-            if chosen == c:
-                confusionList[1] += length
-        #     confusionList[expected][2] += length
-        #     confusionList[expected][3] += length
-        # confusionList[chosen][3] += length
+            confusionList[chosen][1] += length
+            confusionList[expected][2] += length
+            confusionList[expected][3] += length
+        confusionList[chosen][3] += length
+
+    totalTime = totalTimeOfIntervals(comparedIntervals)    
+    for c in confusionList:
+        tp, fp, fn, tt = confusionList[c]
+        tn = totalTime - tp - fp -fn
+        confusionList[c][3] = tn
     return confusionList
 
 def classifierConfusionMatrix(confusionList):
@@ -2085,7 +2090,8 @@ def runClassifierFunctions(USER_ID, log_file, results, resultsSummaryWriter, DAT
         if DIARY_STUDY:
             print("Checking against Diary Study")
             expectedIntervalsDiary = getExpectedIntervals(DIARY_STUDY_FILE)
-            checkClassifications(aggregateClassifierResults, DATA_DAY, NOW_TIME, expectedIntervalsDiary)
+            noSteadyExpectedIntervals = getExpectedIntervals(DIARY_STUDY_NO_STEADY_FILE)
+            checkClassifications(aggregateClassifierResults, DATA_DAY, NOW_TIME, expectedIntervalsDiary, noSteadyExpectedIntervals, classifications)
 
         activatedIntervalsPhone = possessionState.getIntervalsByState()
 
