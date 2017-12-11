@@ -3,7 +3,7 @@ import BaseClassifier
 import Sensors as s
 import numpy
 
-windowSize = 5
+windowSize = 100
 
 class Classifier(BaseClassifier.BaseClassifier):
 
@@ -12,9 +12,7 @@ class Classifier(BaseClassifier.BaseClassifier):
 	def classify(self, windows):
 
 		"""Edit as Necessary"""
-		thresholdX = 1.3
-		thresholdY = 1.3
-		thresholdZ = 1.3
+		thresholdMag = 0.68
 
 		if s.ACCELEROMETER not in windows:
 			raise Exception("Accelerometer not found")
@@ -26,24 +24,23 @@ class Classifier(BaseClassifier.BaseClassifier):
 		
 
 		"""Take average of the entire window"""
-		xValues = []
-		yValues = []
-		zValues = []
+		window_vector = []
 
 		for row in windows[s.ACCELEROMETER]:
-			xValues.append(float(row[1]))
-			yValues.append(float(row[2]))
-			zValues.append(float(row[3]))
+			xVal = float(row[1])
+			yVal = float(row[2])
+			zVal = float(row[3])
 
-		xVal = numpy.mean(xValues)
-		yVal = numpy.mean(yValues)
-		zVal = numpy.mean(zValues)
+			mag = math.sqrt(xVal * xVal + yVal * yVal + zVal * zVal)
+			window_vector.append(mag)
 
+		avg_magnitude = np.mean(window_vector)
 
-		if (abs(xVal-0) < thresholdX and abs(yVal-0) < thresholdY and abs(zVal-9.5) < thresholdZ):
+		if (abs(avg_magnitude - 9.5) < threshold_mag):
 			return 1
 
 		return 0
+
 
 	# Need to change to time
 	def getWindowTime(self):
