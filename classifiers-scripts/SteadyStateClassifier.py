@@ -3,6 +3,7 @@ import BaseClassifier
 import Sensors as s
 
 import numpy as np
+import math
 
 # CLASSIFIER_PATH = './classifier_pickles/TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
 # clf = joblib.load(CLASSIFIER_PATH)

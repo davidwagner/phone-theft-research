@@ -1,7 +1,8 @@
 import BaseClassifier
 
 import Sensors as s
-import numpy
+import numpy as np
+import math
 
 windowSize = 100
 
@@ -36,7 +37,7 @@ class Classifier(BaseClassifier.BaseClassifier):
 
 		avg_magnitude = np.mean(window_vector)
 
-		if (abs(avg_magnitude - 9.5) < threshold_mag):
+		if (abs(avg_magnitude - 9.5) < thresholdMag):
 			return 1
 
 		return 0

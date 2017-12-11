@@ -28,8 +28,6 @@ class Classifier(BaseClassifier.BaseClassifier):
 		feature_vector = np.asarray(features)
 		feature_vector = np.expand_dims(feature_vector, axis=0)
 		results = clf.predict(np.asarray(feature_vector))
-
-		print(np.shape(feature_vector))
 		
 		return round(results[0][0])
 
