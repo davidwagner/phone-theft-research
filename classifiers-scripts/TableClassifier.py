@@ -4,7 +4,7 @@ import Sensors as s
 import numpy as np
 import math
 
-windowSize = 50
+windowSize = 25
 
 class Classifier(BaseClassifier.BaseClassifier):
 
