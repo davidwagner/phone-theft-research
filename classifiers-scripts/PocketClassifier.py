@@ -7,7 +7,7 @@ from keras.models import load_model
 import numpy as np
 
 
-CLASSIFIER_PATH = './classifier_pickles/PocketClassifier/PocketNN_New.h5'
+CLASSIFIER_PATH = './classifier_pickles/PocketClassifier/PocketNN_Sequential_50.h5'
 clf = load_model(CLASSIFIER_PATH)
 
 class Classifier(BaseClassifier.BaseClassifier):

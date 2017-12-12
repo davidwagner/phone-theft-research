@@ -19,7 +19,7 @@ VALIDATION_FILE = "../../pocket_validation.npz"
 
 CLASSIFIER_NAME = "PocketNN.h5"
 
-WINDOW_SIZE = 100
+WINDOW_SIZE = 50
 
 MAX_TRIM = 60 * 100 * 10
 
@@ -249,7 +249,7 @@ def parse_args():
   
 
 if __name__ == '__main__':
-  	# parse_args()
-	create_validation_data()
-	evaluate_classifier()
+  	parse_args()
+	# create_validation_data()
+	# evaluate_classifier()
 

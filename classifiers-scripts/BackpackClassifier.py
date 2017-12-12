@@ -12,25 +12,24 @@ clf = load_model(CLASSIFIER_PATH)
 
 class Classifier(BaseClassifier.BaseClassifier):
 
-	def classify(self, windowOfData):
-		accelData = windowOfData[s.ACCELEROMETER]
+	# def classify(self, windowOfData):
+		# accelData = windowOfData[s.ACCELEROMETER]
 		
-		features = []
+		# features = []
 
-		for i in range(len(accelData)):
-			column_vector = []
-			column_vector.append(float(accelData[i][1]))
-			column_vector.append(float(accelData[i][2]))
-			column_vector.append(float(accelData[i][3]))
+		# for i in range(len(accelData)):
+		# 	column_vector = []
+		# 	column_vector.append(float(accelData[i][1]))
+		# 	column_vector.append(float(accelData[i][2]))
+		# 	column_vector.append(float(accelData[i][3]))
 
-			features.append(column_vector)
+		# 	features.append(column_vector)
 
-		feature_vector = np.asarray(features)
-		feature_vector = np.expand_dims(feature_vector, axis=0)
-		results = clf.predict(np.asarray(feature_vector))
+		# feature_vector = np.asarray(features)
+		# feature_vector = np.expand_dims(feature_vector, axis=0)
+		# results = clf.predict(np.asarray(feature_vector))
 		
-		return round(results[0][0])
-
+		# return round(results[0][0])
 
 	def classify(self, windowOfData):
 		accelData = windowOfData[s.ACCELEROMETER]
@@ -47,6 +46,8 @@ class Classifier(BaseClassifier.BaseClassifier):
 		results = clf.predict(np.asarray(feature_vector))
 		
 		return round(results[0][0])
+	
+
 	# Need to change to time
 	def getWindowTime(self):
 		return featurizer.WINDOW_SIZE
