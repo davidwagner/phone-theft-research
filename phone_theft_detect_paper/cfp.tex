@@ -201,8 +201,7 @@ Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
 The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-week of data, and the logistis regression would report 248,000*0.09\%=223 false positives, the total number of samples extracted from the field study data times the false positive rate. This means that on average users receive 223/159$\approx$1.4 false alarm every week, and a true positive rate of 100\%.
-The random forests classifier has an even lower false positive rate (approximately one false alarm per month),
-but it only detects 60\% of the thefts.
+The random forests classifier has an even lower false positive rate (approximately one false alarm per month), but it only detects 60\% of the thefts.
 
 Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
