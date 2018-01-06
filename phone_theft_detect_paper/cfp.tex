@@ -205,7 +205,7 @@ The random forests classifier has an even lower false positive rate (approximate
 
 Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
-We also tested our classifiers on a set of 120 positive data points collected using a Nexus 6P. A detection rate of 98.3\% indicates that our detector works with other smartphone models.
+We also tested our classifiers on a set of 120 positive data points collected using a Nexus 6P. A detection rate of 98.3\% indicates that our detector works on other smartphone models.
 
 \begin{table}[t]
 \caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
