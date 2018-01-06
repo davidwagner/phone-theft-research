@@ -22,14 +22,14 @@ if __name__ == '__main__':
     classifiers = {
         'random_forest': RandomForestClassifier,
         'logistic_regression': LogisticRegression,
-        # 'linear_svm': LinearSVC,
+        'linear_svm': LinearSVC,
     }
 
     pos_data_file = '/Users/JasonLiu/research/security/phone_theft_detect/data/features_pos.csv'
     neg_data_file = '/Users/JasonLiu/research/security/phone_theft_detect/data/features_neg.csv'
 
-    # 45 positive data points collected using Nexus 6P. Used to calculate detection rate.
-    new_pos_data_file = '/Users/JasonLiu/research/security/phone_theft_detect/data/features_win_size_1_2_with_new_45_pos.csv'
+    # 120 positive data points collected using Nexus 6P. Used to calculate detection rate.
+    new_pos_data_file = '/Users/JasonLiu/research/security/phone_theft_detect/data/features_win_size_1_2_new_120_pos_6p.csv'
 
     class_weight_lr = {0: 1.0, 1: 200.0} # 'balanced' {0: 1.0, 1: 1.0} {0: 1.0, 1: 2000.0}
     class_weight_rf = {0: 1.0, 1: 5000.0}
