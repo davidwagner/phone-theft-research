@@ -1,35 +1,38 @@
 import keras
 from keras.models import Sequential, load_model
-from keras.layers import Dense, Dropout, Flatten, Conv1D, MaxPooling1D, GlobalAveragePooling1D
+from keras.layers import Dense, Dropout
+from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D, Flatten
 
 import numpy as np
 import csv
 import os
 import argparse
+import random
 
-POSITIVE_DATA = "../../Backpack_PostData"
-NEGATIVE_DATA = "../../Backpack_NegData"
+POSITIVE_DATA = "../../Pocket_PosData"
+NEGATIVE_DATA = "../../Pocket_NegData"
 
-VALIDATION_FOLDER = "../../validation_backpack"
+VALIDATION_FOLDER = "../../validation_pocket"
 
-FEATURES_FILE = "BackpackFeatures_50.npz"
-VALIDATION_FILE = "backpack_validation.npz"
+FEATURES_FILE = "pocket_features.npz"
+VALIDATION_FILE = "../../pocket_validation.npz"
 
-CLASSIFIER_NAME = "BackpackClassifierNN.h5"
+CLASSIFIER_NAME = "PocketNN.h5"
 
 WINDOW_SIZE = 50
-MAX_TRIM = 2500
+
+MAX_TRIM = 60 * 100 * 10
 
 def create_training_data(args):
 	if args.use_config:
-		import BackpackConfig
+		import PocketConfig
 
-		POSITIVE_DATA = BackpackConfig.POSITIVE_DATA
-		NEGATIVE_DATA = BackpackConfig.NEGATIVE_DATA
+		POSITIVE_DATA = PocketConfig.POSITIVE_DATA
+		NEGATIVE_DATA = PocketConfig.NEGATIVE_DATA
 
-		FEATURES_FILE = BackpackConfig.FEATURES_FILE
-		WINDOW_SIZE = BackpackConfig.WINDOW_SIZE
-		MAX_TRIM = BackpackConfig.MAX_TRIM
+		FEATURES_FILE = PocketConfig.FEATURES_FILE
+		WINDOW_SIZE = PocketConfig.WINDOW_SIZE
+		MAX_TRIM = PocketConfig.MAX_TRIM
 
 
 	full_feature_vector = []
@@ -73,53 +76,62 @@ def create_training_data(args):
 				else:
 					all_labels.append(0)
 	#Save to .npz
+
 	np.savez(FEATURES_FILE, full_feature_vector = full_feature_vector, all_labels = all_labels)
 
-def create_validation_data(isPositive=True):
-	data = []
+def create_validation_data(isPositive=False):
 
-	full_feature_vector = []
+	full_feature_vector =[]
 
 	for filename in os.listdir(VALIDATION_FOLDER):
-		print(filename)
+
 		if not filename.endswith(".csv"):
 			continue
 		with open(VALIDATION_FOLDER + "/" + filename, 'r') as datafile:
-			all_data = list(csv.reader(datafile))	
+			print(filename)
+
+			all_data = list(csv.reader(datafile))
+
+			if os.path.isfile(VALIDATION_FOLDER + "/" + filename[:-4] + "_trim.txt"):
+				fp = open(VALIDATION_FOLDER + "/" + filename[:-4] + "_trim.txt")
+				trim = int(fp.readline())
+
+				all_data = all_data[:trim]
 		
-		for i in range(len(all_data) - WINDOW_SIZE + 1):
+		for i in range(min(MAX_TRIM, len(all_data)) - WINDOW_SIZE + 1):
+
 			feature_vector = []
 			for j in range(WINDOW_SIZE):
 				if len(all_data[i+j]) < 4:
 					break
-				feature_vector.append(float(all_data[i + j][1]))
-				feature_vector.append(float(all_data[i + j][2]))
-				feature_vector.append(float(all_data[i + j][3]))
 
-			if len(feature_vector) == WINDOW_SIZE * 3:
-				full_feature_vector.append(feature_vector)
+				depth_vector = []
+				depth_vector.append(float(all_data[i + j][1]))
+				depth_vector.append(float(all_data[i + j][2]))
+				depth_vector.append(float(all_data[i + j][3]))
 
-	data = full_feature_vector
+				feature_vector.append(depth_vector)
+
+			full_feature_vector.append(feature_vector)
 
 	if isPositive:
-		labels = [1] * len(data)
+		labels = [1] * len(full_feature_vector)
 	else:
-		labels = [0] * len(data)
+		labels = [0] * len(full_feature_vector)
 
 	#Save to .npz
 	# vals_to_save = {temp_features[0]:"positive", temp_features[1]:"negative"}
-	np.savez(VALIDATION_FILE, labels=labels, data=data)
-
+	np.savez(VALIDATION_FILE, labels=labels, full_feature_vector=full_feature_vector)
 
 def train_model(args):
 
 	if args.use_config:
-		import BackpackConfig
+		import PocketConfig
 
-		FEATURES_FILE = BackpackConfig.FEATURES_FILE
-		CLASSIFIER_NAME = BackpackConfig.CLASSIFIER_NAME
+		FEATURES_FILE = PocketConfig.FEATURES_FILE
+		CLASSIFIER_NAME = PocketConfig.CLASSIFIER_NAME
 
-		WINDOW_SIZE = BackpackConfig.WINDOW_SIZE
+		WINDOW_SIZE = PocketConfig.WINDOW_SIZE
 
 
 	#Read from .npz
@@ -177,21 +189,18 @@ def train_model(args):
 		model.save(CLASSIFIER_NAME)
 
 def evaluate_classifier():
-	model = load_model(CLASSIFIER_NAME)
+	model = load_model("./classifier_pickles/PocketClassifier/PocketNN_New.h5")
 
 	#Load Data
 	#Read from .npz
 	features = np.load(VALIDATION_FILE)
 
-	print(features.keys())
-
-	data = features['data']
+	data = features['full_feature_vector']
 	labels= features['labels']
 
 	scores = model.evaluate(data, labels)
 	# repeat_scores.append(scores[1])
 	print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-
 
 
 
@@ -237,11 +246,10 @@ def parse_args():
   	create_training_data(args)
   else:
   	train_model(args)
-
   
 
 if __name__ == '__main__':
-  parse_args()
+  	parse_args()
 	# create_validation_data()
 	# evaluate_classifier()
 

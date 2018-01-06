@@ -3,29 +3,36 @@ import BaseClassifier
 import Sensors as s
 
 import numpy as np
+import math
 
 # CLASSIFIER_PATH = './classifier_pickles/TrainedClassifier_PhoneSteadyState/PocketSteadyStateClassifier_Beta.pkl'
 # clf = joblib.load(CLASSIFIER_PATH)
-THRESHOLD_X = 1
-THRESHOLD_Y = 1
-THRESHOLD_Z = 1
+THRESHOLD_MAG = 2
+
+WINDOW_SIZE = 100
+
 class Classifier(BaseClassifier.BaseClassifier):
 
-	def classify(self, windowOfData):
-		data = windowOfData[s.ACCELEROMETER]
+	def classify(self, windows):
 
-		x_data = [float(i[1]) for i in data]
-		y_data = [float(i[1]) for i in data]
-		z_data = [float(i[1]) for i in data]
+		window_vector = []
 
-		if np.ptp(x_data) < THRESHOLD_X and np.ptp(y_data) < THRESHOLD_Y and np.ptp(z_data) < THRESHOLD_Z:
+		for row in windows[s.ACCELEROMETER]:
+			xVal = float(row[1])
+			yVal = float(row[2])
+			zVal = float(row[3])
+
+			mag = math.sqrt(xVal * xVal + yVal * yVal + zVal * zVal)
+			window_vector.append(mag)
+
+		if np.ptp(window_vector) < THRESHOLD_MAG:
 			return 1
 
 		return 0
 
 	# Need to change to time
 	def getWindowTime(self):
-		return 50
+		return WINDOW_SIZE
 
 	def getRelevantSensors(self):
 		return [s.ACCELEROMETER]
