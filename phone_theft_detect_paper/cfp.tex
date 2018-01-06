@@ -85,7 +85,7 @@ We ran the experiment on flat ground in an open space, so the experiment was not
 We also made sure that the thief ran at least 40 feet after gaining possession of the victim's phone.
 We used a Nexus 5X smartphone (InvenSense MPU6515 embedded accelerometer) with Android version 7.1.1 for data collection in our simulated theft experiment.
 Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a single simulated theft.
-We collected an additional set of 45 trials, 15 instances from each scenario using a Nexus 6P smartphone with Android version 6.0.1 to demonstrate our classifier can generaize to different smartphone models.
+We collected an additional set of 120 trials, 40 instances from each scenario using a Nexus 6P smartphone with Android version 6.0.1 to demonstrate our classifier can generaize to different smartphone models.
 
 
 \begin{figure}[t]
@@ -206,7 +206,7 @@ but it only detects 60\% of the thefts.
 
 Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
-We also tested our classifiers on a set of 45 positive data points collected using a Nexus 6P. A highest detection rate of 97.8\% indicates that our detector works with other smartphone models.
+We also tested our classifiers on a set of 120 positive data points collected using a Nexus 6P. A detection rate of 98.3\% indicates that our detector works with other smartphone models.
 
 \begin{table}[t]
 \caption{Confusion matrices for a logistic regression classifier (at top; with class weights 1:200), random forests classifier (middle; class weights 1:5000), and a linear SVM classifier (bottom; class weights 1:1000).}
