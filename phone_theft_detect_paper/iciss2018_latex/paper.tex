@@ -1,6 +1,4 @@
 \documentclass[sigconf]{acmart}
-% \documentclass[sigconf, anonymous]{acmart}
-
 
 \fancyhf{} % Remove fancy page headers
 \fancyhead[C]{} % Anonymous submission to ICISS 2018 TODO: replace 9999 with your paper number
@@ -17,13 +15,14 @@
 \acmISBN{978-1-4503-6421-8} % ISBN - Insert your conference/workshop's ISBN below...
 \acmYear{2018} % Insert Publication year
 \copyrightyear{2018} % Insert Copyright year (typically the same as above)
+\acmArticle{...}
 \acmPrice{15.00}
 % \acmConference[Conference]{2018 Conference}{Month date-date, year}{City, State, Country}
 \acmConference[ICISS 2018]{2018 International Conference on Information Science and System}{April 27-29, 2018}{Jeju Island, South Korea}
 
 \settopmatter{printacmref=false, printccs=true, printfolios=false} % We want page numbers on submissions
 
-%%\ccsPaper{9999} % TODO: replace with your paper number once obtained
+%%\icissPaper{IS025} % TODO: replace with your paper number once obtained
 
 \begin{document}
 \title{Detecting Phone Theft Using Machine Learning}
@@ -53,14 +52,14 @@
 \author{Serge Egelman}
 % \authornote{This is the corresponding author}
 \affiliation{
-  \institution{UC Berkeley}
+  \institution{UC Berkeley/ICSI}
   % \streetaddress{726 Soda Hall}
   % \city{Berkeley}
   % \state{CA}
   % \postcode{94720}
   % \country{USA}
   }
-\email{egelman@cs.berkeley.ed}
+\email{egelman@cs.berkeley.edu}
 
 \begin{abstract}
 Millions of smartphones are stolen in the United States every year, putting victims' personal information at risk since many users often do not lock their phones.
@@ -91,10 +90,10 @@ Our system applies machine learning to smartphone accelerometer data in order to
 \keywords{Usable security, machine learning, smartphone theft detection} % TODO: replace with your keywords
 
 \maketitle
-\input{ccs-body} % TODO: replace with your brilliant paper!
+\input{paper-intro} % TODO: replace with your brilliant paper!
 
 \balance
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{ccs-sample}
+\bibliography{paper-ref}
 
 \end{document}

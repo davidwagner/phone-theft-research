@@ -36,7 +36,7 @@ Mare et~al.\ developed a continuous authentication system where the user wears a
 Their continuous authentication scheme works well and could plausibly be used to authenticate to a smartphone, but it requires users to wear a bracelet; in contrast, we seek solutions that do not require the user to carry or wear any additional devices.
 
 The most closely related work is by Chang et~al.\, who used the way
-that each person takes their phone out of their bag or pocket as a
+that each person took their phone out of their bag or pocket as a
 form of biometric authentication~\cite{cheng:theft}.
 They use accelerometer and gyroscope data to detect when the user picks
 up their phone, and then they apply dynamic time warping and boosting to
@@ -52,7 +52,7 @@ The benefit of biometric authentication is that it provides a comprehensive
 way to detect theft, regardless of the way the phone was stolen; however,
 as summarized above, the false positive rates of existing schemes
 are fairly high.
-Our scheme is limited to detecting a particular type of theft, but achieves
+Our scheme is limited to detecting two particular types of theft, but achieves
 far lower false positive rates.
 Our classifier is also user-independent and does not require obtaining
 training data from each user; we use the same classifier for all users.
@@ -101,10 +101,10 @@ We collected an additional set of 120 trials, 40 instances from each scenario us
 
 \subsubsection{Field Study}
 We performed a field study to gather data from ordinary smartphone users while they perform everyday activities, including walking, running, driving, possibly excercising, and anything else that occurred during their lives over the field study period.
-% We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study.
-We obtained approval from our university IRB for this study.
-The study was conducted in a metropolitan area from September to December 2016.
-% The study was conducted in the Bay Area of the United States from September to December 2016.
+We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study.
+% We obtained approval from our university IRB for this study.
+The study was conducted in the Bay Area of the United States from September to December 2016.
+% The study was conducted in a metropolitan area from September to December 2016.
 None of the participants experienced a phone theft during the study interval,
 so we were able to use the accelerometer data collected from the user study as negative samples for our machine learning algorithms (i.e., instances of non-theft activity).
 
@@ -163,8 +163,8 @@ Let $M_1,\dots,M_k$ denote the time series of acceleration magnitudes within the
 The features are computed as follows:
 \begin{itemize}
 \item \emph{Maximum}: the maximum value of the magnitude within the window, i.e., $\max(M_1,\dots,M_k)$.
-\item \emph{Mean}: the average value of magnitude in a window, i.e., $(M_1+\dots + M_k)/k$.
-\item \emph{Standard deviation}: the standard deviation of magnitude values in a window.
+\item \emph{Mean}: the average value of magnitude in a window, i.e., $\overline{M}=(M_1+\dots + M_k)/k$.
+\item \emph{Standard deviation}: the standard deviation of magnitude values in a window, i.e., $(\sum_{i=1}^{k}(M_i-\overline{M})^2)^{1/2}/(k-1)^{1/2}$.
 \item \emph{Root mean square}: the RMS of magnitude values in a window, i.e., $(M_1^2 + \dots + M_k^2)^{1/2}/k^{1/2}$.
 \item \emph{Arc length}: the average of the absolute differences between all adjacent magnitude values in a window, i.e., $(|M_2-M_1| + |M_3-M_2| + \dots + |M_k-M_{k-1}|)/(k-1)$.
 Intuitively, this captures the average of the first derivative of the acceleration.
@@ -173,15 +173,11 @@ Intuitively, this captures the average of the first derivative of the accelerati
 
 Because the accelerometer sensor reports readings in the same units on all Android phones, and because our features are relatively simple, we believe these features capture fundamental, device-independent characteristics of the motion rather than anything specific to the particular device used for data capture (e.g., in contrast to the hardware-based differences documented by Dey et al.~\cite{Dey2014}).
 
-We obtained 60 positive instances from the 60 simulated thefts.
-After applying the~$40 m/s^2$ threshold, we obtained approximately approximately 248,000 negative samples from the data collected in the field study.
+We obtained 120 positive instances from the 120 simulated thefts collected on Nexus 5X.
+After applying the~$40 m/s^2$ threshold, we obtained approximately 248,000 negative samples from the data collected in the field study.
 We then applied boolean classification techniques to this data set.
-
-
-% \begin{figure}[t]
-% \includegraphics[width=1.0\columnwidth]{neg_acc_separated.png}
-% \caption{The X, Y, Z and magnitude of acceleration, respectively, during normal usage at an arbitrary time period.}
-% \end{figure}
+We also obtained an additional data set of 120 positive instances from the 120 simulated thefts collected on Nexus 6P.
+We used this additional data set to test the generalizability of our theft detector.
 
 
 
@@ -200,7 +196,7 @@ Then we trained the classifiers on the training set and reported the predition r
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
-The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-week of data, and the logistis regression would report 248,000*0.09\%=223 false positives, the total number of samples extracted from the field study data times the false positive rate. This means that on average users receive 223/159$\approx$1.4 false alarm every week, and a true positive rate of 100\%.
+The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-week of data, and the logistic regression would report 248,000*0.09\%=223 false positives, the total number of samples extracted from the field study data times the false positive rate. This means that on average users receive 223/159$\approx$1.4 false alarm every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate (approximately one false alarm per month), but it only detects 60\% of the thefts.
 
 Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
@@ -233,46 +229,6 @@ True Positive & 17                 & 20                 \\ \bottomrule
 \label{fig:cmat}
 \end{table}
 
-% \begin{table}[t]
-% \centering
-% \begin{tabular}{@{}lll@{}}
-% \toprule
-%               & Predicted Negative & Predicted Positive \\ \midrule
-% True Negative & 248223             & 170                \\
-% True Positive & 0                  & 60                 \\ \bottomrule
-% \end{tabular}
-% \caption{Confusion matrix for a logistic regression classifier trained
-% with class weights set to 1:200.}
-% \label{fig:logistic}
-% \end{table}
-
-% \begin{table}[t]
-% \centering
-% \begin{tabular}{@{}lll@{}}
-% \toprule
-%               & Predicted Negative & Predicted Positive \\ \midrule
-% True Negative & 248360             & 33                 \\
-% True Positive & 32                 & 28                 \\ \bottomrule
-% \end{tabular}
-% \caption{Confusion matrix for a random forests classifier trained with
-% class weights set to 1:5000.}
-% \label{fig:rf}
-
-% \end{table}
-
-% \begin{table}[t]
-% \centering
-% \begin{tabular}{@{}lll@{}}
-% \toprule
-%               & Predicted Negative & Predicted Positive \\ \midrule
-% True Negative & 246522             & 1871               \\
-% True Positive & 42                 & 18                 \\ \bottomrule
-% \end{tabular}
-% \caption{Confusion matrix for a linear SVM classifier trained with
-% class weights set to 1:1000.}
-% \label{fig:svm}
-% \end{table}
-
 
 To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
@@ -281,9 +237,9 @@ the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is th
 In addition, we computed the 95\% confidence intervals for all standardized coefficents using 50 epoches of the entire data set.
 The feature importance scores and their 95\% confidence intervals for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
 The most discriminative features are
-the maximum of the before-window,
-the product of arc length and standard deviation of the after-window,
-and the arc length of the before-window.
+the root mean square and mean of the before-window,
+the root mean square and mean of the after-window,
+and the standard deviation of the after-window.
 Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \ref{fig:afterhist}), we can see that those features do appear to provide good discrimination.
 
 
@@ -294,7 +250,7 @@ Plotting a histogram of feature values (see Figures~\ref{fig:beforehist} and \re
 \toprule
 Feature                & Feature Importance \\ \midrule
 Root mean square (b)   &   143.8786849  ($\pm$ 0.08714717)       \\
-Mean (b)               &   129.8910092 ($\pm$ 0.08033373)        \\
+Mean (b)               &   129.8910092 ($\pm$ 0.08033373)       \\
 Root mean square (a)   &  \ 93.8382532  ($\pm$ 0.04439512)       \\
 Mean (a)               &  \ 88.1273891  ($\pm$ 0.03972303)       \\
 Standard deviation (a) &  \ 66.7204655  ($\pm$ 0.02228971)       \\

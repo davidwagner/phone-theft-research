@@ -15,11 +15,10 @@ Consequently, our scheme cannot offer comprehensive protection against all forms
 We measure the efficacy of our scheme by gathering two datasets.
 First, we simulated three types of phone theft: grab-and-run while the victim is standing still, grab-and-run while the victim is walking at a constant speed, and pick-pocket theft.
 We collect accelerometer sensor readings during the simulated thefts; these serve as known positives.
-Second, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday activities.
+Secondly, we conducted a field study where we collected 3 weeks of sensor readings from the phones of 53 participants during their everyday activities.
 No phone was stolen during the field study, so this dataset serves as known negatives.
 We use this to train a classifier and then evaluate its detection rate and false positive rate.
 Our best classifier produces 1 false alarm per week on average, while detecting 100\% of simulated thefts.
-
 
 Our contributions are:
 \begin{enumerate}
@@ -27,9 +26,9 @@ Our contributions are:
   \item We devise features and methods to detect two common types of theft, and we show that our system can detect these types of thefts with few false positives.
 \end{enumerate}
 
-\input{cfp}
-% \input{cfp}
-% \input{cfp}
+
+\input{paper-body}
+
 
 \section{Conclusions}
 
@@ -55,26 +54,18 @@ we only need to apply the classifier on a tiny fraction of time windows (only ab
 so the impact on battery life should be negligible.
 
 The primary limitation of our work is that we work with simulated thefts.
-It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data, and then use it to further train the classifier.
+It is difficult to obtain accelerometer data on actual theft occurring in the wild, but perhaps a practical deployment could obtain such data, and then use it to further train the classifiers.
 
 It may be possible to improve our results further by using other sensors on the smartphone, such as the step counter.
 The biggest open question is whether our methods can be extended to a more diverse set of theft scenarios; we hope that our work will inspire others to investigate this direction further.
 
 
 % \appendix
-
 % \section{Location}
-
 % Note that in the new ACM style, the Appendices come before the References.
 
-% \input{cfp}
 
 \begin{acks}
-% TODO: For the submission, don't include acknowledgments since they would most likely deanonymize you.
-% \begin{comment}
-% \textcolor{red}{Comment out for double blind review}.
-
 The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding with the Android sensor monitoring software, Jennider Chen from the Good Research for her assistance on conducting the user study, and Irwin Reyes, David Fifield and Michael McCoyd for giving feedback to our paper drafts.
 This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley.
-% \end{comment}
 \end{acks}
