@@ -176,7 +176,7 @@ Because the accelerometer sensor reports readings in the same units on all Andro
 We obtained 120 positive instances from the 120 simulated thefts collected on Nexus 5X.
 After applying the~$40 m/s^2$ threshold, we obtained approximately 248,000 negative samples from the data collected in the field study.
 We then applied boolean classification techniques to this data set.
-We also obtained an additional data set of 120 positive instances from the 120 simulated thefts collected on Nexus 6P.
+We also obtained an additional data set of 120 positive instances from the 120 simulated thefts collected on a Nexus 6P.
 We used this additional data set to test the generalizability of our theft detector.
 
 
@@ -188,7 +188,7 @@ We also evaluated different window sizes for the after-window.
 We found that a 2-second after-window yielded better accuracy than a 1-second after-window since 2-second windows encapsulate more complete acceleration information about the motions, and larger window sizes did not offer much improvement.
 Therefore, all of our experiments use a 1-second before-window and a 2-second after-window.
 We partitioned the entire dataset, which consists of 120 positive samples and approximately 248,000 negative samples, into training and test sets with 7:3 ratio.
-Then we trained the classifiers on the training set and reported the predition results of the test set.
+Then we trained the classifiers on the training set and reported the prediction results of the test set.
 
 
 
@@ -196,10 +196,10 @@ Then we trained the classifiers on the training set and reported the predition r
 Among the three classifiers, logistic regression performs the best.
 Confusion matrices for logistic regression, random forests, and a linear SVM
 are shown in Table~\ref{fig:cmat}.
-The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-week of data, and the logistic regression would report 248,000*0.09\%=223 false positives, the total number of samples extracted from the field study data times the false positive rate. This means that on average users receive 223/159$\approx$1.4 false alarm every week, and a true positive rate of 100\%.
-The random forests classifier has an even lower false positive rate (approximately one false alarm per month), but it only detects 60\% of the thefts.
+The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-weeks of data, and the logistic regression would report 248,000*0.09\%=223 false positives (the number of samples extracted from the field study data times the false positive rate). Thus, on average, users would receive 223/159$\approx$1.4 false alarms every week, and a true positive rate of 100\%.
+The random forests classifier has an even lower false positive rate ($\approx$1 false alarm per month), but only detects 60\% of the thefts.
 
-Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which seems likely to be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
+Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which will likely be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
 We also tested our classifiers on a set of 120 positive data points collected using a Nexus 6P. A detection rate of 98.3\% indicates that our detector works on other smartphone models.
 

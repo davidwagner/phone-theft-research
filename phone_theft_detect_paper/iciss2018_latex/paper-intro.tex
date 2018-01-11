@@ -36,8 +36,8 @@ In this work, we demonstrate that accelerometer data is enough to detect some co
 It is remarkable that machine learning is so effective and can detect 100\% of our simulated thefts.
 We suspect that this is because the kinds of thefts we consider here involve a rapid jerking motion followed by the thief running away, which induces a unique pattern in the accelerometer sensor readings.
 
-We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a suspected theft event is detected.
-We expect that the inconvenience of unlocking your phone one extra time per week would be tolerable, and might not even be noticed by users.
+We envision that a smartphone could run our classifier continuously and automatically lock the phone whenever a theft is suspected.
+We expect that the inconvenience of unlocking the phone once more per week would be tolerable, and might not even be noticed by users.
 If combined with other heuristics to reduce the false positive rate further (e.g., the phone is not unlocked within a short period after the suspected theft; the phone moves to some new location it has never been before), it might be possible to notify the owner or take other measures as well, when a theft is detected.
 
 As mentioned earlier, 40\% of smartphone users do not lock their phone with a PIN or passcode~\cite{egelman:lock,Harbach2016b}, so currently thieves have full access to the personal data of these users.
@@ -66,6 +66,6 @@ The biggest open question is whether our methods can be extended to a more diver
 
 
 \begin{acks}
-The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding with the Android sensor monitoring software, Jennider Chen from the Good Research for her assistance on conducting the user study, and Irwin Reyes, David Fifield and Michael McCoyd for giving feedback to our paper drafts.
-This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley.
+The authors would like to thank Prakash P. Bhasker and Micah J. Sheller for proivding us with the Android sensor monitoring software, Jennifer Chen from Good Research for her assistance on conducting the user study, and Irwin Reyes, David Fifield and Michael McCoyd for giving feedback on our paper drafts.
+This research was conducted at The Intel Science and Technology Center for Secure Computing (http://scrub.cs.berkeley.edu/) at UC Berkeley and was also supported by the National Science Foundation under award CNS-1514457.
 \end{acks}
