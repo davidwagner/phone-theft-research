@@ -85,7 +85,7 @@ We ran the experiment on flat ground in an open space, so the experiment was not
 We also made sure that the thief ran at least 40 feet after gaining possession of the victim's phone.
 We used a Nexus 5X smartphone (InvenSense MPU6515 embedded accelerometer) with Android version 7.1.1 for data collection in our simulated theft experiment.
 Figure~\ref{fig:simtheft} plots one example of accelerometer readings from a single simulated theft.
-We collected an additional set of 120 trials, 40 instances from each scenario using a Nexus 6P smartphone with Android version 6.0.1 to demonstrate our classifier can generaize to different smartphone models.
+We collected an additional set of 120 trials, 40 instances from each scenario using a Nexus 6P smartphone with Android version 6.0.1 to demonstrate our classifier can generalize to different smartphone models.
 
 
 \begin{figure}[t]
@@ -100,7 +100,7 @@ We collected an additional set of 120 trials, 40 instances from each scenario us
 
 
 \subsubsection{Field Study}
-We performed a field study to gather data from ordinary smartphone users while they perform everyday activities, including walking, running, driving, possibly excercising, and anything else that occurred during their lives over the field study period.
+We performed a field study to gather data from ordinary smartphone users while they perform everyday activities, including walking, running, driving, possibly exercising, and anything else that occurred during their lives over the field study period.
 We obtained approval from the University of California, Berkeley IRB (Institutional Review Board) for this study.
 % We obtained approval from our university IRB for this study.
 The study was conducted in the Bay Area of the United States from September to December 2016.
@@ -121,9 +121,9 @@ A total of 55 participants were recruited, and
 53 out of the 55 subjects completed the study.
 In the first round, 2 of the 18 participants did not complete the study.
 Detailed demographic information about the participants of this user study is listed in Table~\ref{tbl:demographics}.
-In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Adroid versions. This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Adroid version.
+In aggregate, they used 21 different smartphone models from 6 different manufacturers and 8 different Android versions. This ensures the dataset containing diverse devices, and the classifiers are not specific to a particular type of smartphone or Android version.
 We also asked participants how they typically carried their phone, when it was not in their hands; 33 reported keeping it in their pockets, 9 in their purses, 12 in multiple locations (e.g., pocket or purse, pocket or backpack), and 1 did not respond.
-During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly excercising. Data from a wide variety of real-world activities ensures the generability of the classifiers trained on it.
+During the study, the subjects carried their phones while performing daily activities, for example walking, driving, running and possibly exercising. Data from a wide variety of real-world activities ensures the generalizability of the classifiers trained on it.
 
 \begin{table}[H]
 \centering
@@ -175,7 +175,7 @@ Because the accelerometer sensor reports readings in the same units on all Andro
 
 We obtained 120 positive instances from the 120 simulated thefts collected on Nexus 5X.
 After applying the~$40 m/s^2$ threshold, we obtained approximately 248,000 negative samples from the data collected in the field study.
-We then applied boolean classification techniques to this data set.
+We then applied Boolean classification techniques to this data set.
 We also obtained an additional data set of 120 positive instances from the 120 simulated thefts collected on a Nexus 6P.
 We used this additional data set to test the generalizability of our theft detector.
 
@@ -199,7 +199,9 @@ are shown in Table~\ref{fig:cmat}.
 The logistic regression classifier has a false positive rate of 0.09\%. Given that the field study involved 53*3=159 person-weeks of data, and the logistic regression would report 248,000*0.09\%=223 false positives (the number of samples extracted from the field study data times the false positive rate). Thus, on average, users would receive 223/159$\approx$1.4 false alarms every week, and a true positive rate of 100\%.
 The random forests classifier has an even lower false positive rate ($\approx$1 false alarm per month), but only detects 60\% of the thefts.
 
-Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which will likely be tolerable. We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs. The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
+Only a small fraction of predicted positives will actually be theft, but we expect this will be acceptable due to the relatively low cost of false positives: it means users will have to unlock their phones one extra time per week, which will likely be tolerable.
+We report the false positive rate rather than precision, because the false positive rate is easily interpretable and not sensitive to the rate at which theft occurs.
+The precision is sensitive to the number of simulated thefts included in the dataset, which might not match the number of actual thefts that are likely to occur over a given period of time.
 
 We also tested our classifiers on a set of 120 positive data points collected using a Nexus 6P. A detection rate of 98.3\% indicates that our detector works on other smartphone models.
 
@@ -234,7 +236,7 @@ To get a better understanding of why our classifier is successful,
 we computed feature rankings to find the most predictive features.
 For logistic regression, we used standardized coefficients as the feature importance score:
 the score for feature $i$ is $|\alpha_i| \cdot \sigma_i$, where $\alpha_i$ is the coefficient for feature $i$ in the logistic regression model and $\sigma_i$ is the standard deviation of feature $i$ in the training set.
-In addition, we computed the 95\% confidence intervals for all standardized coefficents using 50 epoches of the entire data set.
+In addition, we computed the 95\% confidence intervals for all standardized coefficients using 50 epochs of the entire data set.
 The feature importance scores and their 95\% confidence intervals for the logistic regression classifier are listed in Table~\ref{tbl:importance-lr}.
 The most discriminative features are
 the root mean square and mean of the before-window,
@@ -269,7 +271,7 @@ Arc length * SD (b)    & \ \ 0.04950325 ($\pm$ 0.00090281)       \\ \bottomrule
 We also rank the features for the random forests classifier using scikit-learn's feature importance score, which estimates the relative importance of the features by computing the expected fraction of the samples they contribute to.
 Thus the higher in the tree, the more important the feature is~\cite{sklearn:rfdoc}.
 % 0.04751106, 0.0080411, 0.02881483, 0.01533719, 0.02245781, 0.03309431, 0.12388036, 0.20288397, 0.16426152, 0.21908845, 0.05162059, 0.0830088.
-We also computed the 95\% confidence intervals for all feature importance scores using 50 epoches of the entire data set.
+We also computed the 95\% confidence intervals for all feature importance scores using 50 epochs of the entire data set.
 The resulting feature importance scores and their 95\% confidence intervals for the random forests classifier are listed in Table~\ref{tbl:importance-rf}.
 
 % Another way to visulize the representative features is to plot a histogram of dataset and to see which features can better seperate the positive and negative data points, as shown in Figures 1 and 2.

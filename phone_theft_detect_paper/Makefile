@@ -9,7 +9,7 @@
 PACKAGE=acmart
 
 SAMPLES = \
-	ccs-template.tex 
+	ccs-template.tex
 
 PDF = $(PACKAGE).pdf ${SAMPLES:%.tex=%.pdf}
 
@@ -33,7 +33,7 @@ acmguide.pdf: $(PACKAGE).dtx $(PACKAGE).cls
 	while ( grep -q '^LaTeX Warning: Label(s) may have changed' acmguide.log) \
 	do 	pdflatex -jobname acmguide $(PACKAGE).dtx; done
 
-%.cls:   %.ins %.dtx  
+%.cls:   %.ins %.dtx
 	pdflatex $<
 
 %.pdf:  %.tex   $(PACKAGE).cls ACM-Reference-Format.bst
@@ -59,7 +59,7 @@ sample-sigchi.pdf: samplebody-conf.tex
 
 
 clean:
-	$(RM)  $(PACKAGE).cls *.log *.aux \
+	$(RM) *.log *.aux \
 	*.cfg *.glo *.idx *.toc \
 	*.ilg *.ind *.out *.lof \
 	*.lot *.bbl *.blg *.gls *.cut *.hd \
