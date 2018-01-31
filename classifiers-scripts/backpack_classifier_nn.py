@@ -75,6 +75,19 @@ def create_training_data(args):
 	#Save to .npz
 	np.savez(FEATURES_FILE, full_feature_vector = full_feature_vector, all_labels = all_labels)
 
+def create_teaining_data_diary():
+	if args.use_config:
+		import BackpackConfig
+
+		full_csv = BackpackConfig.DIARY_STUDY
+
+		WINDOW_SIZE = BackpackConfig.WINDOW_SIZE
+
+
+		for i in range(len(full_csv), WINDOW_SIZE);
+			working_window = full_csv[i:i+WINDOW_SIZE]
+			np.ma.masked_where(working_window[4] = ?, working_window)
+
 def create_validation_data(isPositive=True):
 	data = []
 
