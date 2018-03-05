@@ -29,6 +29,7 @@ NPZ_NAME = "DIARY_STUDY_NoDerivative_NoSteady_multi.npz"
 DIARY_STUDIES = [
 #   (dir_with_diary_data, diary_log_file_corresponding_to_data, user_id_of_data)
     ('../data/diary-study-11-14-15/diary_data/', '../data/diary-study-11-14-15/diary_state_no_steady.txt', 'd792b61e'),
+    ('../data/diary-study-2-20/diary_data/', '../data/diary-study-2-20/diary_state_2_20.txt', 'd792b61e')
 ]
 
 
@@ -47,18 +48,20 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
 
     # create model
     accel_input = keras.layers.Input(shape=(WINDOW_SIZE, 6), name='accel_input')
-    first = Conv1D(64, 6,  activation='relu', use_bias=True, name="first_1D")(accel_input)
-    first = Conv1D(64, 6,  activation='relu', use_bias=True, name="second_1D")(first)
-    pool_first = MaxPooling1D(6,name="first_max_pool")(first)
-    first = Conv1D(128, 6, activation='relu', name="third_1D")(pool_first)
-    d_first = Dropout(0.5, name="dropout")(first)
+    first = Conv1D(64, 3,  activation='relu', use_bias=True, name="first_1D")(accel_input)
+    first = Conv1D(64, 3,  activation='relu', use_bias=True, name="second_1D")(first)
+    pool_first = MaxPooling1D(3,name="first_max_pool")(first)
+    third = Conv1D(128, 3, activation='relu', name="third_1D")(pool_first)
+    fourth = Conv1D(128, 3, activation='relu', name="fourth_1D")(third)
+    global_pool = GlobalAveragePooling1D(name="global_pool")(fourth)
+    d_first = Dropout(0.5, name="dropout")(global_pool)
 
-    other_input = keras.layers.Input(shape=(1, 3), name='phone_active_input')
+    other_input = keras.layers.Input(shape=(3,), name='phone_active_input')
 
     x = keras.layers.concatenate([d_first, other_input], name='concatenate', axis=-1)
     fully_output = Dense(64, activation='relu', name="fully_connected")(x)
-    output_without_flatten = Dense(NUM_CLASSES, activation='softmax', name='output')(fully_output)
-    output = Flatten(name='flatten')(output_without_flatten)
+    output = Dense(NUM_CLASSES, activation='softmax', name='output')(fully_output)
+    # output = Flatten(name='flatten')(output_without_flatten)
     model = Model(inputs=[accel_input, other_input], outputs=[output])
 
     #compile
@@ -66,7 +69,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
     model.save_weights('model.h5')
     
     if k == 0:
-        hist = model.fit([accel_data, phone_active_data], [labels], epochs=2, validation_split=0.9)
+        hist = model.fit([accel_data, phone_active_data], [labels], epochs=epochs, validation_split=0.9)
         print(hist.history['val_acc'][-1])
         
     else: 
@@ -79,6 +82,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
         phone_active_data = phone_active_data[perm]
         labels = labels[perm]
         
+        miss_matrices = []
         for fold in range(0, n, fold_size):
             start, end = fold, fold + fold_size
             mask = np.arange(n)
@@ -89,21 +93,29 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
             training_data = (
                             {'accel_input' : accel_data[train_mask], 
                             'phone_active_input' : phone_active_data[train_mask]},
-                            {'flatten' : labels[train_mask]}
+                            {'output' : labels[train_mask]}
             )
 
             validation_data = (
                 {'accel_input': accel_data[val_mask], 
                  'phone_active_input' : phone_active_data[val_mask]},
-                {'flatten' : labels[val_mask]}
+                {'output' : labels[val_mask]}
 
             )
-            hist = model.fit(training_data[0], training_data[1], epochs=2, validation_data=validation_data)
+            hist = model.fit(training_data[0], training_data[1], epochs=epochs, validation_data=validation_data)
             accuracies.append(hist.history['val_acc'][-1])
             print(hist.history['val_acc'][-1])
             
             if check_misclf:
-                predict_and_check(model, [accel_data[val_mask], phone_active_data[val_mask]], labels[val_mask])
+                print("Training dist.", Counter(np.argmax(labels[train_mask], axis=1).flatten()))
+                print("Validation dist.", Counter(np.argmax(labels[val_mask], axis=1).flatten()))
+                miss_matrix = predict_and_check(model, [accel_data[val_mask], phone_active_data[val_mask]], labels[val_mask])
+                miss_matrices.append(miss_matrix)
+
+        miss_matrices = np.array(miss_matrices)
+        print(np.mean(miss_matrices, axis=0))
+
+        print("CROSS VAL. ACCURACY:", sum(accuracies) / len(accuracies))
 
 
 def predict_and_check(model, data, labels):
@@ -120,11 +132,15 @@ def predict_and_check(model, data, labels):
             
             acc_by_class[label] += 1
     
-    miss_matrix /= np.sum(miss_matrix)
+    num_misses = np.sum(miss_matrix)
+    if num_misses > 0:
+        miss_matrix /= np.sum(miss_matrix)
     for i, lbl in enumerate(CLASSES):
         print(i, lbl)
 
-    print(miss_matrix)
+    print("Total misses:", num_misses)
+    print(miss_matrix.round(3))
+    return miss_matrix
 
 
 def blockshaped(arr, nrows, ncols):
@@ -172,6 +188,9 @@ def get_features_and_labels(d, cols):
      'X direction changed', 'Y direction changed', 'Z direction changed',
      'Num. Touches', 'Screen State', 'isUnlocked',
      'Label']]
+
+    # Remove any NaN values
+    data = data.dropna(axis=0)
     
     
     # Convert to matrix, Break into windows
@@ -192,7 +211,7 @@ def get_features_and_labels(d, cols):
         
         accel_data.append(accel)
         
-        phone_active_data.append(phone_active.sum(axis=0).reshape((1, 3)))
+        phone_active_data.append(phone_active.sum(axis=0))
         
         labels.append(label[0])
         
@@ -206,15 +225,13 @@ def get_features_and_labels(d, cols):
 
 def generate_features(args):
     # Compile diary study data
-    d, cols = get_data([
-        DIARY_STUDIES
-    ])
+    d, cols = get_data(DIARY_STUDIES)
 
     # Convert data to features and save to disk
     accel_data, phone_active_data, labels = get_features_and_labels(d, cols)
 
 def train_net(args):
-    train_model_kfold_multiclass(k=args.k, epochs=args.epochs)
+    train_model_kfold_multiclass(k=args.k, epochs=args.epochs, check_misclf=args.check_misclf)
 
 
 def parse_args():
@@ -255,8 +272,8 @@ def parse_args():
 
   if args.gen_features:
     generate_features(args)
-  else:
-    train_net(args)
+
+  train_net(args)
 
   
 if __name__ == '__main__':
