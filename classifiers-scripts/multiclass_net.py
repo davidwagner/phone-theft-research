@@ -29,7 +29,8 @@ NPZ_NAME = "DIARY_STUDY_NoDerivative_NoSteady_multi.npz"
 DIARY_STUDIES = [
 #   (dir_with_diary_data, diary_log_file_corresponding_to_data, user_id_of_data)
     ('../data/diary-study-11-14-15/diary_data/', '../data/diary-study-11-14-15/diary_state_no_steady.txt', 'd792b61e'),
-    ('../data/diary-study-2-20/diary_data/', '../data/diary-study-2-20/diary_state_2_20.txt', 'd792b61e')
+    ('../data/diary-study-2-20/diary_data/', '../data/diary-study-2-20/diary_state_2_20.txt', 'd792b61e'),
+    ('../data/diary-study-3-13/diary_data/', '../data/diary-study-3-13/diary_state_3_13.txt', 'd792b61e')
 ]
 
 
@@ -66,7 +67,6 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
 
     #compile
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.save_weights('model.h5')
     
     if k == 0:
         hist = model.fit([accel_data, phone_active_data], [labels], epochs=epochs, validation_split=0.9)
@@ -77,10 +77,10 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
         fold_size = accel_data.shape[0] // k
         n = accel_data.shape[0]
         
-        perm = np.random.permutation(n)
-        accel_data = accel_data[perm]
-        phone_active_data = phone_active_data[perm]
-        labels = labels[perm]
+        # perm = np.random.permutation(n)
+        # accel_data = accel_data[perm]
+        # phone_active_data = phone_active_data[perm]
+        # labels = labels[perm]
         
         miss_matrices = []
         for fold in range(0, n, fold_size):
@@ -113,7 +113,9 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
                 miss_matrices.append(miss_matrix)
 
         miss_matrices = np.array(miss_matrices)
-        print(np.mean(miss_matrices, axis=0))
+        print(np.mean(miss_matrices, axis=0).round(3))
+
+        print("Accuracies", accuracies)
 
         print("CROSS VAL. ACCURACY:", sum(accuracies) / len(accuracies))
 
@@ -139,7 +141,11 @@ def predict_and_check(model, data, labels):
         print(i, lbl)
 
     print("Total misses:", num_misses)
+
     print(miss_matrix.round(3))
+    for label, row in zip(CLASSES, miss_matrix.round(3)):
+        print(label, "\t" * 2, row)
+    
     return miss_matrix
 
 
@@ -158,12 +164,12 @@ def blockshaped(arr, nrows, ncols):
                .reshape(-1, nrows, ncols))
 
 
-def get_data(dir_diary_user_trips):
+def get_data(dir_diary_user_trips, calibrate_accel=False):
     all_data = []
     data_cols = []
     
     for data_dir, diary_file, user_id in dir_diary_user_trips:
-        d, cols = process_diary_study_all_data.getAllUserData(data_dir, diary_file, user_id, as_matrix=False)
+        d, cols = process_diary_study_all_data.getAllUserData(data_dir, diary_file, user_id, as_matrix=False, calibrate_accel=calibrate_accel)
         
         all_data.append(d)
         data_cols = cols
@@ -180,8 +186,10 @@ def get_features_and_labels(d, cols):
 
     
     for i, label in enumerate(CLASSES):
-        d.loc[d["Class"] == label, "Label"] = i
+        d.loc[d["Class"].str.strip() == label, "Label"] = i
 
+    print("Label count:", Counter(d["Label"]))
+    print("Class count:", Counter(d["Class"].str.strip()))
 
     # Use only the relevant columns
     data = d[['X accel.', 'Y accel.', 'Z accel.',
@@ -225,7 +233,7 @@ def get_features_and_labels(d, cols):
 
 def generate_features(args):
     # Compile diary study data
-    d, cols = get_data(DIARY_STUDIES)
+    d, cols = get_data(DIARY_STUDIES, calibrate_accel=args.calibrate_accel)
 
     # Convert data to features and save to disk
     accel_data, phone_active_data, labels = get_features_and_labels(d, cols)
@@ -263,6 +271,10 @@ def parse_args():
   parser.add_argument(
     '--check_misclf', action='store_true',
     help='whether to print confusion matrix of misclassified')
+
+  parser.add_argument(
+    '--calibrate_accel', action='store_true',
+    help='whether to calibrate acceleration data')
 
 
   args = parser.parse_args()

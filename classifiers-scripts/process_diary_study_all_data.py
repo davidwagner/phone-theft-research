@@ -23,9 +23,9 @@ Returns:
 1) numpy matrix of all acceleromter, touch, screen state, unlock data, and class according to the diary study
 2) names of the coluns of the numpy matrix
 """
-def getAllUserData(data_dir, diary_file, user_id, as_matrix=True):
+def getAllUserData(data_dir, diary_file, user_id, as_matrix=True, calibrate_accel=False):
     files = getUserFilesByInstrument(data_dir, user_id, 'BatchedAccelerometer')
-    x = compileAccelData(files, diary_file, as_matrix=True)
+    x = compileAccelData(files, diary_file, as_matrix=True, calibrate=calibrate_accel)
     accelDf = pd.DataFrame(data=x, columns = ["Timestamp", "X accel.", "Y accel.", "Z accel.", "Other accel", "Class"])
 
     posData, rawPosDataLocked = processPhoneActiveData(data_dir, user_id, x)
@@ -91,7 +91,43 @@ def getExpectedIntervals(file):
             prevState = row[2]
     return intervals
 
-def compileAccelData(accel_files, diary_study_f=None, as_matrix=True):
+def get_accel_calibration_constants(accel_data, is_mean=True):
+    X_Y_STILL_THRESHOLD_MEAN = 0.75
+    X_Y_STILL_THRESHOLD_STD = 0.75
+    
+    data = pd.DataFrame(data=accel_data, columns=["Time", "X", "Y", "Z", "N/A", "Class"])
+    d = data.set_index("Time")
+    d_roll = d[["X", "Y", "Z"]].rolling(6000)
+    d_agg = d_roll.mean().join(d_roll.std(), how='inner', lsuffix='mean', rsuffix='std')
+    
+    mask = (d_agg["Xmean"].abs() < X_Y_STILL_THRESHOLD_MEAN) & (d_agg["Xstd"].abs() < X_Y_STILL_THRESHOLD_STD) \
+        & (d_agg["Ymean"].abs() < X_Y_STILL_THRESHOLD_MEAN) & (d_agg["Ystd"].abs() < X_Y_STILL_THRESHOLD_STD) \
+        & (d_agg["Zmean"].abs() > 8) & (d_agg["Zmean"].abs() < 12) & (d_agg["Zstd"] < 1)
+    
+    table_data = d_agg[mask]
+    x, y, z = table_data.median()[["Xmean", "Ymean", "Zmean"]]
+    print(table_data.std()[["Xmean", "Ymean", "Zmean"]])
+    
+    if is_mean:
+        x, y, z = table_data.mean()[["Xmean", "Ymean", "Zmean"]]
+        
+    
+    x_offset, y_offset, z_offset = 0 - x, 0 - y, 9.8 - z
+    return x_offset, y_offset, z_offset
+
+def calibrate_accel(accel_table):
+    cols = accel_table.columns
+
+    x_offset, y_offset, z_offset = get_accel_calibration_constants(accel_table.as_matrix())
+    
+    accel_table[cols[1]] += x_offset
+    accel_table[cols[2]] += y_offset
+    accel_table[cols[3]] += z_offset
+
+    return accel_table
+
+
+def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=False):
     data = pd.concat([getBootTimestampedData(f) for f in accel_files])
     data = data.sort_values(0)
     
@@ -105,6 +141,8 @@ def compileAccelData(accel_files, diary_study_f=None, as_matrix=True):
             start, end = interval
             mask = (data[0] >= start) & (data[0] < end)
             data.loc[mask, new_col] = label
+
+    data = calibrate_accel(data)
     
     data = data.as_matrix() if as_matrix else data
     return data
