@@ -8,6 +8,7 @@ import numpy as np
 import csv
 import os
 import argparse
+import pickle
 import pandas as pd
 
 import process_diary_study_all_data
@@ -25,6 +26,7 @@ CLASSES =  [
     ]
 
 NPZ_NAME = "DIARY_STUDY_NoDerivative_NoSteady_multi.npz"
+CHECK_MISCLF_LOG = "multiclass_results_log.pkl"
 
 DIARY_STUDIES = [
 #   (dir_with_diary_data, diary_log_file_corresponding_to_data, user_id_of_data)
@@ -74,6 +76,8 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
         
     else: 
         accuracies = []
+        data_distributions = [] # (training, validation)
+        
         fold_size = accel_data.shape[0] // k
         n = accel_data.shape[0]
         
@@ -83,8 +87,8 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
         # labels = labels[perm]
         
         miss_matrices = []
-        for fold in range(0, n, fold_size):
-            start, end = fold, fold + fold_size
+        for fold in range(0, n // fold_size * fold_size, fold_size):
+            start, end = fold, fold + fold_size if fold // fold_size < n - 1 else n
             mask = np.arange(n)
 
             val_mask = (mask >= start) & (mask < end)
@@ -107,17 +111,31 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
             print(hist.history['val_acc'][-1])
             
             if check_misclf:
-                print("Training dist.", Counter(np.argmax(labels[train_mask], axis=1).flatten()))
-                print("Validation dist.", Counter(np.argmax(labels[val_mask], axis=1).flatten()))
+                train_dist = Counter(np.argmax(labels[train_mask], axis=1).flatten())
+                val_dist = Counter(np.argmax(labels[val_mask], axis=1).flatten())
+                print("Training dist.", train_dist)
+                print("Validation dist.", val_dist)
+
+                data_distributions.append((train_dist, val_dist))
+
                 miss_matrix = predict_and_check(model, [accel_data[val_mask], phone_active_data[val_mask]], labels[val_mask])
                 miss_matrices.append(miss_matrix)
 
-        miss_matrices = np.array(miss_matrices)
-        print(np.mean(miss_matrices, axis=0).round(3))
+        
+        print(np.mean(np.array(miss_matrices), axis=0).round(3))
 
         print("Accuracies", accuracies)
 
         print("CROSS VAL. ACCURACY:", sum(accuracies) / len(accuracies))
+
+        if check_misclf:
+            f = open(CHECK_MISCLF_LOG, 'wb+')
+            results = list(zip(accuracies, data_distributions, miss_matrices))
+            results = sorted(results, key=lambda x: x[0])
+
+            pickle.dump(results, f)
+
+
 
 
 def predict_and_check(model, data, labels):
