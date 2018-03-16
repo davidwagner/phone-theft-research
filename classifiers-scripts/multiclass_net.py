@@ -77,6 +77,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
     else: 
         accuracies = []
         data_distributions = [] # (training, validation)
+        indices = []
         
         fold_size = accel_data.shape[0] // k
         n = accel_data.shape[0]
@@ -88,6 +89,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
         
         miss_matrices = []
         for fold in range(0, n // fold_size * fold_size, fold_size):
+            print("FOLD:", fold // fold_size)
             start, end = fold, fold + fold_size if fold // fold_size < n - 1 else n
             mask = np.arange(n)
 
@@ -117,6 +119,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
                 print("Validation dist.", val_dist)
 
                 data_distributions.append((train_dist, val_dist))
+                indices.append((start, end))
 
                 miss_matrix = predict_and_check(model, [accel_data[val_mask], phone_active_data[val_mask]], labels[val_mask])
                 miss_matrices.append(miss_matrix)
@@ -130,7 +133,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False):
 
         if check_misclf:
             f = open(CHECK_MISCLF_LOG, 'wb+')
-            results = list(zip(accuracies, data_distributions, miss_matrices))
+            results = list(zip(accuracies, indices, data_distributions, miss_matrices))
             results = sorted(results, key=lambda x: x[0])
 
             pickle.dump(results, f)
