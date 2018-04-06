@@ -26,7 +26,7 @@ Returns:
 def getAllUserData(data_dir, diary_file, user_id, as_matrix=True, calibrate_accel=False):
     files = getUserFilesByInstrument(data_dir, user_id, 'BatchedAccelerometer')
     x = compileAccelData(files, diary_file, as_matrix=True, calibrate=calibrate_accel)
-    accelDf = pd.DataFrame(data=x, columns = ["Timestamp", "X accel.", "Y accel.", "Z accel.", "Other accel", "Class"])
+    accelDf = pd.DataFrame(data=x, columns = ["Timestamp", "X accel.", "Y accel.", "Z accel.", "Class"])
 
     posData, rawPosDataLocked = processPhoneActiveData(data_dir, user_id, x)
     posDataFrame = pd.DataFrame(data=posData, columns=["Timestamp", "Num. Touches", "Screen State", "isUnlocked", "X direction changed", "Y direction changed", "Z direction changed"])
@@ -95,34 +95,50 @@ def get_accel_calibration_constants(accel_data, is_mean=True):
     X_Y_STILL_THRESHOLD_MEAN = 0.75
     X_Y_STILL_THRESHOLD_STD = 0.75
     
-    data = pd.DataFrame(data=accel_data, columns=["Time", "X", "Y", "Z", "N/A", "Class"])
-    d = data.set_index("Time")
+    d = pd.DataFrame(data=accel_data, columns=["X", "Y", "Z", "Class"])
+
+    # print("Calc calibration any null?")
+    # print(data[data.isnull().any(axis=1)])
+
+    # d = data.set_index("Time")
     d_roll = d[["X", "Y", "Z"]].rolling(6000)
+    # print("ROLLING")
+    # print(d_roll.mean())
+    # print(d_roll.std())
     d_agg = d_roll.mean().join(d_roll.std(), how='inner', lsuffix='mean', rsuffix='std')
+
+    # print("AGGREGATE TABLE")
+    # print(d_agg)
     
     mask = (d_agg["Xmean"].abs() < X_Y_STILL_THRESHOLD_MEAN) & (d_agg["Xstd"].abs() < X_Y_STILL_THRESHOLD_STD) \
         & (d_agg["Ymean"].abs() < X_Y_STILL_THRESHOLD_MEAN) & (d_agg["Ystd"].abs() < X_Y_STILL_THRESHOLD_STD) \
         & (d_agg["Zmean"].abs() > 8) & (d_agg["Zmean"].abs() < 12) & (d_agg["Zstd"] < 1)
     
     table_data = d_agg[mask]
+    # print("MATCHING TO TABLE DATA")
+    # print(table_data)
+
     x, y, z = table_data.median()[["Xmean", "Ymean", "Zmean"]]
-    print(table_data.std()[["Xmean", "Ymean", "Zmean"]])
+    # print(table_data.std()[["Xmean", "Ymean", "Zmean"]])
     
     if is_mean:
         x, y, z = table_data.mean()[["Xmean", "Ymean", "Zmean"]]
         
     
     x_offset, y_offset, z_offset = 0 - x, 0 - y, 9.8 - z
+    print("CALIBRATION CONSTANTS:", x_offset, y_offset, z_offset)
     return x_offset, y_offset, z_offset
 
 def calibrate_accel(accel_table):
     cols = accel_table.columns
+    print("ACCEL COLS:?", cols[1:4])
 
-    x_offset, y_offset, z_offset = get_accel_calibration_constants(accel_table.as_matrix())
+    accel_cols = ["X accel.", "Y accel.", "Z accel.", "Class"]
+    x_offset, y_offset, z_offset = get_accel_calibration_constants(accel_table[accel_cols].as_matrix())
     
-    accel_table[cols[1]] += x_offset
-    accel_table[cols[2]] += y_offset
-    accel_table[cols[3]] += z_offset
+    accel_table["X accel."] += x_offset
+    accel_table["Y accel."] += y_offset
+    accel_table["Z accel."] += z_offset
 
     return accel_table
 
@@ -130,6 +146,15 @@ def calibrate_accel(accel_table):
 def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=False):
     data = pd.concat([getBootTimestampedData(f) for f in accel_files])
     data = data.sort_values(0)
+    
+    # Drop N/A column
+    data = data.drop(4, axis=1)
+
+    # Drop rows with nans
+    data = data.dropna(axis=0)
+
+    # mask = (data[1] != np.nan) & (data[2] != np.nan) & (data[3] != np.nan)
+    # data = data[mask]
     
     new_col = len(data.columns)
     data[new_col] = ''
@@ -140,9 +165,18 @@ def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=
         for interval, label in expectedIntervals:
             start, end = interval
             mask = (data[0] >= start) & (data[0] < end)
+            # print("CHECK INTERVAL", interval, label)
+            # print(data[mask])
             data.loc[mask, new_col] = label
 
-    data = calibrate_accel(data)
+    print("UNCALIBRATED NULL")
+    print(data[data.isnull().any(axis=1)])
+
+    # if calibrate:
+    #     data = calibrate_accel(data)
+    # mask = data[new_col] == ''
+    # print("DID NOT FALL IN INTERVALS")
+    # print(data[mask])
     
     data = data.as_matrix() if as_matrix else data
     return data
