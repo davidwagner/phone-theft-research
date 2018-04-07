@@ -94,9 +94,8 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
         miss_matrices = []
 
         miss_results = [([], []) for _ in range(len(CLASSES))] # 0/1/2/3/4 -> ([], [])
-
+        num_folds = k
         for fold in range(0, n // fold_size * fold_size, fold_size):
-            num_folds = k
             k = fold // fold_size
             print("FOLD:", k)
 
@@ -161,7 +160,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
                 folds_of_note = {
                     9: [(0, 1), (1, 1), (0, 0)],
                     8: [(4, 0), (0, 0), (4, 4)],
-                    6: [(4, 0), (0, 0), (4, 4)],
+                    6: [(4, 0), (0, 0), (4, 4), (4, 3), (3, 3)],
                     # 7: [(0, 4), (0, 0), (4, 4)],
                     0: [(0, 1), (1, 1), (0, 0), (0, 4), (4, 4)],
 
@@ -175,7 +174,9 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
                     find_misclassified_data(data, val_predictions, val_labels, results_f, filters=filters)
 
         
-        print(np.mean(np.array(miss_matrices), axis=0).round(3))
+        M = np.mean(np.array(miss_matrices), axis=0)
+        M /= M.sum()
+        print(M.round(3))
 
         print("Accuracies", accuracies)
 
@@ -198,20 +199,20 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
                 by_total_misses = np.array([np.nan_to_num(m / m.sum()) for m in miss_mat_s]).mean(axis=0)
                 print(by_total_misses.round(3))
 
-            for label, results in enumerate(miss_results):
-                print("Misses breakdown for:", CLASSES[label])
-                miss_mat_s, k_s = results
+            # for label, results in enumerate(miss_results):
+            #     print("Misses breakdown for:", CLASSES[label])
+            #     miss_mat_s, k_s = results
 
-                if len(miss_mat_s) <= 0:
-                    continue
+            #     if len(miss_mat_s) <= 0:
+            #         continue
 
-                for miss_mat, k in zip(miss_mat_s, k_s):
-                    train_dist, val_dist = data_distributions[k]
-                    print("Train:", train_dist)
-                    print("Val:", val_dist)
-                    print("Num misses:", miss_mat.sum())
-                    print(np.nan_to_num(miss_mat / miss_mat.sum(axis=0).round(3)))
-                    print(np.nan_to_num(miss_mat / miss_mat.sum()).round(3))
+            #     for miss_mat, k in zip(miss_mat_s, k_s):
+            #         train_dist, val_dist = data_distributions[k]
+            #         print("Train:", train_dist)
+            #         print("Val:", val_dist)
+            #         print("Num misses:", miss_mat.sum())
+            #         print(np.nan_to_num(miss_mat / miss_mat.sum(axis=0).round(3)))
+            #         print(np.nan_to_num(miss_mat / miss_mat.sum()).round(3))
 
 
 
@@ -232,12 +233,13 @@ def create_model():
     global_pool = GlobalAveragePooling1D(name="global_pool")(fourth)
     d_first = Dropout(0.5, name="dropout")(global_pool)
 
-    dense_input = keras.layers.Input(shape=(15,), name='dense_input')
+    dense_input = keras.layers.Input(shape=(17,), name='dense_input')
 
     x = keras.layers.concatenate([d_first, dense_input], name='concatenate', axis=-1)
     fully_connected_1 = Dense(64, activation='relu', name="fully_connected_1")(x)
     fully_connected_2 = Dense(64, activation='relu', name="fully_connected_2")(fully_connected_1)
-    fully_output = Dense(64, activation='relu', name="fully_connected_output")(fully_connected_2)
+    fully_connected_3 = Dense(64, activation='relu', name="fully_connected_3")(fully_connected_2)
+    fully_output = Dense(64, activation='relu', name="fully_connected_output")(fully_connected_3)
     output = Dense(NUM_CLASSES, activation='softmax', name='output')(fully_output)
     # output = Flatten(name='flatten')(output_without_flatten)
     model = Model(inputs=[conv_input, dense_input], outputs=[output])
@@ -256,7 +258,7 @@ def predict_and_check(model, data, labels):
     labels = np.argmax(labels, axis=1).flatten()
 
     num_per_class = Counter(labels)
-    print("NUMPERCLASS:", num_per_class)
+    # print("NUMPERCLASS:", num_per_class)
 
     miss_by_class = Counter()
     acc_by_pred = Counter()
@@ -276,6 +278,9 @@ def predict_and_check(model, data, labels):
 
     miss_mat = miss_matrix.copy()
 
+    for i, lbl in enumerate(CLASSES):
+        print(i, lbl)
+
     print("Misses by expected label:")
     miss_matrix_by_exp_label = miss_matrix.copy()
     for label, count in miss_by_class.items():
@@ -286,14 +291,13 @@ def predict_and_check(model, data, labels):
 
     if num_misses > 0:
         miss_matrix /= np.sum(miss_matrix)
-    for i, lbl in enumerate(CLASSES):
-        print(i, lbl)
 
     print("Total misses:", num_misses)
+    print("Misses by total misses")
 
     print(miss_matrix.round(3))
-    for label, row in zip(CLASSES, miss_matrix.round(3)):
-        print(label, "\t" * 2, row)
+    # for label, row in zip(CLASSES, miss_matrix.round(3)):
+    #     print(label, "\t" * 2, row)
     
     return miss_mat
 
@@ -411,14 +415,21 @@ def get_features_and_labels(d, cols):
         conv_data.append(accel)
         
         raw_accel = accel[:,:3].astype(np.float64)
+
+        raw_accel_x = raw_accel[:,0]
+        raw_accel_y = raw_accel[:,1]
+        raw_accel_z = raw_accel[:,2]
         raw_accel_abs = np.absolute(raw_accel)
 
+        is_flat_val = np.absolute(raw_accel_x - raw_accel_y).mean()
+        is_flat = 1.0 if is_flat_val < 0.3 and np.absolute(9.8 - np.absolute(raw_accel_z.mean())) < 0.5 else 0.0
         dense_features = [
             phone_active.sum(axis=0), # phone active data
             raw_accel.mean(axis=0), # mean X, Y, Z acceleration
             raw_accel.std(axis=0), # std X, Y, Z acceleration
             raw_accel_abs.mean(axis=0), # mean X, Y, Z magnitude
             raw_accel_abs.std(axis=0), # std of X, Y, Z magnitude
+            np.array([is_flat_val, is_flat])
 
         ]
         dense_data.append(np.concatenate(dense_features, axis=0))
