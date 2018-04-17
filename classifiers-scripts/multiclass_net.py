@@ -27,6 +27,7 @@ CLASSES =  [
     ]
 
 NPZ_NAME = "TRAIN_DIARY_STUDY_NoDerivative_NoSteady_multi.npz"
+RAW_NPZ_NAME = "TRAIN_DIARY_STUDY_COMPILED_DATA.npz"
 TEST_NPZ_NAME = "TEST_DIARY_STUDY_NoDerivative_NoSteady_multi.npz"
 
 CHECK_MISCLF_LOG = "multiclass_results_log.pkl"
@@ -99,9 +100,11 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
             k = fold // fold_size
             print("FOLD:", k)
 
+
+
             # skip folds we're fine on
-            # if k >= 1 and k <= 5:
-            #     continue
+            if k <= 5:
+                continue
 
             start, end = fold, fold + fold_size if k < n - 1 else n
             mask = np.arange(n)
@@ -109,20 +112,41 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
             val_mask = (mask >= start) & (mask < end)
             train_mask = (mask < start) | (mask >= end)
 
+            val_conv = conv_data[val_mask]
+            val_dense = dense_data[val_mask]
+            val_labels = labels[val_mask]
+
+            train_conv = conv_data[train_mask]
+            train_dense = dense_data[train_mask]
+            train_labels = labels[train_mask]
+
+            # add more features
+            is_flat = lambda row : 1.0 if row[9] < 0.3 and row[10] < 0.3 and abs(row[11] - 9.8) < 1.5 else 0.0
+            real_flatness = np.apply_along_axis(is_flat, 1, val_dense)
+            real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
+            val_dense = np.concatenate([val_dense, real_flatness], axis=1)
+
+            real_flatness = np.apply_along_axis(is_flat, 1, train_dense)
+            real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
+            train_dense = np.concatenate([train_dense, real_flatness], axis=1)
+
+            # train_conv = train_conv[:,:,:2]
+            # val_conv = val_conv[:,:,:2]
+
             training_data = (
-                            {'conv_input' : conv_data[train_mask], 
-                            'dense_input' : dense_data[train_mask]},
+                            {'conv_input' : train_conv, 
+                            'dense_input' : train_dense},
                             {'output' : labels[train_mask]}
             )
 
             validation_data = (
-                {'conv_input': conv_data[val_mask], 
-                 'dense_input' : dense_data[val_mask]},
+                {'conv_input': val_conv, 
+                 'dense_input' : val_dense},
                 {'output' : labels[val_mask]}
 
             )
 
-            model = create_model()
+            model = create_model(train_conv.shape[2], train_dense.shape[1])
 
             hist = model.fit(training_data[0], training_data[1], epochs=epochs, validation_data=validation_data)
             accuracies.append(hist.history['val_acc'][-1])
@@ -137,10 +161,6 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
                 data_distributions.append((train_dist, val_dist))
 
                 indices.append((start, end))
-
-                val_conv = conv_data[val_mask]
-                val_dense = dense_data[val_mask]
-                val_labels = labels[val_mask]
 
                 miss_mat = predict_and_check(model, [val_conv, val_dense], val_labels)
 
@@ -222,9 +242,9 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
 
             pickle.dump(results, f)
 
-def create_model():
+def create_model(num_conv_features, num_dense_features):
     # create model
-    conv_input = keras.layers.Input(shape=(WINDOW_SIZE, 9), name='conv_input')
+    conv_input = keras.layers.Input(shape=(WINDOW_SIZE, num_conv_features), name='conv_input')
     first = Conv1D(64, 3,  activation='relu', use_bias=True, name="first_1D")(conv_input)
     first = Conv1D(64, 3,  activation='relu', use_bias=True, name="second_1D")(first)
     pool_first = MaxPooling1D(3,name="first_max_pool")(first)
@@ -233,7 +253,7 @@ def create_model():
     global_pool = GlobalAveragePooling1D(name="global_pool")(fourth)
     d_first = Dropout(0.5, name="dropout")(global_pool)
 
-    dense_input = keras.layers.Input(shape=(17,), name='dense_input')
+    dense_input = keras.layers.Input(shape=(num_dense_features,), name='dense_input')
 
     x = keras.layers.concatenate([d_first, dense_input], name='concatenate', axis=-1)
     fully_connected_1 = Dense(64, activation='relu', name="fully_connected_1")(x)
@@ -349,7 +369,7 @@ def get_data(dir_diary_user_trips, calibrate_accel=False):
     
     for data_dir, diary_file, user_id in dir_diary_user_trips:
         d, cols = process_diary_study_all_data.getAllUserData(data_dir, diary_file, user_id, as_matrix=False, calibrate_accel=calibrate_accel)
-        
+
         d = d[d["Class"] != '']
 
         labels = d["Class"].values
@@ -368,6 +388,8 @@ def get_data(dir_diary_user_trips, calibrate_accel=False):
     print("ALL DATA")
     print([(key, value // WINDOW_SIZE) for key, value in Counter(labels.flatten()).items()])
     
+    np.savez(RAW_NPZ_NAME, all_data=all_data, data_cols=data_cols)
+
     return all_data, data_cols
 
 
@@ -385,7 +407,7 @@ def get_features_and_labels(d, cols):
 
     # Use only the relevant columns
     data = d[['X accel.', 'Y accel.', 'Z accel.',
-     'X direction changed', 'Y direction changed', 'Z direction changed',
+    #  'X direction changed', 'Y direction changed', 'Z direction changed',
      'Num. Touches', 'Screen State', 'isUnlocked',
      'Label']]
 
@@ -421,15 +443,16 @@ def get_features_and_labels(d, cols):
         raw_accel_z = raw_accel[:,2]
         raw_accel_abs = np.absolute(raw_accel)
 
-        is_flat_val = np.absolute(raw_accel_x - raw_accel_y).mean()
-        is_flat = 1.0 if is_flat_val < 0.3 and np.absolute(9.8 - np.absolute(raw_accel_z.mean())) < 0.5 else 0.0
+        # is_flat_val = np.absolute(raw_accel_x - raw_accel_y).mean()
+        # is_flat = 1.0 if is_flat_val < 0.3 and np.absolute(9.8 - np.absolute(raw_accel_z.mean())) < 0.5 else 0.0
+        # is_flat = lambda row : 1.0 if row[9] < 0.3 and row[10] < 0.3 and abs(row[11] - 9.8) < 1.5 else 0.0
         dense_features = [
             phone_active.sum(axis=0), # phone active data
             raw_accel.mean(axis=0), # mean X, Y, Z acceleration
             raw_accel.std(axis=0), # std X, Y, Z acceleration
             raw_accel_abs.mean(axis=0), # mean X, Y, Z magnitude
             raw_accel_abs.std(axis=0), # std of X, Y, Z magnitude
-            np.array([is_flat_val, is_flat])
+            # np.array([is_flat_val, is_flat])
 
         ]
         dense_data.append(np.concatenate(dense_features, axis=0))
@@ -475,8 +498,13 @@ def get_orientation(accel_window):
 
 def generate_features(args):
     # Compile diary study data
-    print("CALIBRATE ACCEL?", args.calibrate_accel)
-    d, cols = get_data(TRAINING_DATA, calibrate_accel=args.calibrate_accel)
+    if args.get_raw_data:
+        d, cols = get_data(TRAINING_DATA, calibrate_accel=args.calibrate_accel)
+    else:
+        print("Loading from saved data")
+        data = np.load(RAW_NPZ_NAME)
+        d, cols = data['all_data'], list(data['data_cols'])
+        d = pd.DataFrame(data=d, columns=cols)
 
     # Convert data to features and save to disk
     accel_data, phone_active_data, labels = get_features_and_labels(d, cols)
@@ -508,6 +536,10 @@ def parse_args():
     default=50,  
     help="Number of timesteps (10 ms) per window",
   )
+
+  parser.add_argument(
+    '--get_raw_data', action='store_true',
+    help='whether to scrape raw data')
 
   parser.add_argument(
     '--gen_features', action='store_true',

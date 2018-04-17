@@ -24,17 +24,23 @@ Returns:
 2) names of the coluns of the numpy matrix
 """
 def getAllUserData(data_dir, diary_file, user_id, as_matrix=True, calibrate_accel=False):
+    print("Compiling data from:", data_dir)
     files = getUserFilesByInstrument(data_dir, user_id, 'BatchedAccelerometer')
+
+    print("Getting Accel Data")
     x = compileAccelData(files, diary_file, as_matrix=True, calibrate=calibrate_accel)
     accelDf = pd.DataFrame(data=x, columns = ["Timestamp", "X accel.", "Y accel.", "Z accel.", "Class"])
 
-    posData, rawPosDataLocked = processPhoneActiveData(data_dir, user_id, x)
-    posDataFrame = pd.DataFrame(data=posData, columns=["Timestamp", "Num. Touches", "Screen State", "isUnlocked", "X direction changed", "Y direction changed", "Z direction changed"])
+    print("Getting Phone Active Data")
+    ALL_DATA, rawPosDataLocked = processPhoneActiveData(data_dir, user_id, accelDf)
+    # posDataFrame = pd.DataFrame(data=posData, columns=["Timestamp", "Num. Touches", "Screen State", "isUnlocked", "X direction changed", "Y direction changed", "Z direction changed"])
 
 
-    ALL_DATA = accelDf.set_index("Timestamp").join(posDataFrame.set_index("Timestamp"), how='inner', lsuffix='d1', rsuffix='d2')
-    ALL_DATA_MATRIX = ALL_DATA.reset_index().values
+    # ALL_DATA = accelDf.set_index("Timestamp").join(posDataFrame.set_index("Timestamp"), how='inner', lsuffix='d1', rsuffix='d2')
+    ALL_DATA_MATRIX = ALL_DATA.values
     ALL_DATA_COLS = ALL_DATA.columns
+
+    print("Finished compiling data")
 
     return ALL_DATA_MATRIX if as_matrix else ALL_DATA, ALL_DATA_COLS
 
@@ -169,200 +175,162 @@ def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=
             # print(data[mask])
             data.loc[mask, new_col] = label
 
-    print("UNCALIBRATED NULL")
-    print(data[data.isnull().any(axis=1)])
+    # print("UNCALIBRATED NULL")
+    # print(data[data.isnull().any(axis=1)])
 
-    # if calibrate:
-    #     data = calibrate_accel(data)
     # mask = data[new_col] == ''
     # print("DID NOT FALL IN INTERVALS")
     # print(data[mask])
     
     data = data.as_matrix() if as_matrix else data
     return data
+
+
+def processPhoneActive(data_dir, ID, posDataAccel):
+    # print("Adding screen state")
+    posFilesScreen = getUserFilesByInstrument(data_dir, ID, 'TriggeredScreenState')
+    addActiveData(posFilesScreen, posDataAccel, "Screen State", zero_val='false')
+
+    # print("Adding unlocks")
+    posFilesLocked = getUserFilesByInstrument(data_dir, ID, 'TriggeredKeyguard')
+    addActiveData(posFilesLocked, posDataAccel, "isUnlocked", zero_val='true')
+
+    # print("Adding touches")
+    posFilesTouch = getUserFilesByInstrument(data_dir, ID, 'TouchScreenAsEvent')
+    rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
+    rawPosDataTouch = pd.DataFrame(data=rawPosDataTouch)
+    processTouches(rawPosDataTouch, posDataAccel)
+
+    return posDataAccel
+
+def processTouches(touchDf, accelDf):
+    accelDf['Num. Touches'] = 0
+
+    curTouchIndex = 0
+    curAccelIndex = 1
+
+    numAccelRows = accelDf.shape[0]
+    numTouchRows = touchDf.shape[0]
+
+    accel = accelDf.iloc
+    while curAccelIndex < numAccelRows - 1 and curTouchIndex < numTouchRows:
+        startTime, endTime = accel[curAccelIndex, 0], accel[curAccelIndex + 1, 0]
+        touchTime = touchDf.iloc[curTouchIndex, 0]
+
+        if touchTime >= startTime and touchTime < endTime:
+            accelDf.loc[curAccelIndex, 'Num. Touches'] += 1
+
+            curTouchIndex += 1
+            
+
+        else:
+            curAccelIndex += 1
+
+    return accelDf
+
+
+def addActiveData(csv_files, accelDf, column, zero_val='false'):
+    convertTime = lambda timestamp : datetime.datetime.fromtimestamp(int(timestamp) / 1000)
+    truthToNum = lambda x : 0 if str(x).lower() == zero_val else 1
+
+    accelDf[column] = 0
+
+    currVal = 0
+    startTime, endTime = accelDf.iloc[0][0], None
+    trueMask = None
+    for f in csv_files:
+        # print(f)
+        reader = csv.reader(open(f, 'r'))
+
+        for row in reader:
+            if len(row) < 3:
+                # print("Bad row:", row)
+                continue
+            time, val = convertTime(row[1]), truthToNum(row[2])
+            
+            endTime = time
+            
+            if val != currVal:
+                # if currVal is True and val is False, then a True interval is ending
+                if currVal == 1 and val == 0:
+                    # print("Appending true interval:", startTime, endTime)
+                    mask = ((accelDf['Timestamp'] >= startTime) & (accelDf['Timestamp'] < endTime))
+                    if trueMask is None:
+                        trueMask = mask
+                    else:
+                        trueMask = trueMask | mask
+                       
+                # start new interval
+                startTime = time
+                currVal = val
+                
+                # print("Starting new interval:", currVal, startTime)
+            
+    
+    if currVal == True:
+        mask = ((accelDf['Timestamp'] >= startTime) & (accelDf['Timestamp'] < endTime))
+        if trueMask is None:
+            trueMask = mask
+        else:
+            trueMask = trueMask | mask
+            
+    accelDf.loc[trueMask, column] = 1
+
+    return accelDf
+
     
 def processPhoneActiveData(data_dir, ID, posDataAccel):
     if len(posDataAccel) <= 1:
-        return []
+        return [], []
 
-    firstAccelTime = posDataAccel[0][0]
-    
-    posFilesTouch = getUserFilesByInstrument(data_dir, ID, 'TouchScreenAsEvent')
-    rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
-    # # print("RAW DATA TOUCH")
-    # # print(rawPosDataTouch)
-    
+    print("Adding screen state")
     posFilesScreen = getUserFilesByInstrument(data_dir, ID, 'TriggeredScreenState')
-    rawPosDataScreen = dataFilesToDataListAbsTime(posFilesScreen)
-    
+    addActiveData(posFilesScreen, posDataAccel, "Screen State", zero_val='false')
+
+    print("Adding unlocks")
     posFilesLocked = getUserFilesByInstrument(data_dir, ID, 'TriggeredKeyguard')
     rawPosDataLocked = dataFilesToDataListAbsTime(posFilesLocked)
+    addActiveData(posFilesLocked, posDataAccel, "isUnlocked", zero_val='true')
 
+    print("Adding touches")
+    posFilesTouch = getUserFilesByInstrument(data_dir, ID, 'TouchScreenAsEvent')
+    rawPosDataTouch = dataFilesToDataListAbsTime(posFilesTouch)
+    rawPosDataTouch = pd.DataFrame(data=rawPosDataTouch)
+    processTouches(rawPosDataTouch, posDataAccel)
 
+    allData = posDataAccel
+    # posDataAccel = posDataAccel.values
+    # print("Adding signs")
 
-    currScreenDate = None
-    nextScreenDate = None
-    currScreenVal = None
-    currLockedDate = None
-    nextLockedDate = None
-    currLockedVal = None
-    
-    touchIndex = -1
-    if rawPosDataTouch.shape[0] > 0:
-        touchIndex = 0
-        currentTime = rawPosDataTouch[touchIndex][0]
-        while currentTime < firstAccelTime: 
-            touchIndex += 1
-            if touchIndex >= rawPosDataTouch.shape[0]:
-                break
-            currentTime = rawPosDataTouch[touchIndex][0]
+    # allData["X direction changed"] = 0
+    # allData["Y direction changed"] = 0
+    # allData["Z direction changed"] = 0
 
-        startTouchIndex = touchIndex
+    # curAccelSignX = float(posDataAccel[0][1]) > 0
+    # curAccelSignY = float(posDataAccel[0][2]) > 0
+    # curAccelSignZ = float(posDataAccel[0][3]) > 0
     
-    screenIndex = -1
-    if rawPosDataScreen.shape[0] > 0:
-        screenIndex = 0
-        currentTime = rawPosDataScreen[screenIndex][0]
-        while currentTime < firstAccelTime:
-            screenIndex += 1
-            if screenIndex >= rawPosDataScreen.shape[0]:
-                break
-            currentTime = rawPosDataScreen[screenIndex][0]
-            # # print(currentTime)
-            # # print(screenIndex)
-        currScreenDate = rawPosDataScreen[screenIndex][0]
-        currScreenVal = rawPosDataScreen[screenIndex][2]
-        if rawPosDataScreen.shape[0] > 1:
-            nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
+    # curSigns = [curAccelSignX, curAccelSignY, curAccelSignZ]
     
-    lockedIndex = -1
-    if rawPosDataLocked.shape[0] > 0:
-        lockedIndex = 0
-        currentTime = rawPosDataLocked[lockedIndex][0]
-        while currentTime < firstAccelTime:
-            lockedIndex += 1
-            if lockedIndex >= rawPosDataLocked.shape[0]:
-                break
-            currentTime = rawPosDataLocked[lockedIndex][0]
-        currLockedDate = rawPosDataLocked[lockedIndex][0]
-        currLockedVal = rawPosDataLocked[lockedIndex][2]
-        if len(rawPosDataLocked) > 1:
-            nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
-    
-    posDataTouch = []
-    posDataScreen = []
-    posDataLocked = []
-    
-    # # print(firstAccelTime)
-    # # print(screenIndex)
-    
-    truthToNum = lambda x : 0 if str(x) == 'false' else 1
-    
-    for i in range(posDataAccel.shape[0] - 1):
-        accelRow = posDataAccel[i]
-        accelRowNext = posDataAccel[i + 1]
-        
-        accelDate = accelRow[0]
-        accelDateNext = accelRowNext[0]
-        
-        # Calculate number of touch events starting at this row time and before next row time
-        # touchDate >= firstAccelTime
-        if rawPosDataTouch.shape[0] == 0 or touchIndex >= rawPosDataTouch.shape[0] or rawPosDataTouch[touchIndex][0] >= accelDateNext: # No touch events
-            touchRow = [accelDate, 0]
-            posDataTouch.append(touchRow)
-            ## print("TOUCH DATE:" + str(touchDate))
-            ## print("ACCEL DATE:" + str(accelDate))
+    # signsChanged = lambda now, cur : [1 if now[i] != cur[i] else 0 for i in range(len(now))]
+    # for i in range(posDataAccel.shape[0] - 1):
+    #     try:
+    #         accelSignX = float(posDataAccel[i][1]) > 0
+    #         accelSignY = float(posDataAccel[i][2]) > 0
+    #         accelSignZ = float(posDataAccel[i][3]) > 0
             
-        else: #touchDate < AccelDateNext
-            numTouches = 0
-            touchDate = rawPosDataTouch[touchIndex][0]
-            while touchDate < accelDateNext and touchIndex < rawPosDataTouch.shape[0]:
-                # # print("TOUCH RECOGNIZED!")
-                numTouches += 1
-                touchIndex += 1
-                if touchIndex < rawPosDataTouch.shape[0] - 1:
-                    touchDate = rawPosDataTouch[touchIndex][0]
-                
-            touchRow = [accelDate, numTouches]
-            posDataTouch.append(touchRow)
-        
-        
-        # Calculate if screen on in this interval
-        if currScreenDate == None or nextScreenDate == None:
-            screenRow = [accelDate, 0]
-            posDataScreen.append(screenRow)
+    #         newSigns = [accelSignX, accelSignY, accelSignZ]
+    #         accelSigns = signsChanged(newSigns, curSigns)
+    #         curSigns = newSigns
 
-        elif accelDate >= nextScreenDate:
-            if screenIndex + 1 < rawPosDataScreen.shape[0]:
-                screenIndex += 1
-                currScreenDate = rawPosDataScreen[screenIndex][0]
-                currScreenVal = rawPosDataScreen[screenIndex][2]
-                if screenIndex + 1 < rawPosDataScreen.shape[0]:
-                    nextScreenDate = rawPosDataScreen[screenIndex + 1][0]
-                
-            screenRow = [accelDate, truthToNum(currScreenVal)]
-            posDataScreen.append(screenRow)
-        
-        else:
-            screenRow = [accelDate, truthToNum(currScreenVal)]
-            posDataScreen.append(screenRow)
-        
-        # Calculate if locked on in this interval
+    #         allData.loc[i, ["X direction changed", "Y direction changed", "Z direction changed"]] = accelSigns
 
-        if currLockedDate == None or nextLockedDate == None:
-            screenRow = [accelDate, 0]
-            posDataLocked.append(screenRow)
-        elif accelDate >= nextLockedDate:
-            if lockedIndex + 1 < rawPosDataLocked.shape[0]:
-                lockedIndex += 1
-                currLockedDate = rawPosDataLocked[lockedIndex][0]
-                currLockedVal = rawPosDataLocked[lockedIndex][2]
-                if lockedIndex + 1 < rawPosDataLocked.shape[0]:
-                    nextLockedDate = rawPosDataLocked[lockedIndex + 1][0]
-                
-            lockedRow = [accelDate, truthToNum(currLockedVal)]
-            posDataLocked.append(lockedRow)
-        
-        else:
-            lockedRow = [accelDate, truthToNum(currLockedVal)]
-            posDataLocked.append(lockedRow)
-            
-    posData = []
-    curAccelSignX = float(posDataAccel[0][1]) > 0
-    curAccelSignY = float(posDataAccel[0][2]) > 0
-    curAccelSignZ = float(posDataAccel[0][3]) > 0
+    #     except (ValueError,IndexError):
+    #         print("BAD VALUE OF I:", i)
+    #         accelSigns = signsChanged(curSigns, curSigns)
+    #         allData.loc[i, ["X direction changed", "Y direction changed", "Z direction changed"]] = accelSigns
     
-    curSigns = [curAccelSignX, curAccelSignY, curAccelSignZ]
-    
-    signsChanged = lambda now, cur : [1 if now[i] != cur[i] else 0 for i in range(len(now))]
-    for i in range(posDataAccel.shape[0] - 1):
-        try:
-            accelSignX = float(posDataAccel[i][1]) > 0
-            accelSignY = float(posDataAccel[i][2]) > 0
-            accelSignZ = float(posDataAccel[i][3]) > 0
-            
-            newSigns = [accelSignX, accelSignY, accelSignZ]
-            accelSigns = signsChanged(newSigns, curSigns)
-            curSigns = newSigns
-            
-            
-            numTouches = posDataTouch[i][1]
-            screenState = posDataScreen[i][1]
-            lockedState = posDataLocked[i][1]
-            
-            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + accelSigns
-            posData.append(row)
-
-        except (ValueError,IndexError):
-            print("BAD VALUE OF I:", i)
-            numTouches = posDataTouch[i][1]
-            screenState = posDataScreen[i][1]
-            lockedState = posDataLocked[i][1]
-            
-            row = [posDataAccel[i][0]] + [numTouches, screenState, lockedState] + signsChanged(curSigns, curSigns)
-            posData.append(row)
-    
-    return posData, rawPosDataLocked
+    return allData, rawPosDataLocked
 
 
 def dataFilesToDataListAbsTime(userFiles):
