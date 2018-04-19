@@ -57,6 +57,12 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
     #Converts labels to one-hot vector
     labels = keras.utils.to_categorical(labels, num_classes=NUM_CLASSES)
 
+    # Add more features
+    is_flat = lambda row : 1.0 if row[9] < 0.3 and row[10] < 0.3 and abs(row[11] - 9.8) < 1.5 else 0.0
+    real_flatness = np.apply_along_axis(is_flat, 1, dense_data)
+    real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
+    dense_data = np.concatenate([dense_data, real_flatness], axis=1)
+
     if evaluate_test:
         test_data = np.load(TEST_NPZ_NAME)
         test_conv = test_data['conv_data']
@@ -107,6 +113,7 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
                 continue
 
             start, end = fold, fold + fold_size if k < n - 1 else n
+            print("GET DATA <", start, ">=", end)
             mask = np.arange(n)
 
             val_mask = (mask >= start) & (mask < end)
@@ -121,14 +128,14 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
             train_labels = labels[train_mask]
 
             # add more features
-            is_flat = lambda row : 1.0 if row[9] < 0.3 and row[10] < 0.3 and abs(row[11] - 9.8) < 1.5 else 0.0
-            real_flatness = np.apply_along_axis(is_flat, 1, val_dense)
-            real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
-            val_dense = np.concatenate([val_dense, real_flatness], axis=1)
+            # is_flat = lambda row : 1.0 if row[9] < 0.3 and row[10] < 0.3 and abs(row[11] - 9.8) < 1.5 else 0.0
+            # real_flatness = np.apply_along_axis(is_flat, 1, val_dense)
+            # real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
+            # val_dense = np.concatenate([val_dense, real_flatness], axis=1)
 
-            real_flatness = np.apply_along_axis(is_flat, 1, train_dense)
-            real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
-            train_dense = np.concatenate([train_dense, real_flatness], axis=1)
+            # real_flatness = np.apply_along_axis(is_flat, 1, train_dense)
+            # real_flatness = real_flatness.reshape((real_flatness.shape[0], 1))
+            # train_dense = np.concatenate([train_dense, real_flatness], axis=1)
 
             # train_conv = train_conv[:,:,:2]
             # val_conv = val_conv[:,:,:2]
@@ -177,20 +184,38 @@ def train_model_kfold_multiclass(k=20, epochs=10, check_misclf=False, save_path=
 
                 # Save misclassified data to analyze
                 # pred Table but really Backpack, pred Backpack but really Pocket
-                folds_of_note = {
-                    9: [(0, 1), (1, 1), (0, 0)],
-                    8: [(4, 0), (0, 0), (4, 4)],
-                    6: [(4, 0), (0, 0), (4, 4), (4, 3), (3, 3)],
-                    # 7: [(0, 4), (0, 0), (4, 4)],
-                    0: [(0, 1), (1, 1), (0, 0), (0, 4), (4, 4)],
+                # folds_of_note = {
+                #     9: [(0, 1), (1, 1), (0, 0), (0, 4), (4, 4)],
+                #     8: [(4, 0), (0, 0), (4, 4)],
+                #     6: [(4, 0), (0, 0), (4, 4), (4, 3), (3, 3)],
+                #     # 7: [(0, 4), (0, 0), (4, 4)],
+                #     0: [(0, 1), (1, 1), (0, 0), (0, 4), (4, 4)],
 
-                }
-                if k in folds_of_note:
-                    print("LOOKING AT MISCLASSIFIED DATA")
-                    filters = folds_of_note[k]
+                # }
+                # if k in folds_of_note:
+                #     print("LOOKING AT MISCLASSIFIED DATA")
+                #     filters = folds_of_note[k]
+                #     data = {'conv' : val_conv, 'dense' : val_dense}
+                #     val_predictions = model.predict([val_conv, val_dense])
+                #     results_f = 'misclf_data_fold_' + str(k) + '_' + str(num_folds) + 'folds' '.npz'
+                #     find_misclassified_data(data, val_predictions, val_labels, results_f, filters=filters)
+
+                worst_cases = np.argwhere(miss_mat > 1000)
+                filters = [tuple(indices) for indices in worst_cases]
+                if len(filters) > 0:
+                    compare_cases = set([])
+
+                    for filt in filters:
+                        compare_cases.add((filt[0], filt[0]))
+                        compare_cases.add((filt[1], filt[1]))
+
+                    filters += list(compare_cases)
+
+                    print("FILTERS:", filters)
+
                     data = {'conv' : val_conv, 'dense' : val_dense}
                     val_predictions = model.predict([val_conv, val_dense])
-                    results_f = 'misclf_data_fold_' + str(k) + '_' + str(num_folds) + 'folds' '.npz'
+                    results_f = 'misclf_data_fold_' + str(k) + '_' + str(num_folds) + 'folds_1000_misses' '.npz'
                     find_misclassified_data(data, val_predictions, val_labels, results_f, filters=filters)
 
         
@@ -259,7 +284,9 @@ def create_model(num_conv_features, num_dense_features):
     fully_connected_1 = Dense(64, activation='relu', name="fully_connected_1")(x)
     fully_connected_2 = Dense(64, activation='relu', name="fully_connected_2")(fully_connected_1)
     fully_connected_3 = Dense(64, activation='relu', name="fully_connected_3")(fully_connected_2)
-    fully_output = Dense(64, activation='relu', name="fully_connected_output")(fully_connected_3)
+    fully_connected_4 = Dense(64, activation='relu', name="fully_connected_4")(fully_connected_3)
+    fully_connected_5 = Dense(64, activation='relu', name="fully_connected_5")(fully_connected_4)
+    fully_output = Dense(64, activation='relu', name="fully_connected_output")(fully_connected_5)
     output = Dense(NUM_CLASSES, activation='softmax', name='output')(fully_output)
     # output = Flatten(name='flatten')(output_without_flatten)
     model = Model(inputs=[conv_input, dense_input], outputs=[output])
@@ -429,7 +456,7 @@ def get_features_and_labels(d, cols):
         if total != WINDOW_SIZE:
             continue
         
-        accel, phone_active, label = window[:,:6], window[:,6:-1], window[:,-1]
+        accel, phone_active, label = window[:,:3], window[:,3:-1], window[:,-1]
 
         orientation = get_orientation(accel)
         accel = np.concatenate([accel, orientation], axis=1)
