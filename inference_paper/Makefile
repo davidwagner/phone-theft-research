@@ -1,32 +1,6 @@
-BUILD := \
-	paper
+BUILD := paper
 
-
-DEPS := \
-	algorithm.sty \
-	algorithmic.sty \
-	icml2018.bst \
-	icml2018.sty \
-	fancyhdr.sty \
-	macros.tex \
-	abstract.tex \
-	introduction.tex \
-	background.tex \
-	discussion.tex \
-	techniques.tex \
-	breaks.tex \
-	obfuscated-gradients.tex \
-	conclusion.tex \
-	acknowledgements.tex \
-	bibliography.tex \
-	figures/defense_gan.png \
-	figures/distortion.png \
-	figures/lid.pdf \
-	figures/sap.pdf \
-	figures/therm.pdf \
-	figures/thermloss.pdf \
-
-
+DEPS := introduction.tex related.tex approach.tex evaluation.tex conclusion.tex
 
 LATEX  := pdflatex
 BIBTEX := bibtex
