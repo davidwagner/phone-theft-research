@@ -1,6 +1,6 @@
 BUILD := paper
 
-DEPS := introduction.tex related.tex approach.tex evaluation.tex conclusion.tex
+DEPS := introduction.tex related.tex approach.tex evaluation.tex results.tex conclusion.tex
 
 LATEX  := pdflatex
 BIBTEX := bibtex

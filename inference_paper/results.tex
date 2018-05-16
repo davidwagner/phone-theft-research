@@ -1,0 +1,46 @@
+\section{Results}
+\subsection{Single Phone Model}
+Using the architecture detailed in, we trained the network for 10 epochs
+and measured its effectiveness using $k$-fold cross-validation with $k = 10$.
+Training/validation data was compiled from the four different diary studies
+that used phone model WON.
+
+To ensure that each fold had comparable training and validation distributions 
+for each class, we preprocessed all of the diary study data before partitioning it
+for cross-validation. Specifically, we divided the data of each diary study into its 
+contiguous segments of each class (e.g. 10:00-11:15, Table or 13:55-14:30, Hand),
+and then concatenated those segments together for each class. The result was four 
+homogenous datasets, one of each class, such that for each fold, we could construct
+the validation set by aggregating together $\frac{1}{k}$ of each class dataset and then
+construct the training set by compiling the remaining $\frac{k - 1}{k}$ of each class dataset.
+Within these homogenous class datasets, the data were not randomized but 
+kept sequential.
+
+The average accuracy across all folds was $92.06\%$, and the corresponding
+confusion matrix is shown in Figure X.
+
+\begin{tabular}{| l || c | c | c | c |}  
+\toprule
+\multicolumn{5}{c}{Actual Class} \\ \cmidrule{2-5}
+Predicted Class		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+\midrule
+Backpack			&	0.878 	&	0.108	&	0.368 	&	0.028 \\
+Pocket			&	0.055 	&	0.843 	&	0.024 	&	0.001 \\
+Hand			&	0.048 	&	0.016 	&	0.574 	&	0.006 \\
+Table			&	0.019 	&	0.033 	&	0.035 	&	0.965\\
+\bottomrule
+\end{tabular}
+
+\subsection{Multiple Phone Models}
+We also attempted to validate our networks across different phone models, by training
+on data collected by one phone model and then validating on data collected on a 
+different phone model. We trained a network on all of the 
+data collected from diary studies using phone model JOANNA, and then validated on 
+two separate diary studies of data collected using phone model WON. In order to account
+for inconsistent calibrations between the accelerometers of different phone models, we
+recalibrated all accelerometer data...
+
+However, results were inconclusive. On the first diary study with phone model WON, our network
+had a validation accuracy of only $76\%$, but on the second diary study, our network had a validation
+accuracy of $91\%$--an accuracy much more comparable to the cross validation accuracy
+demonstrated in the single phone model case. 
