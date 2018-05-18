@@ -78,12 +78,25 @@ applied to the Nexus 5 data, as a cursory comparison of the accelerometer data b
 that did not equal the expected values of $X = 0g$, $Y = 0g$, and $Z = 9.8g$. Samples, 0.5s long, of 
 the two phone's accelerometer data is shown in Figure Y. 
 
+\begin{figure}[t]
+\center
+\includegraphics[scale=0.25]{won_table}
+\includegraphics[scale=0.25]{joanna_table}
+\caption{Graphs of the acceleration of the Nexus 5 and 5X while on a table (at different times).}
+\end{figure}
+
 In order to account for the inconsistent calibrations between the accelerometers of different phone models, we
 attempted to recalibrate the accelerometer data for each phone before using it with the network. 
 First, to see what type of recalibration model was necessary (e.g. $accel_{calibrated} = accel_{raw} + C$ or
 $accel_{calibrated} = K(accel_{raw}) + C$), we taped the Nexus 5 and Nexus 5X together, and then recorded
 the phones' accelerations in the four states. Plots of the two phones' accelerations against each other over the same time period
 then suggested a linear relationship of the form $accel_{calibrated} = accel_{raw} + C$. 
+
+\begin{figure}[t]
+\center
+\includegraphics[scale=0.5]{two_phones}
+\caption{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while taped together over the same period of time.}
+\end{figure}
 
 To find the calibration constants for each phone model, we collected accelerometer
 data from when the phone was flat on a table, measured the acceleration in the
