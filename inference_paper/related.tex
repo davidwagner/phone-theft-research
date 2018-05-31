@@ -1,1 +1,35 @@
 \section{Related work}
+There has been much previous work involving smartphone sensors.
+To note, this is in contrast to lots of previous work that involve sensors that are meant to be worn \cite{Kunze2005WhereAI}.
+We focus on smartphone sensors since we believe they are more readily accesible, prevalent, and versatile than a wearable sensor.
+
+Work by Khan et al, utilized accelerometer values to classify phone position 
+but was limited to distinguishing between whether the phone was in the upper or lower half of the body.
+Similarly, Miluzzo et al. proposed the use of various sensors to classify different phone locations, 
+but only recognized two states: inside and outside of a pocket.
+
+
+ In <TOFIX>'s work, the case of in-pocket detection was studied using light and proximity sensors[10, 3].
+Several other works, including works by Fujinami et al. and by Coksun et al. tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer. 
+In the former case, an accuracy of 74.6\% was achieved and in the latter case, an accuracy of roughly 84\% was achieved.
+
+Park et al achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but required that the participant be walking. 
+
+
+
+Wiese et al explored the idea of adding sensors that utilize capacitive sensing,  multi-spectral properties, as well as light and proximity sensing.
+They were able to achieve accuracies of 85\% to 100\%.
+Similarly, Mart\'{\i}n et al used sensors like light, proximity, and acceleration sensors
+to obtain position location accuracy of 92.94\%, but to cost in file size. 
+
+In this paper, we take this idea further and utilize data from only two data sources: the accelerometer and the phone screen. 
+Data from both sources are readily available, do not require specific user permissions, and are less energy draining than previously studied sensors.
+Furthermore, unlike previous work, we also train and validate our model on phone data collected throughout the entire day, and not just during specific tasks (e.g. walking).
+This includes times when the phone may be still and not actually directly on the user.
+
+
+
+
+
+
+

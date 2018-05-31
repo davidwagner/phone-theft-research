@@ -1,0 +1,27 @@
+\begin{thebibliography}{}
+
+\bibitem[Fujinami and Kouchi, 2013]{Fujinami}
+Fujinami, K. and Kouchi, S. (2013).
+\newblock Recognizing a mobile phone's storing position as a context of a
+  device and a user.
+\newblock In Zheng, K., Li, M., and Jiang, H., editors, {\em Mobile and
+  Ubiquitous Systems: Computing, Networking, and Services}, pages 76--88,
+  Berlin, Heidelberg. Springer Berlin Heidelberg.
+
+\bibitem[Kunze et~al., 2005]{Kunze2005WhereAI}
+Kunze, K., Lukowicz, P., Junker, H., and Tr{\"o}ster, G. (2005).
+\newblock Where am i: Recognizing on-body positions of wearable sensors.
+\newblock In {\em LoCA}.
+
+\bibitem[Mart\'{\i}n et~al., 2013]{Martin}
+Mart\'{\i}n, H., Bernardos, A.~M., Iglesias, J., and Casar, J.~R. (2013).
+\newblock Activity logging using lightweight classification techniques in
+  mobile devices.
+\newblock volume~17, pages 675--695, London, UK, UK. Springer-Verlag.
+
+\bibitem[Miluzzo et~al., 2010]{Miluzzo2010}
+Miluzzo, E., Papandrea, M., Lane, N.~D., Lu, H., and Campbell, A.~T. (2010).
+\newblock Pocket, bag, hand, etc. - automatically detecting phone context
+  through discovery.
+
+\end{thebibliography}

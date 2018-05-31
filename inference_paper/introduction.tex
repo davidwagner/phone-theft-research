@@ -1,1 +1,22 @@
 \section{Introduction}
+With the recent proliferation of smartphones with sensors, such as light sensors and accelerometers,
+ combined with the wide usage of smartphones over traditional phones, 
+ there has been an explosion of applications utilizing sensors.
+One such common application is activity detection: detecting whether a person is walking or running, for example.
+
+Knowing, a priori, the position of the phone can prove to be useful.
+For exampo, a phone's vibration intensity can be adjusted based on where the phone is positined on the person, potentially prolonging battery usage \cite{Fujinami}.
+In another example, CO2 and pollution sensors could be turned off automatically if the phone were deemed to be in a pocket or backpack \cite{Miluzzo2010} 
+
+Not only that, but phone position can also be a powerful information tool that can enhance the quality of other classifiers.
+For example, work by Mart\'{\i}n et al has shown that feeding phone position as an input to a classifier predicting activity will increase accuracy in certain instances\cite{Martin}.  
+
+
+In this paper, we discuss our methodology of automatically detecting and differentiating between different phone states: table, backpack, hand, and table. 
+We trained a convolutional neural net on data collected from the accelerometer sensor 
+ as well as screen events to achieve 92.06\% accuracy when evaluated on the same phone.
+We then extend this to a different phone model and show that it is possible to evaluate states on a 
+ different phone, even if the phone has an accelerometer sensor that is calibrated differently.
+While the work on this is preliminary, we belive it provides an important step toward the goal of a 
+universal classifier that can detect different phone states across phone models. 
+
