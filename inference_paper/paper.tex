@@ -1,21 +1,44 @@
-\documentclass{article}
+\documentclass[a4paper,twoside]{article}
 \usepackage{microtype}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{graphicx}
 \usepackage{booktabs} % for professional tables
 \usepackage{csquotes}
-\usepackage{siunitx}
 
+\usepackage{siunitx}
+\usepackage{epsfig}
+\usepackage{subfigure}
+\usepackage{calc}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{multicol}
+\usepackage{pslatex}
+\usepackage{apalike}
+\usepackage{SCITEPRESS}
+
+\subfigtopskip=0pt
+\subfigcapskip=0pt
+\subfigbottomskip=0pt
 
 \begin{document}
-\title{Inferring Phone Location}
-\author{Steven Chen \and Won Park \and Joanna Yang \and David Wagner}
-\maketitle
 
-\begin{abstract}
-abstract...
-\end{abstract}
+\title{Inferring Phone Location}
+\author{\authorname{Steven Chen\sup{1}, Won Park \sup{1},  Joanna Yang and David Wagner \sup{2}}
+\affiliation{\sup{1}Institute of Problem Solving, XYZ University, My Street, MyTown, MyCountry}
+\affiliation{\sup{2}Department of Computing, Main University, MySecondTown, MyCountry}
+\email{\{f\_author, s\_author\}@ips.xyz.edu, t\_author@dc.mu.edu}
+}
+
+\keywords{Sensors, Smartphone}
+
+\abstract{Smartphone sensors are becoming more universal and more accurate. In this paper, we aim to distinguish between 4 positions a phone can be in: in the hand, pocket, backpack, or on a table. Using a convolutional neural network and data from the accelerometer and the screen state, we achieve a 92.04\% accuracy on the same phone. We also explore extending this to different phones. }
+\onecolumn 
+
+
+\maketitle \normalsize \vfill
 
 \input{introduction}
 \input{related}
@@ -27,6 +50,7 @@ abstract...
 \nocite{}
 
 \bibliography{paper}
-\bibliographystyle{plain}
+\bibliographystyle{apalike}
+
 
 \end{document}
