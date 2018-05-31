@@ -4,7 +4,7 @@
 \subsubsection{Data Collection Software}
 The software used to collect data for this experiment is the AppMon logging mobile application 
 for the Android phone. 
-The AppMon application logs the smartphone sensors, including the following:
+The AppMon application logs data from various smartphone sensors, including the following:
 \begin{enumerate}
 \item Accelerometer
 \item Number of unlocks
@@ -20,25 +20,57 @@ It also registers the timestamp at which various trigger events occur (e.g. phon
 
 \subsubsection{Phones}
 We used two phones for the purpose of diary studies and collecting data for creating the classifiers.
-One phone was a Nexus 5 and the other was a Neuxs 5s
+One phone was a Nexus 5 and the other was a Nexus 5x
 
 
 \subsection {Diary Study}
-To obtain data for training and validation, one participant used the test phone with the app installed 
-and underwent a daily routine.
-Whenever a change of state occured [Note: As of this point, would the reader know what the states are?], the participant would record the time (according to the phone) and the new state.
+To obtain data for training and validation, three `diary studies' were performed, all by the same participant.
+
+In each study, the participant would carry the phone around with the aforementioned app running and undergo a daily routine.
+Whenever a change of state occured, the participant would record the time (according to the phone) and the new state.
+
+The first diary study was performed for a total of roughly 14.5 hours using the Nexus 5x which was also used as the source of training as well as validation data.
+The second and third diary studies were performed using the Nexus 5.
+This data was used to check for cross-phone validation.
 
 
 The distribution of the states during the diary study are shown below:
 
 
-\begin{center}
-\begin{tabular}{ |c|c| } 
+\begin{table}[h]
+\caption{Distribution of States for Diary Study 1 (Nexus 5x)}\label{tab:diary1} \centering
+\begin{tabular}{ |c|c|c| } 
  \hline
- Table & 9.288 hours & 0.635\% \\ 
- Pocket & 0.492 hours & 0.034\%\\ 
+ Table & 9.288 hours & 0.635\%  \\ 
+ Pocket & 0.492 hours & 0.034\% \\ 
  Backpack &  4.263 hours  &  0.292\% \\ 
  Hand & 0.576 hours  & 0.039\% \\
  \hline
 \end{tabular}
-\end{center}
+\end{table}
+
+\begin{table}[h]
+\caption{Distribution of States for Diary Study 2 (Nexus 5)}\label{tab:diary1} \centering
+\begin{tabular}{ |c|c|c| } 
+ \hline
+ Table & FILL & ME  \\ 
+ Pocket & IN & 0.034\% \\ 
+ Backpack &  4.263 hours  &  0.292\% \\ 
+ Hand & 0.576 hours  & 0.039\% \\
+ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Distribution of States for Diary Study 3 (Nexus 5)}\label{tab:diary1} \centering
+\begin{tabular}{ |c|c|c| } 
+ \hline
+ Table & FILL & 0.635\%  \\ 
+ Pocket & ME & 0.034\% \\ 
+ Backpack &  IN  &  0.292\% \\ 
+ Hand & 0.576 hours  & 0.039\% \\
+ \hline
+\end{tabular}
+\end{table}
+
+

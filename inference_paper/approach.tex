@@ -19,15 +19,40 @@ For creating features, the relevant sensor data were the Accelerometer readings 
 \end{enumerate}
 
 The "If phone is flat" feature was a boolean feature derived from the raw accelerometer readings. 
-The feature was 1 if the equation below held true, and 0 otherwise.
-$$ (Mean X Accel. Magnitude) < 1.0 and (Mean Y Accel. Magnitude ) < 1.0 and |9.8 - (Mean Z Accel. Magnitude)| < 1.0 $$
+The feature was 1 if equations 1,2,3 below held true, and 0 otherwise.
+
+\begin{equation}\label{eq1}
+    \text{(Mean X Accel. Magnitude)} < 1.0 
+\end{equation}
+
+
+\begin{equation}\label{eq2}
+\text{ (Mean Y Accel. Magnitude )} < 1.0
+\end{equation}
+
+\begin{equation}\label{eq1}
+\ |9.8 - \text{(Mean Z Accel. Magnitude)}| < 1.0
+\end{equation}
+
+
 
 \subsection{Architecture}
 Our architecture consisted of two distinct sections: a convolutional section and a dense, fully connected section. 
-\includegraphics{convnet}
+
+
+\begin{figure*}[!h]
+  \vspace{-0.2cm}
+  \centering
+   {\epsfig{file = convnet, width = 11.5cm}}
+  \caption{The architecture of our convolutional neural net}
+  \label{fig1}
+  \vspace{-0.1cm}
+\end{figure*}
 
 Specifically in the convolution section, we use the raw acceleration data, which includes the acceleration in the x, y, z direction. 
 After multiple 1 dimensional convolution layers, max and global pooling, and dropout layers, we concantenate the 16 features from the section above in order to incorporate the other features. 
 We chose to separate out the acceleration and the other features in order to take advantage of the potentially "periodic" behavior of a user's acceleration in certain positions (e.g. walking).
 
 After the concatenation of inputs, our model has 6 dense layers with 4 outputs, which match the four classes listed previously. 
+
+An illustration of the model is shown on the next page.
