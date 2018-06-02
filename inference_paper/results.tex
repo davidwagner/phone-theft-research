@@ -47,8 +47,44 @@ We applied this calibration process to both the Nexus 5X and Nexus 5 data, and t
 trained a network on all of the Nexus 5X data, and validated individually on each of the 
 two days of diary study data collected from the Nexus 5.
 Nonetheless, even after calibration, results between the two phones were inconclusive. 
-On the first diary study with the Nexus 5, our network
-had a validation accuracy of only $76\%$, but on the second diary study, our network had a validation
+On the first diary study with the Nexus 5 (Diary Study 2), our network
+had a validation accuracy of $77.57\%$, significantly lower than the accuracy observed
+in the single phone model case. The corresponding confusion matrix shown in figure X.
+\begin{table}[h]
+\caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion} \centering
+\begin{tabular}{| c || c | c | c | c }  
+\toprule
+\multicolumn{1}{c}{\textit{Class}}\multicolumn{4}{c}{(Actual)} \\ \cmidrule{1-5}
+(Predicted)		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+\midrule
+Backpack			&	0.342 	&	0.016	&	0.017 	&	0.131 \\
+Pocket			&	0.001 	&	0.185 	&	0.	 	&	0.000 \\
+Hand			&	0.057 	&	0.	 	&	0.004 	&	0. \\
+Table			&	0. 		&	0.003 	&	0.	 	&	0.245\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On the second diary study, with the Nexus 5 (Diary Study 3), our network had a validation
 accuracy of $91\%$--an accuracy much more comparable to the cross validation accuracy
-demonstrated in the single phone model case. These results suggest that a linear calibration
+demonstrated in the single phone model case. The corresponding confusion matrix is 
+shown below in Figure X.
+
+\begin{table}[h]
+\caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion} \centering
+\begin{tabular}{| c || c | c | c | c }  
+\toprule
+\multicolumn{2}{c}{\textit{Class}}\multicolumn{3}{c}{(Actual)} \\ \cmidrule{1-5}
+(Predicted)		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+\midrule
+Backpack			&	0.053 	&	0.040	&	0.013 	&	0.001 \\
+Pocket			&	0.006 	&	0.037 	&	0.005 	&	0.001 \\
+Hand			&	0.	 	&	0.014 	&	0.055 	&	0.001 \\
+Table			&	0.009 	&	0.003 	&	0.	 	&	0.763\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+These results suggest that a linear calibration
 strategy may be effective, but further investigation is needed for definitive understanding.
