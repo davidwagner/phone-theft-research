@@ -14,8 +14,8 @@ the two states (i.e. the user could have been moving or still when the phone was
 in their backpack or pocket). The Hand state was classified with the least accuracy,
 and misclassified most often instead as the Backpack state. These misclassifications
 likely also stem from the varied positions of the Hand state, as in addition to the user
-using the phone actively in their Hand, they may also walk with their phone inactive
-in their hand [@Joanna what kind of hand states did you have?]
+using the phone actively in their hand, they may also walk with their phone in hand
+but just to hold the phone and not actually using it.
 
 
 \begin{table}[h]
@@ -38,17 +38,13 @@ Table			&	0.004 	&	0.002 	&	0.002 	&	0.965\\
 \subsection{Multiple Phone Models}
 We also attempted to validate our networks across different phone models, by training
 on data collected by one phone model and then validating on data collected on a 
-different phone model. 
-
-However, the same network trained on the Nexus 5X data could unfortunately not be immediately
-applied to the Nexus 5 data, as 
-
-We applied this calibration process to both the Nexus 5X and Nexus 5 data, and then
-trained a network on all of the Nexus 5X data, and validated individually on each of the 
-two days of diary study data collected from the Nexus 5.
-Nonetheless, even after calibration, results between the two phones were inconclusive. 
-On the first diary study with the Nexus 5 (Diary Study 2), our network
-had a validation accuracy of $77.57\%$, significantly lower than the accuracy observed
+different phone model. Specifically, we first applied the calibration process described in section 4.3 
+to both the Nexus 5X diary study data (Diary Study 1) and Nexus 5 diary study data (Diary Study 2 and Diary Study 3).
+We then trained a network of our proposed architecture on the Nexus 5X data for 20 epochs, 
+and validated the network on the two separate diary studies that used the
+Nexus 5 phone.
+Validating on the first diary study with the Nexus 5 (Diary Study 2), our network
+had an accuracy of $78\%$, significantly lower than the accuracy observed
 in the single phone model case. The corresponding confusion matrix shown in figure X.
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion} \centering
@@ -65,13 +61,13 @@ Table			&	0. 		&	0.003 	&	0.	 	&	0.245\\
 \end{tabular}
 \end{table}
 
-On the second diary study, with the Nexus 5 (Diary Study 3), our network had a validation
+Validating the second diary study, with the Nexus 5 (Diary Study 3), our trained network had a validation
 accuracy of $91\%$--an accuracy much more comparable to the cross validation accuracy
 demonstrated in the single phone model case. The corresponding confusion matrix is 
 shown below in Figure X.
 
 \begin{table}[h]
-\caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion} \centering
+\caption{Confusion matrix of the network predictions on Diary Study 3 (Nexus 5).}\label{fig:confusion} \centering
 \begin{tabular}{| c || c | c | c | c }  
 \toprule
 \multicolumn{2}{c}{\textit{Class}}\multicolumn{3}{c}{(Actual)} \\ \cmidrule{1-5}
@@ -85,6 +81,8 @@ Table			&	0.009 	&	0.003 	&	0.	 	&	0.763\\
 \end{tabular}
 \end{table}
 
-
-These results suggest that a linear calibration
+The disparity in accuracy between the two different diary studies with the Nexus 5 was unexpected,
+since both were conducted within the same Nexus 5 device. We did not have time to explore the root
+cause for this disparity, so we cannot conclude definitely if a single network is applicable across phone models. 
+The results from Diary Study 3 ($91\%$ accuracy) suggest that a linear calibration
 strategy may be effective, but further investigation is needed for definitive understanding.
