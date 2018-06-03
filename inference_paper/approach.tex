@@ -2,7 +2,26 @@
 
 \subsection{Problem}
 We want to predict the location of an user's phone based on the sensor data collected on the phone. 
-From our observations, the most common states of the phone would be in a user's: backpack, pocket, hand, and on a table. 
+From our observations, the most common states of the phone would be in a user's: backpack, pocket, hand, and on a table.
+Upon a cursory observation of their accelerometer traces, these phone states also appeared to be distinguishable and motivated
+our approach to use deep learning to classify these states. Sample accelerometer traces for the states, measured on a Nexus 5X
+smartphone are shown below in figure X.
+
+\begin{center}
+ \scalebox{0.375}{\input{Backpack15.pgf}}
+  \scalebox{0.375}{\input{Pocket7.pgf}}
+  \scalebox{0.375}{\input{Hand2.pgf}}
+  \scalebox{0.375}{\input{Table6.pgf}}
+  \captionof{figure}{Acceleration graphs of the phone states.}
+\end{center}
+
+%\begin{figure}[t]
+%\center
+%\includegraphics[scale=0.25]{won_table}
+%\includegraphics[scale=0.25]{joanna_table}
+%\caption{Graphs of the acceleration of the Nexus 5 and 5X while on a table (at different times).}
+%\end{figure}
+
 
 \subsection{Features}
 For creating features, the relevant sensor data were the Accelerometer readings (X, Y, Z values), Number of unlocks, Number of screen touches, and Number of times the screen turned on/off. For each window of 0.5s of these raw sensor readings, we generated the following features:
