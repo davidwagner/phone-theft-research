@@ -1,6 +1,6 @@
 \section{Related work}
 There has been much previous work involving smartphone sensors.
-To note, this is a different set of work than the numerous pervious work that exist for wearable sensors \cite{Kunze2005}.
+To note, this is a different set of work than the numerous pervious work that exist for wearable sensors \cite{Kunze2005,Atallah}.
 We focus on smartphone sensors since we believe they are more readily accesible, prevalent, and versatile than wearable sensors.
 
 Work by Khan et al, utilized accelerometer values to classify phone state 
@@ -9,9 +9,7 @@ Similarly, Miluzzo et al. proposed the use of various sensors to classify differ
 but only recognized two states: inside and outside of a pocket \cite{Miluzzo2010}.
 In contrast, our work distinguishes between more states: hand, pocket, bag, and backpack. 
 
- In <TOFIX>'s work, the case of in-pocket detection was studied using light and proximity sensors[10, 3].
-Several other works, including works by Fujinami et al. and by Coksun et al. tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer \cite{Fujinami2013,Coksun15}. 
-In the former case, an accuracy of 74.6\% was achieved and in the latter case, an accuracy of roughly 84\% was achieved.
+Several other works tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer resulting in accuracies between 74.6\% to 84\% \cite{Fujinami2013,Coksun15}. 
 Our work improves on this accuracy by utilizing additional data from the phone screen.
 
 Park et al achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but required that the participant be walking \cite{Park2012}. 
@@ -19,11 +17,11 @@ In contrast, our work does not require that the phone user perform a specific ta
 Rather, we train and validate our model on phone data collected throughout the entire day, 
  including times when the phone may be still and not actually on the user. 
 
-
-Wiese et al explored the idea of adding sensors that utilize capacitive sensing,  multi-spectral properties, as well as light and proximity sensing \cite{Wiese2013}.
+Other works improved accuracy by using several additional sensors \cite{Yang13}.
+For example, Wiese et al explored the idea of adding sensors that utilize capacitive sensing,  multi-spectral properties, as well as light and proximity sensing \cite{Wiese2013}.
 They were able to achieve accuracies of 85\% to 100\%.
 Similarly, Mart\'{\i}n et al used sensors like light, proximity, and acceleration sensors
-to obtain phone state accuracy of 92.94\% \cite{Martin}, but to cost in file size.
+to obtain phone state accuracy of 92.94\% \cite{Martin2013}, but to cost in file size.
 Our work achieves similar accuracy rates but with data from much fewer sensors.  
 
 In this paper, we take this idea further and utilize data from only two data sources: the accelerometer and the phone screen. 
