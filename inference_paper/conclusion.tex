@@ -1,12 +1,8 @@
 \section{Conclusion}
-In this work, we apply deep learning to the task of determining the position of a 
-user's smartphone on the user's person. We explore useful phone features that can 
-be easily accessed from sensor data available to Android phone models, and also
-identify four common phone positions that span most of a user's phone behavior
-and appear distinguishable from the sensor data. We introduce a neural network architecture well suited
-to process and learn from these features, and demonstrate that this architecture
-can accurately classify a phone's position provided data from a single phone model. We also
-propose an accelerometer calibration strategy for standardizing phone accelerometer
-data across phone models, and show the potential generalization of a network trained on data from a single phone
-model to other phone models. Lastly, we discuss the potential security application of this
-network to phone authentication software.
+The work described in this paper describes the methodology in applying deep learning to the task of determining the state of a user's smartphone on the user's person. 
+To do this, we do not require the user to be performing any specific action.
+Instead, we utilize data from the accelerometer and screen, which are both lightweight and readily available on Android phone models, to identify four common phone positions that span most of a user's phone behavior
+and appear distinguishable from the sensor data. 
+We show that great accuracy can be achieved when evaluating on a single phone model.
+Furthermore, we propose an accelerometer calibration strategy for standardizing phone accelerometer
+data across phone models, and show the potential generalization of a network trained on data from a single phone model to other phone models.
