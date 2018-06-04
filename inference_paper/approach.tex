@@ -1,11 +1,11 @@
 \section{Approach}
 
 \subsection{Problem}
-We want to predict the location of an user's phone based on the sensor data collected on the phone. 
+We want to predict the state of an user's phone based on the sensor data collected on the phone. 
 From our observations, the most common states of the phone would be in a user's: backpack, pocket, hand, and on a table.
 Upon a cursory observation of their accelerometer traces, these phone states also appeared to be distinguishable and motivated
 our approach to use deep learning to classify these states. Sample accelerometer traces for the states, measured on a Nexus 5X
-smartphone are shown below in figure X.
+smartphone are shown in Figure ~\ref{fig:accelGraph}.
 
 \begin{center}
  \scalebox{0.375}{\input{Backpack15.pgf}}
@@ -13,6 +13,7 @@ smartphone are shown below in figure X.
   \scalebox{0.375}{\input{Hand2.pgf}}
   \scalebox{0.375}{\input{Table6.pgf}}
   \captionof{figure}{Acceleration graphs of the phone states.}
+  \label{fig:accelGraph}
 \end{center}
 
 %\begin{figure}[t]
@@ -24,39 +25,38 @@ smartphone are shown below in figure X.
 
 
 \subsection{Features}
-For creating features, the relevant sensor data were the Accelerometer readings (X, Y, Z values), Number of unlocks, Number of screen touches, and Number of times the screen turned on/off. For each window of 0.5s of these raw sensor readings, we generated the following features:
+For creating features, the relevant sensor data were the accelerometer readings (X, Y, Z values), number of unlocks, Number of screen touches, and number of times the screen turned on/off. For each window of 0.5s of these raw sensor readings, we generate the following features:
 
 \begin{enumerate}
 \item \textit{Total number of phone unlocks}
 \item \textit{Total number of phone touches}
 \item \textit{Fraction of window that phone screen was on}
-\item \textit{Mean acceleration each in X, Y, Z directions}
-\item \textit{Std. deviation of acceleration each in X, Y, Z directions}
-\item \textit{Mean magnitude of acceleration each in X, Y, Z directions}
-\item \textit{Std. deviation of magnitude of acceleration each in X, Y, Z directions}
+\item \textit{Mean acceleration each in X, Y, Z}
+\item \textit{Std. deviation of acceleration each in X, Y, Z}
+\item \textit{Mean magnitude of acceleration each in X, Y, Z}
+\item \textit{Std. deviation of magnitude of acceleration each in X, Y, Z}
 \item \textit{If phone is flat (handcrafted feature explained below)}
 \end{enumerate}
 
-The "If phone is flat" feature was a boolean feature derived from the raw accelerometer readings. 
+The ``If phone is flat" feature was a boolean feature derived from the raw accelerometer readings. 
 The feature was 1 if equations 1,2,3 below held true, and 0 otherwise.
 
 \begin{equation}\label{eq1}
-    \text{(Mean X Accel. Magnitude)} < 1.0 
+    \text{       (Mean X Accel. Magnitude)} < 1.0 
 \end{equation}
 
-
 \begin{equation}\label{eq2}
-\text{ (Mean Y Accel. Magnitude )} < 1.0
+\text{            (Mean Y Accel. Magnitude)} < 1.0
 \end{equation}
 
 \begin{equation}\label{eq1}
-\ |9.8 - \text{(Mean Z Accel. Magnitude)}| < 1.0
+|9.8 - \text{(Mean Z Accel. Magnitude)}| < 1.0
 \end{equation}
 
 
 
 \subsection{Architecture}
-Our architecture consisted of two distinct sections: a convolutional section and a dense, fully connected section. 
+Our architecture consists of a standard convolutional layer followed by dense, fully connected layers.
 
 
 \begin{figure*}[!h]
@@ -64,14 +64,15 @@ Our architecture consisted of two distinct sections: a convolutional section and
   \centering
    {\epsfig{file = convnet1, width = 11.5cm}}
   \caption{The architecture of our convolutional neural net}
-  \label{fig1}
+  \label{fig:ConvNet}
   \vspace{-0.1cm}
 \end{figure*}
 
-Specifically in the convolution section, we use the raw acceleration data, which includes the acceleration in the x, y, z direction. 
-After multiple 1 dimensional convolution layers, max and global pooling, and dropout layers, we concantenate the 16 features from the section above in order to incorporate the other features. 
-We chose to separate out the acceleration and the other features in order to take advantage of the potentially "periodic" behavior of a user's acceleration in certain positions (e.g. walking).
+In the convolution section, we use the raw acceleration data, which includes the acceleration in the x, y, z directions. 
+After multiple 1 dimensional convolution layers, max and global pooling, and dropout layers, 
+we concantenate the 16 features from the section above in order to incorporate the features that do not involve the data from the accelerometer. 
+We chose to separate the features in this way in order to take advantage of the potentially periodic behavior of a user's acceleration in certain positions (e.g. walking).
 
-After the concatenation of inputs, our model has 6 dense layers with 4 outputs, which match the four classes listed previously. 
+After the concatenation of inputs, our model has 6 dense layers culminating in  4 outputs, which match the four classes listed previously. 
 
-An illustration of the model is shown on the next page.
+Our model is shown in Figure ~\ref{fig:ConvNet}

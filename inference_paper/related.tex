@@ -1,26 +1,26 @@
 \section{Related work}
 There has been much previous work involving smartphone sensors.
-To note, this is a different set of work than that for wearable sensors \cite{Kunze2005WhereAI}.
+To note, this is a different set of work than the numerous pervious work that exist for wearable sensors \cite{Kunze2005}.
 We focus on smartphone sensors since we believe they are more readily accesible, prevalent, and versatile than wearable sensors.
 
 Work by Khan et al, utilized accelerometer values to classify phone state 
-but was limited to distinguishing between whether the phone was in the upper or lower half of the body\cite{Khan2010}.
+but was limited to distinguishing between whether the phone was in the upper or lower half of the body \cite{Khan2010}.
 Similarly, Miluzzo et al. proposed the use of various sensors to classify different phone locations, 
 but only recognized two states: inside and outside of a pocket \cite{Miluzzo2010}.
 In contrast, our work distinguishes between more states: hand, pocket, bag, and backpack. 
 
  In <TOFIX>'s work, the case of in-pocket detection was studied using light and proximity sensors[10, 3].
-Several other works, including works by Fujinami et al. and by Coksun et al. tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer\cite{Fujinami, Coksun15}. 
+Several other works, including works by Fujinami et al. and by Coksun et al. tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer \cite{Fujinami2013,Coksun15}. 
 In the former case, an accuracy of 74.6\% was achieved and in the latter case, an accuracy of roughly 84\% was achieved.
 Our work improves on this accuracy by utilizing additional data from the phone screen.
 
-Park et al achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but required that the participant be walking \cite{Park}. 
+Park et al achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but required that the participant be walking \cite{Park2012}. 
 In contrast, our work does not require that the phone user perform a specific task in order to distinguish between states.
 Rather, we train and validate our model on phone data collected throughout the entire day, 
  including times when the phone may be still and not actually on the user. 
 
 
-Wiese et al explored the idea of adding sensors that utilize capacitive sensing,  multi-spectral properties, as well as light and proximity sensing.
+Wiese et al explored the idea of adding sensors that utilize capacitive sensing,  multi-spectral properties, as well as light and proximity sensing \cite{Wiese2013}.
 They were able to achieve accuracies of 85\% to 100\%.
 Similarly, Mart\'{\i}n et al used sensors like light, proximity, and acceleration sensors
 to obtain phone state accuracy of 92.94\% \cite{Martin}, but to cost in file size.
@@ -30,6 +30,7 @@ In this paper, we take this idea further and utilize data from only two data sou
 Data from both sources are readily available, do not require specific user permissions, and are less energy draining than previously studied sensors.
 Furthermore, unlike previous work, we also train and validate our model on phone data collected throughout the entire day, and not just during specific tasks (e.g. walking).
 This includes times when the phone may be still and not actually directly on the user.
+An example of this may be if the phone is left on a table or in a backpack. 
 
 
 

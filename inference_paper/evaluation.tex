@@ -1,15 +1,15 @@
 \section{Evaluation}
 
 \subsection{Data Collection Tools}
-\subsubsection{Data Collection Software}
+\paragraph{Data Collection Software}
 The software used to collect data for this experiment is the AppMon logging mobile application 
 for the Android phone. 
 The AppMon application logs data from various smartphone sensors, including the following:
 \begin{enumerate}
 \item Accelerometer
-\item Number of unlocks
-\item Number of screen touches
-\item Number of times the screen turns on and off
+\item Screen unlock count
+\item Screen touch count
+\item Screen On-off count
 \end{enumerate}
 
 In our project, we will be using data from the sensors
@@ -18,57 +18,60 @@ to create features in order to classify and predict the location of the phone.
 The app collects accelerometer readings (X, Y, Z directions) in units of $m/s^2$ every 10ms.
 It also registers the timestamp at which various trigger events occur (e.g. phone unlocks, screen on, etc.)
 
-\subsubsection{Phones}
-We used two phones for the purpose of diary studies and collecting data for creating the classifiers.
-One phone was a Nexus 5 and the other was a Nexus 5x
+\paragraph{Phones}
+We used two phones diary studies and collecting data for the classifiers,
+ a Nexus 5 and a Nexus 5X.
 
 
 \subsection {Diary Study}
 To obtain data for training and validation, three `diary studies' were performed, all by the same participant.
 
-In each study, the participant would carry the phone around with the aforementioned app running and undergo a daily routine.
-Whenever a change of state occured, the participant would record the time (according to the phone) and the new state.
+In each study, the participant carried the phone around with the monitoring app running and undergo a daily routine.
+Whenever a change of state occured, the participant recorded the time (according to the phone) and the new state.
 
-The first diary study was performed for a total of roughly 14.5 hours using the Nexus 5x which was also used as the source of training as well as validation data.
-The second and third diary studies were performed using the Nexus 5.
+The first diary study was performed for 14.5 hours using the Nexus 5x which was also used as the source of training as well as validation data.
+The second and third diary studies were performed using the Nexus 5 for 7 and 6 hours, respectively.
 This data was used to check for cross-phone validation.
 
 
-The distribution of the states during the diary study are shown below:
+The distribution of the states during the diary study are shown in Figure ~\ref{tab:diarydistr}.
 
 
 \begin{table}[h]
-\caption{Distribution of States for Diary Study 1 (Nexus 5x)}\label{tab:diary1} \centering
-\begin{tabular}{ |c|c|c| } 
+\caption{Distribution of states for different diary studies} \label{tab:diarydistr} 
+\centering
+
+\begin{tabular}{ |c|c|c|c| } 
  \hline
+ \multirow{4}{*}{Diary 1, Nexus 5X} &
  Table & 9.29 hours & 0.635\%  \\ 
- Pocket & 0.49 hours & 0.034\% \\ 
- Backpack &  4.26 hours  &  0.292\% \\ 
- Hand & 0.58 hours  & 0.039\% \\
+ & Pocket & 0.49 hours & 0.034\% \\ 
+ & Backpack &  4.26 hours  &  0.292\% \\ 
+ & Hand & 0.58 hours  & 0.039\% \\
  \hline
 \end{tabular}
-\end{table}
 
-\begin{table}[h]
-\caption{Distribution of States for Diary Study 2 (Nexus 5)}\label{tab:diary1} \centering
-\begin{tabular}{ |c|c|c| } 
+\bigskip
+
+\begin{tabular}{ |c|c|c|c| } 
  \hline
- Table & 2.85 & 0.400\%  \\ 
- Pocket & 1.45 & 0.204\% \\ 
- Backpack &  0.15 hours  &  0.021\% \\ 
- Hand & 2.67 hours  & 0.375\% \\
+ \multirow{4}{*}{Diary 2, Nexus 5} &
+ Table & 2.85 hours & 0.400\%  \\ 
+ & Pocket & 1.45 hours & 0.204\% \\ 
+ & Backpack &  0.15 hours  &  0.021\% \\ 
+ & Hand & 2.67 hours  & 0.375\% \\
  \hline
 \end{tabular}
-\end{table}
 
-\begin{table}[h]
-\caption{Distribution of States for Diary Study 3 (Nexus 5)}\label{tab:diary1} \centering
-\begin{tabular}{ |c|c|c| } 
+\bigskip
+
+\begin{tabular}{ |c|c|c|c| } 
  \hline
- Table & 0.44 & 0.061\%  \\ 
- Pocket & 0.60 & 0.085\% \\ 
- Backpack &  0.47  &  0.066\% \\ 
- Hand & 4.93 hours  & 0.694\% \\
+ \multirow{4}{*}{Diary 3, Nexus 5} &
+ Table & 0.44 hours & 0.061\%  \\ 
+ & Pocket & 0.60 hours & 0.085\% \\ 
+ & Backpack &  0.47 hours &  0.066\% \\ 
+ & Hand & 4.93 hours  & 0.694\% \\
  \hline
 \end{tabular}
 \end{table}
