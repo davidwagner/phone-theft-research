@@ -17,14 +17,14 @@ likely also stem from the varied positions of the Hand state, as in addition to 
 using the phone actively in their hand, they may also walk with their phone in hand
 but just to hold the phone and not actually using it.
 
-
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 1 (Nexus 5X). Each entry indicates the proportion of
 total instances that were predicted as the predicted class by the network and labeled the actual class.}\label{fig:confusion} \centering
-\begin{tabular}{| c || c | c | c | c }  
+\begin{tabular}{| c || c | c | c | c |}  
 \toprule
-\multicolumn{2}{c}{\textit{Class}}\multicolumn{3}{c}{(Actual)} \\ \cmidrule{1-5}
-(Predicted)		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+Class &  \multicolumn{3}{c}{\textit{Actual}} \\
+\cmidrule{1-5}
+\textit{Predicted}		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
 Backpack			&	0.266 	&	0.005	&	0.024 	&	0.029 \\
 Pocket			&	0.016 	&	0.041 	&	0.001 	&	0.001 \\
@@ -46,12 +46,16 @@ Nexus 5 phone.
 Validating on the first diary study with the Nexus 5 (Diary Study 2), our network
 had an accuracy of $78\%$, significantly lower than the accuracy observed
 in the single phone model case. The corresponding confusion matrix shown in figure X.
+
+
 \begin{table}[h]
-\caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion} \centering
-\begin{tabular}{| c || c | c | c | c }  
+\caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion}
+\centering
+\begin{tabular}{| c || c | c | c | c |}  
 \toprule
-\multicolumn{1}{c}{\textit{Class}}\multicolumn{4}{c}{(Actual)} \\ \cmidrule{1-5}
-(Predicted)		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+Class & \multicolumn{4}{c}{\textit{Actual}} \\
+\cmidrule{2-5}
+\textit{Predicted}	&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
 Backpack			&	0.342 	&	0.016	&	0.017 	&	0.131 \\
 Pocket			&	0.001 	&	0.185 	&	0.	 	&	0.000 \\
@@ -61,6 +65,7 @@ Table			&	0. 		&	0.003 	&	0.	 	&	0.245\\
 \end{tabular}
 \end{table}
 
+
 Validating the second diary study, with the Nexus 5 (Diary Study 3), our trained network had a validation
 accuracy of $91\%$--an accuracy much more comparable to the cross validation accuracy
 demonstrated in the single phone model case. The corresponding confusion matrix is 
@@ -68,10 +73,11 @@ shown below in Figure X.
 
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 3 (Nexus 5).}\label{fig:confusion} \centering
-\begin{tabular}{| c || c | c | c | c }  
+\begin{tabular}{| c || c | c | c | c |}  
 \toprule
-\multicolumn{2}{c}{\textit{Class}}\multicolumn{3}{c}{(Actual)} \\ \cmidrule{1-5}
-(Predicted)		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
+Class & \multicolumn{3}{c}{\textit{Actual}} \\ 
+\cmidrule{1-5}
+\textit{Predicted}	&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
 Backpack			&	0.053 	&	0.040	&	0.013 	&	0.001 \\
 Pocket			&	0.006 	&	0.037 	&	0.005 	&	0.001 \\
@@ -80,6 +86,7 @@ Table			&	0.009 	&	0.003 	&	0.	 	&	0.763\\
 \bottomrule
 \end{tabular}
 \end{table}
+
 
 The disparity in accuracy between the two different diary studies with the Nexus 5 was unexpected,
 since both were conducted within the same Nexus 5 device. We did not have time to explore the root
