@@ -4,18 +4,23 @@ Using the architecture detailed in section 3, we trained the network for 10 epoc
 and measured its effectiveness using $10$-fold cross-validation.
 Training/validation data was compiled from the diary study conducted with the Nexus 5X.
 
-The average accuracy across all folds was $92.06\%$, and the corresponding
-confusion matrix is shown in table ~\ref{fig:confusion1}. The network is able to learn how to 
-classify the Table state very accurately, which is understandable given 
-the consistent nature of the state (i.e. always in a still, flat position). The states
-of Backpack and Pocket were also classified with pretty moderate accuracy,
+The average accuracy across all folds was $92\%$, and the corresponding
+confusion matrix is shown in Table ~\ref{fig:confusion1}.
+ The network is able to learn how to  classify the Table state very accurately, which is understandable given  the consistent nature of the state (i.e. always in a still, flat position). 
+The states of Backpack and Pocket were also classified with pretty moderate accuracy,
 with the misclassifications likely stemming from the more diverse nature of 
 the two states (i.e. the user could have been moving or still when the phone was
-in their backpack or pocket). The Hand state was classified with the least accuracy,
-and misclassified most often instead as the Backpack state. These misclassifications
-likely also stem from the varied positions of the Hand state, as in addition to the user
-using the phone actively in their hand, they may also walk with their phone in hand
-but just to hold the phone and not actually using it.
+in their backpack or pocket). 
+The Hand state was classified with the least accuracy,
+and misclassified most often instead as the Backpack state. 
+These misclassifications likely also stem from the varied positions of the Hand state, 
+ as in addition to the user using the phone actively in their hand, 
+ they may also walk with their phone in hand
+ but just to hold the phone and not actually using it.
+ 
+One problem our classifier had was in distinguishing between cases where the phone was flat on a table or still in a non-moving backpack.
+For future work, we propose a post-processing step after obtaining the classification output.
+In this step, classifications from timeframes before and after the one in question would be considered to help `smooth' the outputs.
 
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 1 (Nexus 5X). Each entry indicates the percent of
