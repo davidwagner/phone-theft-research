@@ -12,7 +12,7 @@ In contrast, our work distinguishes between four states: hand, pocket, bag, and 
 Several other works tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer resulting in accuracies between 74.6\% to 84\% \cite{Fujinami2013,Coksun15}. 
 Our work improves on this accuracy by utilizing additional data from the phone screen.
 
-Park \et achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but required that the participant be walking \cite{Park2012}. 
+Park \et achieved an accuracy of 94\% in distinguishing between hand, ear, pocket, and backpack, but limited the data to record instances where the user was walking \cite{Park2012}. 
 In contrast, our work does not require that the phone user perform a specific task in order to distinguish between states.
 Rather, we train and validate our model on phone data collected throughout the entire day, 
  including times when the phone may be still and not actually on the user. 
@@ -24,7 +24,7 @@ Similarly, Mart\'{\i}n \et used sensors like light, proximity, and acceleration 
 to obtain phone state accuracy of 92.94\% \cite{Martin2013}, but at a cost in file size.
 Our work achieves similar accuracy rates but with data from fewer sensors.  
 
-In this paper, we take this idea further and utilize data from only two data sources: the accelerometer and the phone screen. 
+In this paper, we take this idea further and utilize data from only two sources: the accelerometer and the phone screen. 
 Data from both sources is readily available, does not require specific user permissions, and is less energy draining than previously studied sensors.
 Furthermore, unlike previous work, we also train and validate our model on phone data collected throughout the entire day, and not just during specific tasks (e.g. walking).
 This includes times when the phone may be still and not actually directly on the user.
