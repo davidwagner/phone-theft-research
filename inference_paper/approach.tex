@@ -59,7 +59,9 @@ The feature was 1 if equations 1,2,3 below held true, and 0 otherwise.
 \hspace*{-1cm}|9.8 - \text{(Mean Z Accel. Magnitude)}| < 1.0
 \end{equation}
 
-
+Other sensors that we considered to be relevant with predicting phone states are batched light and step count.
+However, the batched light sensor is not used because of its inability to distinguish outdoor nighttime darkness and the darkness from an enclosed backpack. 
+We could not use the step count sensor because the sensor data we collected showed that this sensor was not reliable. 
 
 \subsection{Architecture}
 Our architecture consists of a standard convolutional layer followed by dense fully connected layers.
@@ -78,6 +80,10 @@ In the convolution section, we use the raw acceleration data, which includes the
 After multiple one-dimensional convolution layers, max and global pooling, and dropout layers, 
 we concatenate the 16 features above in order to incorporate the features that do not involve the data from the accelerometer. 
 We chose to separate the features in this way in order to take advantage of the potentially periodic behavior of a user's acceleration in certain positions (e.g. walking).
+The features that use the acceleration in the X, Y, Z are separated from the other binary features because we wanted to capture the time series data of the different phone states.
+The other binary features are independent of the time, so these features are added in after the acceleration features go through the convolution layers.  
 
 After the concatenation of inputs, our model has 6 dense layers culminating in  4 outputs, which match the four classes listed previously. 
 Our model is shown in figure ~\ref{fig:ConvNet}.
+We have experimented with other architecture, such as separate binary linear classifiers for each phone state and separate neural net classifiers for each phone state.
+However, we found out this multiclass neural net classifier works best and has the highest accuracy rates. 
