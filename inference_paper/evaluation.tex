@@ -99,7 +99,7 @@ We had hoped that phone accelerometers would be consistent across phone models (
 both the Nexus 5 and Nexus 5X in the same state would have the same accelerometer
 readings, save for some noise). However, cursory comparison of the accelerometer data between the two phones 
 (while both phones had been on the table) revealed both differing accelerometer readings and readings
-that did not equal the expected values of $X = 0g$, $Y = 0g$, and $Z = 9.8g$. 
+that did not equal the expected values of $X = 0m/s^2$, $Y = 0m/s^2$, and $Z = 9.8m/s^2$. 
 
 
 %Samples, 0.5s long, of 
@@ -119,17 +119,28 @@ $accel_{calibrated} = K(accel_{raw}) + C$), we taped the Nexus 5 and Nexus 5X to
 the phones' accelerations in the four states. Plots of the two phones' accelerations against each other, figure \ref{fig:tapedphones}, over the same time period
 then suggested a linear relationship of the form $accel_{calibrated} = accel_{raw} + C$. 
 
-\begin{figure*}[!h]
-\center
-\includegraphics[scale=0.5]{two_phones}
-\caption{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while taped together over the same period of time.}
-  \label{fig:tapedphones}
-\end{figure*}
+\begin{center}
+ \scalebox{0.375}{\input{x.pgf}}
+  \scalebox{0.375}{\input{y.pgf}}
+  \scalebox{0.375}{\input{z.pgf}}
+  \captionof{figure}{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while physically taped together over the same period of time.}
+  \label{fig:accelGraph}
+\end{center}
+
+% \begin{figure*}[!h]
+%\center
+% \includegraphics[scale=0.5]{two_phones}
+%\scalebox{0.375}{\input{x.pgf}}
+%  \scalebox{0.375}{\input{y.pgf}}
+%  \scalebox{0.375}{\input{z.pgf}}
+%\caption{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while taped together over the same period of time.}
+%  \label{fig:tapedphones}
+%\end{figure*}
 
 To find the calibration constants for each phone model, we collected accelerometer
 data from when the phone was flat on a table, measured the acceleration in the
 $X$, $Y$, and $Z$ directions and then computed the offsets from the expected values of
-$0g$, $0g$, and $9.8g$. These offsets were then added to all of the accelerometer data for that phone model.
+$0m/s^2$, $0m/s^2$, and $9.8m/s^2$. These offsets were then added to all of the accelerometer data for that phone model.
 For practical applications of our phone state classifier, we believe that this calibration process
 could then be reasonably achieved by asking phone users to place their phones flat on a table for a short period of time (e.g. a minute)
 to allow the above calibration constants to be calculated.
