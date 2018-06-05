@@ -6,16 +6,18 @@ From our observations, the most common states of the phone would be in a user's:
 Upon a cursory observation of accelerometer traces, these phone states also appeared to be distinguishable and motivated
 our approach to use deep learning to classify these states.
 Sample accelerometer traces for the states, measured on a Nexus 5X
-smartphone are shown in Figure ~\ref{fig:accelGraph}.
+smartphone are shown in Figure ~\ref{fig:AccelDiffStates}.
 
+\begin{figure}
 \begin{center}
  \scalebox{0.375}{\input{Backpack15.pgf}}
   \scalebox{0.375}{\input{Pocket7.pgf}}
   \scalebox{0.375}{\input{Hand2.pgf}}
   \scalebox{0.375}{\input{Table6.pgf}}
   \captionof{figure}{Typical acceleration graphs for our four states for a Nexus 5X.}
-  \label{fig:accelGraph}
+  \label{fig:AccelDiffStates}
 \end{center}
+\end{figure}
 
 %\begin{figure}[t]
 %\center
@@ -26,7 +28,7 @@ smartphone are shown in Figure ~\ref{fig:accelGraph}.
 
 Our goal is to allow the classifier to predict phone states no matter what action the user may be performing.
 This includes times when the phone is not physically on the user. 
-Of course, this means that certain cases may be very difficult to distinguish between: a phone being in a still backpack versus on a table, for example.
+Of course, this means that certain cases may be very difficult to differentiate: a phone being in a still backpack versus on a table, for example.
 In future works, we propose a potential solution to this problem. 
 
 
@@ -63,6 +65,10 @@ Other sensors that we considered to be relevant with predicting phone states are
 However, the batched light sensor is not used because of its inability to distinguish outdoor nighttime darkness and the darkness from an enclosed backpack. 
 We could not use the step count sensor because the sensor data we collected showed that this sensor was not reliable. 
 
+We do not utilize a overlapping or `rolling` window, and instead take distinct chunks of 0.5 seconds.
+We believe that this is acceptable since the window size is small enough that we do not miss any transitions.
+This decision is supported by previous work that showed there is no notable difference in accuracy between using overlapping and non-overlapping windows \cite{Martin2013}
+
 \subsection{Architecture}
 Our architecture consists of a standard convolutional layer followed by dense fully connected layers.
 
@@ -76,6 +82,28 @@ Our architecture consists of a standard convolutional layer followed by dense fu
   \vspace{-0.1cm}
 \end{figure*}
 
+
+\begin{table}[!h]
+\begin{center}
+\begin{tabular}{llrp{2.5cm}}\toprule
+Layer &  Kernel & Outputs  &  Activation / Note\\\midrule
+Conv  & 3  & 64 &  Conv1D + ReLU \\
+Conv  & 3  & 64 & Conv1D + ReLU  \\
+MaxPooling   & & 4\\
+Conv & & & \\
+Conv & & & \\
+GlobalPooling & & &\\
+Dropout & & & Dropout rate of 0.5\\
+Concat   &  & & Join count data with XYZ to form  an input of 144\\
+Dense & & 64 & ReLU; There are 6 of these in succession \\
+Dense & & 4 & softmax
+
+\end{tabular}
+\caption{Model Architecutre}
+\label{tab:ArchDescription}
+\end{center}
+\end{table}
+
 In the convolution section, we use the raw acceleration data, which includes the acceleration in the x, y, z directions. 
 After multiple one-dimensional convolution layers, max and global pooling, and dropout layers, 
 we concatenate the 16 features above in order to incorporate the features that do not involve the data from the accelerometer. 
@@ -83,7 +111,8 @@ We chose to separate the features in this way in order to take advantage of the 
 The features that use the acceleration in the X, Y, Z are separated from the other binary features because we wanted to capture the time series data of the different phone states.
 The other binary features are independent of the time, so these features are added in after the acceleration features go through the convolution layers.  
 
-After the concatenation of inputs, our model has 6 dense layers culminating in  4 outputs, which match the four classes listed previously. 
-Our model is shown in Figure ~\ref{fig:ConvNet}.
+After the concatenation of inputs, our model has 6 dense layers culminating in 4 outputs, which match the four classes listed previously. 
+Our model is shown in Figure ~\ref{fig:ConvNet} and a description is shown in Table ~\ref{tab:ArchDescription}.
 We have experimented with other architecture, such as separate binary linear classifiers for each phone state and separate neural net classifiers for each phone state.
 However, we found out this multiclass neural net classifier works best and has the highest accuracy rates. 
+We also experimented with the number of convolutional and dense layers as well as the number of layer units and width of the convolutional filters.

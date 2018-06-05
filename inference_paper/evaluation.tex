@@ -33,7 +33,7 @@ The second and third diary studies were performed using the Nexus 5 for 7 and 6 
 This data was used to check for cross-phone validation.
 
 
-The distribution of the states during the diary study are shown in Figure ~\ref{tab:diarydistr}.
+The distribution of the states during the diary study are shown in Table ~\ref{tab:diarydistr}.
 
 
 \begin{table}[h]
@@ -79,25 +79,29 @@ Our suspicions were confirmed when we observed that the cross-validation accurac
 was $9.22\%$ higher when the dataset was partitioned randomly instead of sequentially.
 
 Accordingly, we decided to partition the data sequentially (i.e. without randomization)
-for cross-validation. However, since the data from our diary studies
+for cross-validation. 
+However, since the data from our diary studies
 did not have equal proportions of each class, it was possible for some folds
 to have a training set with barely any instances of a class and then validate
 on many instances of the same class that the network had limited instances
-to train/learn from. To ensure that each fold had comparable training and validation distributions 
+to train/learn from. 
+To ensure that each fold had comparable training and validation distributions 
 for each class, we preprocessed the diary study data before sequentially partitioning it. 
 Specifically, we divided the data of each diary study into its 
 contiguous segments (e.g. 10:00-11:15, Table or 13:55-14:30, Hand), grouped 
-those segments by class, and then concatenated the segments together for each class. The result was four 
+those segments by class, and then concatenated the segments together for each class. 
+The result was four 
 homogenous datasets, one of each class, such that for each fold, we could construct
 the validation set by aggregating together $\frac{1}{k}$ of each class dataset and then
 construct the training set by compiling the remaining $\frac{k - 1}{k}$ of each class dataset.
 Within these homogenous class datasets, the data were not randomized but 
 kept sequential.
 
-\paragraph{Accelerometer calibration across phone models}
-We had hoped that phone accelerometers would be consistent across phone models (i.e.
+\paragraph{Accelerometer calibration across phones}
+We had hoped that phone accelerometers would be consistent across phones and models (i.e.
 both the Nexus 5 and Nexus 5X in the same state would have the same accelerometer
-readings, save for some noise). However, cursory comparison of the accelerometer data between the two phones 
+readings, save for some noise). 
+However, cursory comparison of the accelerometer data between the two phones 
 (while both phones had been on the table) revealed both differing accelerometer readings and readings
 that did not equal the expected values of $X = 0m/s^2$, $Y = 0m/s^2$, and $Z = 9.8m/s^2$. 
 
@@ -112,20 +116,23 @@ that did not equal the expected values of $X = 0m/s^2$, $Y = 0m/s^2$, and $Z = 9
 %\caption{Graphs of the acceleration of the Nexus 5 and 5X while on a table (at different times).}
 %\end{figure}
 
-In order to account for the inconsistent calibrations between the accelerometers of different phone models, we
+In order to account for the inconsistent calibrations between the accelerometers of different phones, we
 attempted to recalibrate the accelerometer data for each phone before using it with the network. 
 First, to see what type of recalibration model was necessary (e.g. $accel_{calibrated} = accel_{raw} + C$ or
 $accel_{calibrated} = K(accel_{raw}) + C$), we taped the Nexus 5 and Nexus 5X together, and then recorded
-the phones' accelerations in the four states. Plots of the two phones' accelerations against each other, Figure \ref{fig:accelGraph}, over the same time period
+the phones' accelerations in the four states. 
+Plots of the two phones' accelerations against each other, Figure \ref{fig:accelGraph}, over the same time period
 then suggested a linear relationship of the form $accel_{calibrated} = accel_{raw} + C$. 
 
+\begin{figure}[h]
 \begin{center}
  \scalebox{0.375}{\input{x.pgf}}
   \scalebox{0.375}{\input{y.pgf}}
   \scalebox{0.375}{\input{z.pgf}}
-  \captionof{figure}{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while physically taped together over the same period of time.}
-  \label{fig:accelGraph}
+ \captionof{figure}{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while physically taped together over the same period of time.}
+\label{fig:accelGraph}
 \end{center}
+\end{figure}
 
 % \begin{figure*}[!h]
 %\center
@@ -137,12 +144,15 @@ then suggested a linear relationship of the form $accel_{calibrated} = accel_{ra
 %  \label{fig:tapedphones}
 %\end{figure*}
 
-To find the calibration constants for each phone model, we collected accelerometer
+To find the calibration constants for each phone, we collected accelerometer
 data from when the phone was flat on a table, measured the acceleration in the
 $X$, $Y$, and $Z$ directions and then computed the offsets from the expected values of
-$0m/s^2$, $0m/s^2$, and $9.8m/s^2$. These offsets were then added to all of the accelerometer data for that phone model.
+$0m/s^2$, $0m/s^2$, and $9.8m/s^2$. 
+These offsets were then added to all of the accelerometer data for that phone model.
 For practical applications of our phone state classifier, we believe that this calibration process
 could then be reasonably achieved by asking phone users to place their phones flat on a table for a short period of time (e.g. a minute)
 to allow the above calibration constants to be calculated.
+To note, we do not know at this point if the reason the sensor calibration is off is a property unique to the phone or the phone model or both.
+Regardless, we believe that this phone calibration method is a potential solution for any of the above cases.  
 
 
