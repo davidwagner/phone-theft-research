@@ -2,27 +2,27 @@
 With the recent proliferation of smartphones with sensors, such as light sensors and accelerometers,
  combined with the wide usage of smartphones over traditional phones, 
  there has been an explosion of applications utilizing sensors,
- including activity detection \cite{Martin2013} to user authentication \cite{Kumar17,Primo14}
+ including activity detection \cite{Martin2013} and user authentication \cite{Kumar17,Primo14}
 
-Knowing, a priori, the position of the phone (e.g. in a bag, in a user's pocket, etc.), 
+Knowing, a priori, the position of the phone (e.g., in a bag, in a user's pocket, etc.), 
  which we will call \textit{phone state}, can prove to be useful.
 For example, a phone's vibration intensity can be adjusted based on where the phone is positioned on the person, potentially prolonging battery usage \cite{Fujinami2013}.
-In another example, CO2 and pollution sensors could be turned off automatically if the phone were deemed to be in a pocket or backpack \cite{Miluzzo2010} 
+In another example, CO2 and pollution sensors could be turned off automatically if the phone were deemed to be in a pocket or backpack \cite{Miluzzo2010}.
 
 Not only that, but phone state can also be a powerful information tool that can enhance the quality of other classifiers.
-For example, Mart\'{\i}n et al has shown that feeding phone state as an input to a classifier predicting activity will increase accuracy in certain instances \cite{Martin2013}.  
+For example, Mart\'{\i}n \et has shown that feeding phone state as an input to a classifier doing activity prediction will increase accuracy in certain instances \cite{Martin2013}.  
 As another example, user authentication performance was augmented when a prior step was taken to infer phone state \cite{Primo14}.
 
 
-In this paper, we discuss our methodology of automatically detecting and differentiating between four commonly identified phone states: table, backpack, hand, and table. 
+In this paper, we discuss our methodology of automatically detecting and differentiating between four commonly identified phone states: table, backpack, hand, and pocket. 
 To do this, we explore useful phone features that can be easily accessed from sensor data available to Android phone models, namely data from the accelerometer and the screen.
 We then introduce a neural net architecture well-suited to process and learn from these features, 
-and demonstrate that this architecture can achieve accuracy of 92\% in classifying a phoneâ€™s state provided data from a single phone model.
+and demonstrate that this architecture can achieve 92\% accuracy in classifying a phone'€™s state provided data from a single phone model.
 We then extend this to a different phone model and show that it could be possible to evaluate states on a 
  different phone, even if the phone has an accelerometer sensor that is calibrated differently.
 To do this, we found that the acceleration values between the two phones can be adjusted with a simple offset.
-When evaluating our twice classifier on the new phone, we achieve an accuracy of 78\% and 91\%.
+In two cross phone studies we achieve accuracies of 78\% and 91\%.
 Unfortunately, we were unable to investigate the root cause of this discrepancy further. 
-While the work on this is preliminary, we belive it provides an important step toward the goal of a 
+While the work on this is preliminary, we believe it provides an important step toward the goal of a 
 universal classifier that can detect different phone states across phone models. 
 

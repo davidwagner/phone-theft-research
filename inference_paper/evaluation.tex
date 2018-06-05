@@ -2,9 +2,8 @@
 
 \subsection{Data Collection Tools}
 \paragraph{Data Collection Software}
-The software used to collect data for this experiment is the AppMon logging mobile application 
-for the Android phone. 
-The AppMon application logs data from various smartphone sensors, including the following:
+To collect our data, we used AppMon, an Android mobile logging application.
+AppMon logs data from various smartphone sensors, including:
 \begin{enumerate}
 \item Accelerometer
 \item Screen unlock count
@@ -19,17 +18,17 @@ The app collects accelerometer readings (X, Y, Z directions) in units of $m/s^2$
 It also registers the timestamp at which various trigger events occur (e.g. phone unlocks, screen on, etc.)
 
 \paragraph{Phones}
-We used two phones diary studies and collecting data for the classifiers,
+We used diary studies on two phones to collect data for the classifiers,
  a Nexus 5 and a Nexus 5X.
 
 
 \subsection {Diary Study}
 To obtain data for training and validation, three `diary studies' were performed, all by the same participant.
 
-In each study, the participant carried the phone around with the monitoring app running and undergo a daily routine.
+In each study, the participant carried the phone around with the monitoring app running and underwent a daily routine.
 Whenever a change of state occurred, the participant recorded the time (according to the phone) and the new state.
 
-The first diary study was performed for 14.5 hours using the Nexus 5x which was also used as the source of training as well as validation data.
+The first diary study was performed for 14.5 hours using the Nexus 5X which was also used as the source of training as well as validation data.
 The second and third diary studies were performed using the Nexus 5 for 7 and 6 hours, respectively.
 This data was used to check for cross-phone validation.
 
@@ -41,38 +40,27 @@ The distribution of the states during the diary study are shown in Figure ~\ref{
 \caption{Distribution of states for different diary studies} \label{tab:diarydistr} 
 \centering
 
-\begin{tabular}{ |c|c|c|c| } 
- \hline
- \multirow{4}{1.4cm}{\centering Diary 1 Nexus 5X} &
- Table & 9.29 hours & 0.635\%  \\ 
- & Pocket & 0.49 hours & 0.034\% \\ 
- & Backpack &  4.26 hours  &  0.292\% \\ 
- & Hand & 0.58 hours  & 0.039\% \\
- \hline
-\end{tabular}
-
-\bigskip
-
-\begin{tabular}{ |c|c|c|c| } 
- \hline
+\begin{tabular}{llcr } 
+ Diary/Phone & State & Duration & Percent\\
+ \toprule
+ \multirow{4}{1.4cm}{ Diary 1 Nexus 5X} &
+ Table & 9.29 hours & 63.5\%  \\ 
+ & Pocket & 0.49 hours & 3.4\% \\ 
+ & Backpack &  4.26 hours  &  29.2\% \\ 
+ & Hand & 0.58 hours  & 3.9\% \\
+ \midrule
  \multirow{4}{1.4cm}{\centering Diary 2 Nexus 5} &
- Table & 2.85 hours & 0.400\%  \\ 
- & Pocket & 1.45 hours & 0.204\% \\ 
- & Backpack &  0.15 hours  &  0.021\% \\ 
- & Hand & 2.67 hours  & 0.375\% \\
- \hline
-\end{tabular}
-
-\bigskip
-
-\begin{tabular}{ |c|c|c|c| } 
- \hline
+ Table & 2.85 hours & 40.0\%  \\ 
+ & Pocket & 1.45 hours & 20.4\% \\ 
+ & Backpack &  0.15 hours  &  2.1\% \\ 
+ & Hand & 2.67 hours  & 37.5\% \\
+  \midrule
  \multirow{4}{1.4cm}{\centering Diary 3 Nexus 5} &
- Table & 0.44 hours & 0.061\%  \\ 
- & Pocket & 0.60 hours & 0.085\% \\ 
- & Backpack &  0.47 hours &  0.066\% \\ 
- & Hand & 4.93 hours  & 0.694\% \\
- \hline
+ Table & 0.44 hours & 6.1\%  \\ 
+ & Pocket & 0.60 hours & 8.5\% \\ 
+ & Backpack &  0.47 hours &  6.6\% \\ 
+ & Hand & 4.93 hours  & 69.4\% \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -87,7 +75,7 @@ were partitioned into the training set and the other sample into the validation 
 that it could be the case that we observe a high validation accuracy, but instead of learning 
 a generalizable decision rule, the network may have only learned to remember the class of the sample in the training set 
 and regurgitate that class when seeing the very similar other sample in the validation set. 
-Our suspicions were confirmed when we later observed that the cross-validation accuracy
+Our suspicions were confirmed when we observed that the cross-validation accuracy
 was $9.22\%$ higher when the dataset was partitioned randomly instead of sequentially.
 
 Accordingly, we decided to partition the data sequentially (i.e. without randomization)
@@ -108,7 +96,7 @@ kept sequential.
 
 \paragraph{Accelerometer calibration across phone models}
 We had hoped that phone accelerometers would be consistent across phone models (i.e.
-both the Nexus 5 and Nexus 5x in the same state would have the same accelerometer
+both the Nexus 5 and Nexus 5X in the same state would have the same accelerometer
 readings, save for some noise). However, cursory comparison of the accelerometer data between the two phones 
 (while both phones had been on the table) revealed both differing accelerometer readings and readings
 that did not equal the expected values of $X = 0g$, $Y = 0g$, and $Z = 9.8g$. 
@@ -128,13 +116,14 @@ In order to account for the inconsistent calibrations between the accelerometers
 attempted to recalibrate the accelerometer data for each phone before using it with the network. 
 First, to see what type of recalibration model was necessary (e.g. $accel_{calibrated} = accel_{raw} + C$ or
 $accel_{calibrated} = K(accel_{raw}) + C$), we taped the Nexus 5 and Nexus 5X together, and then recorded
-the phones' accelerations in the four states. Plots of the two phones' accelerations against each other over the same time period
+the phones' accelerations in the four states. Plots of the two phones' accelerations against each other, figure \ref{fig:tapedphones}, over the same time period
 then suggested a linear relationship of the form $accel_{calibrated} = accel_{raw} + C$. 
 
 \begin{figure*}[!h]
 \center
 \includegraphics[scale=0.5]{two_phones}
 \caption{Graphs of the acceleration of the Nexus 5X (x1/y1/z1) against the Nexus 5 (x2/y2/z2) while taped together over the same period of time.}
+  \label{fig:tapedphones}
 \end{figure*}
 
 To find the calibration constants for each phone model, we collected accelerometer

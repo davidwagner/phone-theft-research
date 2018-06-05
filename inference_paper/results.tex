@@ -1,11 +1,11 @@
 \section{Results}
 \subsection{Single Phone Model}
-Using the architecture detailed in Section 3, we trained the network for 10 epochs
+Using the architecture detailed in section 3, we trained the network for 10 epochs
 and measured its effectiveness using $10$-fold cross-validation.
 Training/validation data was compiled from the diary study conducted with the Nexus 5X.
 
 The average accuracy across all folds was $92.06\%$, and the corresponding
-confusion matrix is shown in Figure ~\ref{fig:confusion1}. The network is able to learn how to 
+confusion matrix is shown in table ~\ref{fig:confusion1}. The network is able to learn how to 
 classify the Table state very accurately, which is understandable given 
 the consistent nature of the state (i.e. always in a still, flat position). The states
 of Backpack and Pocket were also classified with pretty moderate accuracy,
@@ -18,18 +18,18 @@ using the phone actively in their hand, they may also walk with their phone in h
 but just to hold the phone and not actually using it.
 
 \begin{table}[h]
-\caption{Confusion matrix of the network predictions on Diary Study 1 (Nexus 5X). Each entry indicates the proportion of
+\caption{Confusion matrix of the network predictions on Diary Study 1 (Nexus 5X). Each entry indicates the percent of
 total instances that were predicted as the predicted class by the network and labeled the actual class.}\label{fig:confusion1} \centering
-\begin{tabular}{| c || c | c | c | c |}  
+\begin{tabular}{ l rrrr }  
 \toprule
-Class &  \multicolumn{3}{c}{\textit{Actual}} \\
-\cmidrule{1-5}
+      &  \multicolumn{4}{c}{\textit{Actual}} \\
+\cmidrule{2-5}
 \textit{Predicted}		&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
-Backpack			&	0.266 	&	0.005	&	0.024 	&	0.029 \\
-Pocket			&	0.016 	&	0.041 	&	0.001 	&	0.001 \\
-Hand			&	0.017 	&	0.003 	&	0.035 	&	0.006 \\
-Table			&	0.004 	&	0.002 	&	0.002 	&	0.965\\
+Backpack			&	26.6\% 	&	 .5\%		&	2.4\% 	&	2.9\% \\
+Pocket			&	1.6\% 	&	4.1\% 	&	 .1\% 	&	 .1\% \\
+Hand			&	1.7\% 	&	 .3\% 	&	3.5\% 	&	 .6\% \\
+Table			&	 .4\% 	&	 .2\% 	&	 .2\% 	&	96.5\%\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -41,48 +41,46 @@ on data collected by one phone model and then validating on data collected on a
 different phone model. Specifically, we first applied the calibration process described in section 4.3 
 to both the Nexus 5X diary study data (Diary Study 1) and Nexus 5 diary study data (Diary Study 2 and Diary Study 3).
 We then trained a network of our proposed architecture on the Nexus 5X data for 20 epochs, 
-and validated the network on the two separate diary studies that used the
-Nexus 5 phone.
-Validating on the first diary study with the Nexus 5 (Diary Study 2), our network
-had an accuracy of $78\%$, significantly lower than the accuracy observed
-in the single phone model case. The corresponding confusion matrix shown in Figure ~\ref{fig:confusion2}.
+and validated the network on the two separate Nexus 5 diary studies.
 
+Validating on the first Nexus 5 diary study (Diary Study 2), our network
+had an accuracy of $78\%$, significantly lower than the accuracy observed
+in the single phone model case. The  confusion matrix shown in table~\ref{fig:confusion2}.
 
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 2 (Nexus 5).}\label{fig:confusion2}
 \centering
-\begin{tabular}{| c || c | c | c | c |}  
+\begin{tabular}{ l rrrr }  
 \toprule
-Class & \multicolumn{4}{c}{\textit{Actual}} \\
+   & \multicolumn{4}{c}{\textit{Actual}} \\
 \cmidrule{2-5}
 \textit{Predicted}	&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
-Backpack			&	0.342 	&	0.016	&	0.017 	&	0.131 \\
-Pocket			&	0.001 	&	0.185 	&	0.	 	&	0.000 \\
-Hand			&	0.057 	&	0.	 	&	0.004 	&	0. \\
-Table			&	0. 		&	0.003 	&	0.	 	&	0.245\\
+Backpack			&	34.2\% 	&	1.6\%	&	1.7\% 	&	13.1\% \\
+Pocket			&	.1\% 		&	18.5\% 	&	.0\%		&	.0\% \\
+Hand			&	5.7\%	&	.0\%	 	&	.4\% 		&	.0\% \\
+Table			&	.0\% 		&	.3\% 		&	.0\%	 	&	24.5\%\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-
 Validating the second diary study, with the Nexus 5 (Diary Study 3), our trained network had a validation
-accuracy of $91\%$--an accuracy much more comparable to the cross validation accuracy
-demonstrated in the single phone model case. The corresponding confusion matrix is 
-shown in Figure ~\ref{fig:confusion3}
+accuracy of $91\%$--an accuracy much closer to the cross validation accuracy
+demonstrated in the single phone model case. The  confusion matrix is 
+shown in table~\ref{fig:confusion3}.
 
 \begin{table}[h]
 \caption{Confusion matrix of the network predictions on Diary Study 3 (Nexus 5).}\label{fig:confusion3} \centering
-\begin{tabular}{| c || c | c | c | c |}  
+\begin{tabular}{ l rrrr }  
 \toprule
-Class & \multicolumn{3}{c}{\textit{Actual}} \\ 
-\cmidrule{1-5}
+ & \multicolumn{3}{c}{\textit{Actual}} \\ 
+\cmidrule{2-5}
 \textit{Predicted}	&	Backpack    & 	Pocket 	& 	Hand	&	Table \\
 \midrule
-Backpack			&	0.053 	&	0.040	&	0.013 	&	0.001 \\
-Pocket			&	0.006 	&	0.037 	&	0.005 	&	0.001 \\
-Hand			&	0.	 	&	0.014 	&	0.055 	&	0.001 \\
-Table			&	0.009 	&	0.003 	&	0.	 	&	0.763\\
+Backpack			&	5.3\% 	&	4.0\%	&	1.3\% 	&	.1\% \\
+Pocket			&	  .6\% 	&	3.7\% 	&	.5\% 		&	.1\% \\
+Hand			&	 .0\% 	&	1.4\% 	&	5.5\% 	&	.1\% \\
+Table			&	 .9\% 	&	 .3\% 	&	.0\%		&	76.3\%\\
 \bottomrule
 \end{tabular}
 \end{table}
