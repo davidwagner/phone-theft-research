@@ -1,9 +1,10 @@
 \documentclass[a4paper,twoside]{article}
-\usepackage{microtype}
+\usepackage[protrusion=true,  expansion, tracking=true, spacing=true]{microtype} % typesetting
+
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{graphicx}
-\usepackage{booktabs} % for professional tables
+\usepackage{booktabs} % \toprule <head>\\\midrule \cmidrule <bod>\\\bottomrule
 \usepackage{csquotes}
 
 \usepackage{siunitx}
@@ -18,9 +19,18 @@
 \usepackage{multirow}
 \usepackage{pslatex}
 \usepackage{apalike}
-\usepackage{SCITEPRESS}
+\usepackage{xspace}  % fixes spaces, as in \newcommand{\eg}{e.g.\xspace}
+
+% Abbreviations
+\newcommand{\et}{et al.\xspace}
+\newcommand{\eg}{e.g.\xspace}
+
+\usepackage{SCITEPRESS}  % use last per conference directions.
 \usepackage{pgf}
 
+\subfigtopskip=0pt
+\subfigcapskip=0pt
+\subfigbottomskip=0pt
 \subfigtopskip=0pt
 \subfigcapskip=0pt
 \subfigbottomskip=0pt
