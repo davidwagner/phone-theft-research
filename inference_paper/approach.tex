@@ -4,8 +4,9 @@
 We want to predict the state of an user's phone based on the sensor data collected on the phone. 
 From our observations, the most common states of the phone would be in a user's: backpack, pocket, hand, or on a table.
 Upon a cursory observation of accelerometer traces, these phone states also appeared to be distinguishable and motivated
-our approach to use deep learning to classify these states. Sample accelerometer traces for the states, measured on a Nexus 5X
-smartphone are shown in figure ~\ref{fig:accelGraph}.
+our approach to use deep learning to classify these states.
+Sample accelerometer traces for the states, measured on a Nexus 5X
+smartphone are shown in Figure ~\ref{fig:accelGraph}.
 
 \begin{center}
  \scalebox{0.375}{\input{Backpack15.pgf}}
@@ -22,6 +23,11 @@ smartphone are shown in figure ~\ref{fig:accelGraph}.
 %\includegraphics[scale=0.25]{joanna_table}
 %\caption{Graphs of the acceleration of the Nexus 5 and 5X while on a table (at different times).}
 %\end{figure}
+
+Our goal is to allow the classifier to predict phone states no matter what action the user may be performing.
+This includes times when the phone is not physically on the user. 
+Of course, this means that certain cases may be very difficult to distinguish between: a phone being in a still backpack versus on a table, for example.
+In future works, we propose a potential solution to this problem. 
 
 
 \subsection{Features}
