@@ -77,7 +77,7 @@ The first consists of convolutional layers, while the second part contains dense
 \begin{figure*}[!h]
   \vspace{-0.2cm}
   \centering
-   {\epsfig{file = convnet1, width = 15cm}}
+   {\epsfig{file = convnet1, width = \linewidth}}
   \caption{The architecture of our convolutional neural net}
   \label{fig:ConvNet}
   \vspace{-0.1cm}
@@ -90,7 +90,7 @@ The first consists of convolutional layers, while the second part contains dense
 Layer &  Kernel & Outputs  &  Activation / Note\\\midrule
 Conv  & 3  & 64 &  Conv1D + ReLU \\
 Conv  & 3  & 64 & Conv1D + ReLU  \\
-MaxPooling   & & Max Pooling of 3\\
+MaxPooling  & & & Max Pooling of 3\\
 Conv & 3 & 128 &  Conv1D + ReLU\\
 Conv & 3 & 128 & Conv1D + ReLU\\
 GlobalPooling & & &\\
