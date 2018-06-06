@@ -29,7 +29,7 @@ smartphone are shown in Figure ~\ref{fig:AccelDiffStates}.
 Our goal is to allow the classifier to predict phone states no matter what action the user may be performing.
 This includes times when the phone is not physically on the user. 
 Of course, this means that certain cases may be very difficult to differentiate: a phone being in a still backpack versus on a table, for example.
-In future works, we propose a potential solution to this problem. 
+Later, we propose a potential solution to this problem. 
 
 
 \subsection{Features}
@@ -90,12 +90,12 @@ The first consists of convolutional layers, while the second part contains dense
 Layer &  Kernel & Outputs  &  Activation / Note\\\midrule
 Conv  & 3  & 64 &  Conv1D + ReLU \\
 Conv  & 3  & 64 & Conv1D + ReLU  \\
-MaxPooling   & & 4\\
-Conv & & & \\
-Conv & & & \\
+MaxPooling   & & Max Pooling of 3\\
+Conv & 3 & 128 &  Conv1D + ReLU\\
+Conv & 3 & 128 & Conv1D + ReLU\\
 GlobalPooling & & &\\
 Dropout & & & Dropout rate of 0.5\\
-Concat   &  & & Join count data with XYZ to form  an input of 144\\
+Concat  &  & & Join count data with XYZ to form an input of 144\\
 Dense & & 64 & ReLU; There are 6 of these in succession \\
 Dense & & 4 & softmax
 
