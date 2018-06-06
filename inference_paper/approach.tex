@@ -87,20 +87,20 @@ The first consists of convolutional layers, while the second part contains dense
 \begin{table}[!h]
 \begin{center}
 \begin{tabular}{llrp{2.5cm}}\toprule
-Layer &  Kernel & Outputs  &  Activation / Note\\\midrule
-Conv  & 3  & 64 &  Conv1D + ReLU \\
-Conv  & 3  & 64 & Conv1D + ReLU  \\
-MaxPooling  & & & Max Pooling of 3\\
-Conv & 3 & 128 &  Conv1D + ReLU\\
-Conv & 3 & 128 & Conv1D + ReLU\\
-GlobalPooling & & &\\
-Dropout & & & Dropout rate of 0.5\\
-Concat  &  & & Join count data with XYZ to form an input of 144\\
-Dense & & 64 & ReLU; There are 6 of these in succession \\
-Dense & & 4 & softmax
+Layer 	&  	 	Filters 	& 	Outputs  	&  	Activation / \newline Note\\\midrule
+Conv1D  	&  	64 		& 	$48 \times 6$	&  ReLU \\
+Conv1D  & 	64 		&	$46 \times 6 $ 	& ReLU  \\
+MaxPooling1D  &  64 		& 	$15 \times 6$	& Stride = 3\\
+Conv1D & 		128 	& 	$13 \times 6$&  ReLU\\
+Conv1D & 128 & $11 \times 6$ & ReLU\\
+GAP1D & 128 & $128 \times 1$ & \\
+Dropout & | &  $128 \times 1$ & Rate = 0.5\\
+Concat  & | & $144 \times 1$&  ($128 \times 1$) \newline + ($16 \times 1$)\\
+Dense & | & 64 & ReLU; 6 of these in succession \\
+Dense & | & 4 & Softmax
 
 \end{tabular}
-\caption{Model Architecutre}
+\caption{Model Architecture. For all convolutional layers, the kernel was $3 \times 6$, and GAP1D is short for GlobalAveragePooling1D. In the concatenation layer, the count features ($16 \times 1$) are concatenated with convolutional outputs to form the initial input into the dense layers.}
 \label{tab:ArchDescription}
 \end{center}
 \end{table}
