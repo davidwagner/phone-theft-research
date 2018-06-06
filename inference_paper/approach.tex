@@ -70,7 +70,8 @@ We believe that this is acceptable since the window size is small enough that we
 This decision is supported by previous work that showed there is no notable difference in accuracy between using overlapping and non-overlapping windows \cite{Martin2013}
 
 \subsection{Architecture}
-Our architecture consists of a standard convolutional layer followed by dense fully connected layers.
+Our architecture has two parts.
+The first consists of convolutional layers, while the second part contains dense fully connected layers.
 
 
 \begin{figure*}[!h]
@@ -106,7 +107,8 @@ Dense & & 4 & softmax
 
 In the convolution section, we use the raw acceleration data, which includes the acceleration in the x, y, z directions. 
 After multiple one-dimensional convolution layers, max and global pooling, and dropout layers, 
-we concatenate the 16 features above in order to incorporate the features that do not involve the data from the accelerometer. 
+we concatenate the 16 features above in order to incorporate the features that do not involve the data from the accelerometer.  
+Together, these features are fed into the second part of the net.  
 We chose to separate the features in this way in order to take advantage of the potentially periodic behavior of a user's acceleration in certain positions (e.g. walking).
 The features that use the acceleration in the X, Y, Z are separated from the other binary features because we wanted to capture the time series data of the different phone states.
 The other binary features are independent of the time, so these features are added in after the acceleration features go through the convolution layers.  
