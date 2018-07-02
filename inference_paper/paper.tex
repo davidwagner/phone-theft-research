@@ -1,4 +1,4 @@
-\documentclass[a4paper,twoside]{article}
+\documentclass[conference]{IEEEtran}
 \usepackage[protrusion=true,  expansion, tracking=true, spacing=true]{microtype} % typesetting
 
 \usepackage{amsmath}
@@ -13,20 +13,25 @@
 \usepackage{calc}
 \usepackage{amssymb}
 \usepackage{amstext}
-\usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{multicol}
 \usepackage{multirow}
 \usepackage{pslatex}
-\usepackage{apalike}
 \usepackage{xspace}  % fixes spaces, as in \newcommand{\eg}{e.g.\xspace}
+\usepackage{pgf}
+
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+
 
 % Abbreviations
 \newcommand{\et}{et al.\xspace}
 \newcommand{\eg}{e.g.\xspace}
-
-\usepackage{SCITEPRESS}  % use last per conference directions.
-\usepackage{pgf}
 
 \subfigtopskip=0pt
 \subfigcapskip=0pt
@@ -36,12 +41,41 @@
 
 \title{Inferring Phone Location State}
 
-\keywords{Sensors, Smartphone, Position}
+\author{\IEEEauthorblockN{Steven Chen}
+\IEEEauthorblockA{\textit{Electrical Engineering and Computer Science} \\
+\textit{University of California, Berkeley}\\
+Berkeley, United States \\
+scchen@berkeley.edu}
+\and
+\IEEEauthorblockN{Won Park}
+\IEEEauthorblockA{\textit{Electrical Engineering and Computer Science} \\
+\textit{University of California, Berkeley}\\
+Berkeley, United States \\
+wonpark@berkeley.edu}
+\and
+\IEEEauthorblockN{Joanna Yang}
+\IEEEauthorblockA{\textit{Electrical Engineering and Computer Science} \\
+\textit{University of California, Berkeley}\\
+Berkeley, United States \\
+joannayangg@berkeley.edu}
+\and
+\IEEEauthorblockN{David Wagner}
+\IEEEauthorblockA{\textit{Electrical Engineering and Computer Science} \\
+\textit{University of California, Berkeley}\\
+Berkeley, United States \\
+daw@berkeley.edu}
+}
 
-\abstract{Smartphone sensors are becoming more universal and more accurate. In this paper, we aim to distinguish between four common positions or states a phone can be in: in the hand, pocket, backpack, or on a table. Using a uniquely designed neural network and data from the accelerometer and the screen state, we achieve a 92\% accuracy on the same phone. We also explore extending this to different phone models and propose an acceleration calibration technique to do so. }
-\onecolumn
 
-\maketitle \normalsize \vfill
+\maketitle
+
+
+\begin {abstract}Smartphone sensors are becoming more universal and more accurate. In this paper, we aim to distinguish between four common positions or states a phone can be in: in the hand, pocket, backpack, or on a table. Using a uniquely designed neural network and data from the accelerometer and the screen state, we achieve a 92\% accuracy on the same phone. We also explore extending this to different phones and propose an acceleration calibration technique to do so. 
+\end{abstract}
+
+\begin{IEEEkeywords}
+Sensors, Smartphone, Position
+\end{IEEEkeywords}
 
 \input{introduction}
 \input{related}
@@ -53,7 +87,7 @@
 \nocite{}
 
 \vfill
-\bibliographystyle{apalike}
+\bibliographystyle{ieeetran}
 {\small
 \bibliography{paper}}
 

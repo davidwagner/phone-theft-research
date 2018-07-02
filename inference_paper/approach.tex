@@ -2,19 +2,19 @@
 
 \subsection{Problem}
 We want to predict the state of an user's phone based on the sensor data collected on the phone. 
-From our observations, the most common states of the phone would be in a user's: backpack, pocket, hand, or on a table.
+From our observations and prior research, the most common states of the phone would be in a user's: backpack, pocket, hand, or on a table.
 Upon a cursory observation of accelerometer traces, these phone states also appeared to be distinguishable and motivated
 our approach to use deep learning to classify these states.
 Sample accelerometer traces for the states, measured on a Nexus 5X
 smartphone are shown in Figure ~\ref{fig:AccelDiffStates}.
 
-\begin{figure}
+\begin{figure}[h]
 \begin{center}
- \scalebox{0.375}{\input{Backpack15.pgf}}
-  \scalebox{0.375}{\input{Pocket7.pgf}}
-  \scalebox{0.375}{\input{Hand2.pgf}}
-  \scalebox{0.375}{\input{Table6.pgf}}
-  \captionof{figure}{Typical acceleration graphs for our four states for a Nexus 5X.}
+ \scalebox{0.1}{\input{Backpack15.pgf}}
+  \scalebox{0.1}{\input{Pocket7.pgf}}
+  \scalebox{0.1}{\input{Hand2.pgf}}
+  \scalebox{0.1}{\input{Table6.pgf}}
+  \caption{Typical acceleration graphs for our four states for a Nexus 5X.}
   \label{fig:AccelDiffStates}
 \end{center}
 \end{figure}
@@ -27,13 +27,13 @@ smartphone are shown in Figure ~\ref{fig:AccelDiffStates}.
 %\end{figure}
 
 Our goal is to allow the classifier to predict phone states no matter what action the user may be performing.
-This includes times when the phone is not physically on the user. 
-Of course, this means that certain cases may be very difficult to differentiate: a phone being in a still backpack versus on a table, for example.
+This includes times when the phone is not physically on the user, including cases that may be very difficult to differentiate: a phone being in a still backpack versus on a table, for example.
 Later, we propose a potential solution to this problem. 
 
 
 \subsection{Features}
-For creating features, the relevant sensor data were the accelerometer readings (X, Y, Z values), number of unlocks, Number of screen touches, and number of times the screen turned on/off. For each window of 0.5s of these raw sensor readings, we generate the following features:
+For creating features, the relevant sensor data were the accelerometer readings (X, Y, Z values), number of unlocks, number of screen touches, and number of times the screen turned on/off. 
+For each window of 0.5s of these raw sensor readings, we generate the following features:
 
 \begin{enumerate}
 \item \textit{Total number of phone unlocks}
@@ -62,11 +62,11 @@ The feature was 1 if equations 1,2,3 below held true, and 0 otherwise.
 \end{equation}
 
 Other sensors that we considered to be relevant with predicting phone states are batched light and step count.
-However, the batched light sensor is not used because of its inability to distinguish outdoor nighttime darkness and the darkness from an enclosed backpack. 
+However, the batched light sensor was not used because of its inability to distinguish outdoor nighttime darkness and the darkness from an enclosed backpack. 
 We could not use the step count sensor because the sensor data we collected showed that this sensor was not reliable. 
 
 We do not utilize a overlapping or `rolling` window, and instead take distinct chunks of 0.5 seconds.
-We believe that this is acceptable since the window size is small enough that we do not miss any transitions.
+We believe that this is acceptable since the window size is small enough that we would not miss most transitions.
 This decision is supported by previous work that showed there is no notable difference in accuracy between using overlapping and non-overlapping windows \cite{Martin2013}
 
 \subsection{Architecture}
