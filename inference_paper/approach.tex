@@ -43,31 +43,24 @@ For each window of 0.5s of these raw sensor readings, we generate the following 
 \item \textit{Std. deviation of acceleration in each of X, Y, Z}
 \item \textit{Mean magnitude of acceleration in each of X, Y, Z}
 \item \textit{Std. deviation of magnitude of acceleration in each of X, Y, Z}
-\item \textit{If phone is flat (handcrafted feature explained below)}
+\item \textit{Phone is flat (handcrafted feature explained below)}
 \end{enumerate}
 
-The ``If phone is flat" feature was a boolean feature derived from the raw accelerometer readings. 
-The feature was 1 if equations 1,2,3 below held true, and 0 otherwise.
+The ``Phone is flat'' feature is a boolean feature derived from the raw accelerometer readings. 
+The feature is 1 if the three equations below all hold, and 0 otherwise.
+\begin{align*}
+ \text{(Mean X Accel. Magnitude)} &< 1.0\\
+\text{(Mean Y Accel. Magnitude)} &< 1.0\\
+|9.8 - \text{(Mean Z Accel. Magnitude)}| &< 1.0
+\end{align*}
 
-\begin{equation}\label{eq1}
- \text{(Mean X Accel. Magnitude)} < 1.0 
-\end{equation}
-
-\begin{equation}\label{eq2}
-\text{(Mean Y Accel. Magnitude)} < 1.0
-\end{equation}
-
-\begin{equation}\label{eq1}
-\hspace*{-1cm}|9.8 - \text{(Mean Z Accel. Magnitude)}| < 1.0
-\end{equation}
-
-Other sensors that we considered to be relevant with predicting phone states are batched light and step count.
+Other sensors that we considered to be relevant for predicting phone states are the batched light sensor and step count.
 However, the batched light sensor was not used because of its inability to distinguish outdoor nighttime darkness and the darkness from an enclosed backpack. 
-We could not use the step count sensor because the sensor data we collected showed that this sensor was not reliable. 
+We could not use the step count sensor because the sensor data we collected showed that this sensor was not reliable for our phones. 
 
-We do not utilize a overlapping or `rolling` window, and instead take distinct chunks of 0.5 seconds.
+We do not utilize a overlapping or `rolling' window.  Instead, we take distinct chunks of 0.5 seconds.
 We believe that this is acceptable since the window size is small enough that we would not miss most transitions.
-This decision is supported by previous work that showed there is no notable difference in accuracy between using overlapping and non-overlapping windows \cite{Martin2013}
+This decision is supported by previous work that found no notable difference in accuracy between using overlapping and non-overlapping windows \cite{Martin2013}.
 
 \subsection{Architecture}
 Our architecture has two parts.
