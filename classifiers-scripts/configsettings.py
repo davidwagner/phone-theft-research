@@ -5,6 +5,7 @@ DASHBOARDDIR = '../data/Classifier_Results_TEST/'
 USERS_TO_IDS_FILE = "../joanna_watch.csv"
 DIRECTORY = "../data/diary-study-11-14-15"
 DIARY_STUDY_FILE = "../data/diary-study-11-14-15/diary_state.txt"
+DIARY_STUDY_NO_STEADY_FILE = "../data/diary-study-11-14-15/diary_state_no_steady.txt"
 # DIRECTORY = "../data/Decrypted_Data/2016_11_01/"
 ###############USERS###########################
 FILTER_ONLY_CONSISTENT_DATA = False

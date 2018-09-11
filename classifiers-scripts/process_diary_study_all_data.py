@@ -23,12 +23,12 @@ Returns:
 1) numpy matrix of all acceleromter, touch, screen state, unlock data, and class according to the diary study
 2) names of the coluns of the numpy matrix
 """
-def getAllUserData(data_dir, diary_file, user_id, as_matrix=True, calibrate_accel=False):
+def getAllUserData(data_dir, diary_file, user_id, as_matrix=True, calibrate_accel=False, no_boundary=False):
     print("Compiling data from:", data_dir)
     files = getUserFilesByInstrument(data_dir, user_id, 'BatchedAccelerometer')
 
     print("Getting Accel Data")
-    x = compileAccelData(files, diary_file, as_matrix=True, calibrate=calibrate_accel)
+    x = compileAccelData(files, diary_file, as_matrix=True, calibrate=calibrate_accel, no_boundary_data=no_boundary)
     accelDf = pd.DataFrame(data=x, columns = ["Timestamp", "X accel.", "Y accel.", "Z accel.", "Class"])
 
     print("Getting Phone Active Data")
@@ -149,7 +149,7 @@ def calibrate_accel(accel_table):
     return accel_table
 
 
-def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=False):
+def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=False, no_boundary_data=False):
     data = pd.concat([getBootTimestampedData(f) for f in accel_files])
     data = data.sort_values(0)
     
@@ -167,13 +167,19 @@ def compileAccelData(accel_files, diary_study_f=None, as_matrix=True, calibrate=
     
     if diary_study_f != None:
         expectedIntervals = getExpectedIntervals(diary_study_f)
-
+        # print(data)
         for interval, label in expectedIntervals:
             start, end = interval
             mask = (data[0] >= start) & (data[0] < end)
-            # print("CHECK INTERVAL", interval, label)
-            # print(data[mask])
+            print("CHECK INTERVAL", interval, label)
+            print(data[mask].shape)
             data.loc[mask, new_col] = label
+
+            if no_boundary_data:
+                print("Before boundary filter:", data.shape)
+                mask = ~((data[0] >= start) & (data[0] < start + datetime.timedelta(minutes=1)))
+                data = data[mask]
+                print("After boundary filter:", data.shape)
 
     # print("UNCALIBRATED NULL")
     # print(data[data.isnull().any(axis=1)])
@@ -217,14 +223,15 @@ def processTouches(touchDf, accelDf):
         startTime, endTime = accel[curAccelIndex, 0], accel[curAccelIndex + 1, 0]
         touchTime = touchDf.iloc[curTouchIndex, 0]
 
-        if touchTime >= startTime and touchTime < endTime:
+        if touchTime < startTime:
+            curTouchIndex += 1
+        elif touchTime >= startTime and touchTime < endTime:
             accelDf.loc[curAccelIndex, 'Num. Touches'] += 1
 
             curTouchIndex += 1
-            
-
         else:
             curAccelIndex += 1
+    print("curAccel:", curAccelIndex, "numAccel:", numAccelRows, "curTouch:", curTouchIndex, "numTouch:", numTouchRows)
 
     return accelDf
 
