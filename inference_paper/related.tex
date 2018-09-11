@@ -7,7 +7,7 @@ Work by Khan \et, utilized accelerometer values to classify phone state
 but was limited to distinguishing between whether the phone was in the upper or lower half of the body \cite{Khan2010}.
 Similarly, Miluzzo \et proposed the use of various sensors to classify different phone locations, 
 but only recognized two states: inside and outside of a pocket \cite{Miluzzo2010}.
-In contrast, our work distinguishes between four states: hand, pocket, bag, and backpack. 
+In contrast, our work distinguishes between four states: hand, pocket, backpack, and table. 
 
 Several other works tried to classify and distinguish between more states (e.g. hand, bag, pocket, etc.), but only used data from the accelerometer resulting in accuracies between 74.6\% to 84\% \cite{Fujinami2013,Coksun15}. 
 Our work improves on this accuracy by utilizing additional data from the phone screen.
@@ -24,7 +24,7 @@ Similarly, Mart\'{\i}n \et used sensors like light, proximity, and acceleration 
 to obtain phone state accuracy of 92.94\% \cite{Martin2013}, but at a cost in file size.
 Our work achieves similar accuracy rates but with data from fewer sensors.  
 
-In a somewhat different approach, work by Wijerathne \et \cite{Wijerathne} took advantage of smartphone accelerometers to help monitor road conditions. Similar to our work, the paper attempted to generalize between all positions the phone could be in. 
+In a somewhat different approach, work by Wijerathne \et \cite{Wijerathne} took advantage of smartphone accelerometers to help monitor road conditions. Similar to our work, the paper attempted to generalize between all positions the phone could be in, but instead of detecting the exact position of the user's phone, the authors attempted to detect rough roads and bumps while cycling. 
 
 In this paper, we take this idea further and utilize data from only two sources: the accelerometer and the phone screen. 
 Data from both sources is readily available, does not require specific user permissions, and is less energy draining than previously studied sensors.
